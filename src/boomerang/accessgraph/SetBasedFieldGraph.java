@@ -1,21 +1,32 @@
 package boomerang.accessgraph;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
 public class SetBasedFieldGraph implements IFieldGraph {
 
-	private final Set<WrappedSootField> fields;
+	private final int[] fields;
 	public SetBasedFieldGraph(Set<WrappedSootField> fields) {
-		this.fields = fields;
+		this.fields = new int[fields.size()];
+		int i = 0;
+		for(WrappedSootField f:fields){
+			this.fields[i] = FieldGraph.fieldToInt(f);
+			i++;
+		}
+		Arrays.sort(this.fields);
 //		assert fields.size() > 1;
+	}
+	
+	public SetBasedFieldGraph(int[] fields) {
+		this.fields = fields;
 	}
 	@Override
 	public Set<IFieldGraph> popFirstField() {
 		Set<IFieldGraph> out = new HashSet<>();
 		out.add(this);
-		out.add(FieldGraph.EMPTY_GRAPH);
+//		out.add(FieldGraph.EMPTY_GRAPH);
 		return out;
 	}
 
@@ -26,7 +37,7 @@ public class SetBasedFieldGraph implements IFieldGraph {
 
 	@Override
 	public Collection<WrappedSootField> getEntryNode() {
-		return fields;
+		return getExitNode();
 	}
 
 	@Override
@@ -36,9 +47,27 @@ public class SetBasedFieldGraph implements IFieldGraph {
 
 	@Override
 	public IFieldGraph appendFields(WrappedSootField[] toAppend) {
-		Set<WrappedSootField> overapprox = new HashSet<>(fields);
-		for(WrappedSootField f: toAppend)
-			overapprox.add(f);
+		Set<Integer> newFields = new HashSet<>();
+		for(WrappedSootField f : toAppend){
+			boolean skip = false;
+			int fieldInt = FieldGraph.fieldToInt(f);
+			for(int existing : fields){
+				if(fieldInt == existing)
+					skip = true;
+			}
+			if(!skip)
+				newFields.add(fieldInt);
+		}
+				
+		int[] overapprox = new int[fields.length + newFields.size()];
+				
+		System.arraycopy(fields, 0, overapprox, 0, fields.length);
+		int i = fields.length;
+		for(Integer f: newFields){
+			overapprox[i] = f;
+			i++;
+		}
+		Arrays.sort(overapprox);
 		return new SetBasedFieldGraph(overapprox);
 	}
 
@@ -49,14 +78,15 @@ public class SetBasedFieldGraph implements IFieldGraph {
 
 	@Override
 	public IFieldGraph prependField(WrappedSootField f) {
-		Set<WrappedSootField> overapprox = new HashSet<>(fields);
-		overapprox.add(f);
-		return new SetBasedFieldGraph(overapprox);
+		return appendFields(new WrappedSootField[]{f});
 	}
 
 	@Override
 	public Collection<WrappedSootField> getExitNode() {
-		return fields;
+		Set<WrappedSootField> out = new HashSet<>();
+		for(int i : fields)
+		out.add(FieldGraph.intToField(i));
+		return out;
 	}
 
 	@Override
@@ -70,13 +100,18 @@ public class SetBasedFieldGraph implements IFieldGraph {
 	}
 	
 	public String toString(){
-		return " **"+ fields.toString() + "**";
+		String str = " **";
+		for(int i : fields){
+			str += FieldGraph.intToField(i)+",";
+		}
+		str+= "** ";
+		return str;
 	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((fields == null) ? 0 : fields.hashCode());
+		result = prime * result + ((fields == null) ? 0 : Arrays.hashCode(fields));
 		return result;
 	}
 	@Override
@@ -91,7 +126,7 @@ public class SetBasedFieldGraph implements IFieldGraph {
 		if (fields == null) {
 			if (other.fields != null)
 				return false;
-		} else if (!fields.equals(other.fields))
+		} else if (!Arrays.equals(fields, other.fields))
 			return false;
 		return true;
 	}

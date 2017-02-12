@@ -113,16 +113,15 @@ public class FieldGraph implements IFieldGraph{
 		return new InMemoryGrph();
 	}
 
-	private int fieldToInt(WrappedSootField from) {
+	static int fieldToInt(WrappedSootField from) {
 		if (fieldToInteger.contains(from)) {
 			return fieldToInteger.indexOf(from);
 		}
-		;
 		fieldToInteger.add(from);
 		return fieldToInteger.size() - 1;
 	}
 
-	private WrappedSootField intToField(int hash) {
+	static WrappedSootField intToField(int hash) {
 		return fieldToInteger.get(hash);
 	}
 
