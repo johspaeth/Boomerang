@@ -1,6 +1,7 @@
 package boomerang.ifdssolver;
 
 import heros.solver.Pair;
+import soot.SootMethod;
 import soot.Unit;
 import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
 
@@ -30,4 +31,7 @@ public void onProcessCall(IPathEdge<N, D> edge);
 public void onProcessExit(IPathEdge<N, D> edge);
 
 public void onProcessNormal(IPathEdge<N, D> edge);
+
+void addIncoming(Direction direction, SootMethod callee,
+		Pair<Unit, AccessGraph> pair, IPathEdge<Unit, AccessGraph> pe);
 }
