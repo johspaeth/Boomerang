@@ -56,6 +56,7 @@ public class AbstractBoomerangTest {
 	public TestName name = new TestName();
 	private SootMethod sootTestMethod;
 	private IContextRequester contextReuqester;
+	private TestBoomerangOptions options;
 
 	@Before
 	public void performQuery() {
@@ -63,7 +64,6 @@ public class AbstractBoomerangTest {
 		
 		initializeSootWithEntryPoint(name.getMethodName());
 		analyze(name.getMethodName());
-
 		// To never execute the @Test method...
 		org.junit.Assume.assumeTrue(false);
 	}
@@ -73,11 +73,14 @@ public class AbstractBoomerangTest {
 
 			protected void internalTransform(String phaseName, @SuppressWarnings("rawtypes") Map options) {
 				icfg = new InfoflowCFG(new JimpleBasedInterproceduralCFG(true));
+				AbstractBoomerangTest.this.options = new TestBoomerangOptions(AbstractBoomerangTest.this.getClass(), name.getMethodName());
 				Query q = parseQuery(sootTestMethod);
 				contextReuqester = (q.getMethod().equals(sootTestMethod) ? new NoContextRequester() : new AllCallersRequester());
+				
 				AliasResults expectedResults = parseExpectedQueryResults(q);
 				AliasResults results = runQuery(q);
 				compareQuery(q, expectedResults, results);
+				AbstractBoomerangTest.this.options.removeVizFile();
 			}
 
 		});
@@ -120,8 +123,7 @@ public class AbstractBoomerangTest {
 	}
 
 	private AliasResults runQuery(Query q) {
-
-		AliasFinder boomerang = new AliasFinder(icfg, new TestBoomerangOptions());
+		AliasFinder boomerang = new AliasFinder(icfg, options);
 		boomerang.startQuery();
 		return boomerang.findAliasAtStmt(q.getAp(), q.getStmt(),contextReuqester).withoutNullAllocationSites();
 	}

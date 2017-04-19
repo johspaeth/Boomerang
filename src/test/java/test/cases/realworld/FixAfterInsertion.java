@@ -2,9 +2,6 @@ package test.cases.realworld;
 
 import java.util.Map;
 
-import org.junit.Test;
-
-import test.core.selfrunning.AbstractBoomerangTest;
 import test.core.selfrunning.AllocatedObject;
 
 public class FixAfterInsertion<K,V>{
