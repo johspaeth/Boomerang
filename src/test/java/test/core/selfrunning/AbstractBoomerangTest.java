@@ -61,7 +61,7 @@ public class AbstractBoomerangTest {
 	@Before
 	public void performQuery() {
 		WrappedSootField.TRACK_TYPE = false;
-		
+
 		initializeSootWithEntryPoint(name.getMethodName());
 		analyze(name.getMethodName());
 		// To never execute the @Test method...
@@ -73,13 +73,20 @@ public class AbstractBoomerangTest {
 
 			protected void internalTransform(String phaseName, @SuppressWarnings("rawtypes") Map options) {
 				icfg = new InfoflowCFG(new JimpleBasedInterproceduralCFG(true));
-				AbstractBoomerangTest.this.options = new TestBoomerangOptions(AbstractBoomerangTest.this.getClass(), name.getMethodName());
+				AbstractBoomerangTest.this.options = new TestBoomerangOptions(AbstractBoomerangTest.this.getClass(),
+						name.getMethodName());
 				Query q = parseQuery(sootTestMethod);
-				contextReuqester = (q.getMethod().equals(sootTestMethod) ? new NoContextRequester() : new AllCallersRequester());
-				
+				contextReuqester = (q.getMethod().equals(sootTestMethod) ? new NoContextRequester()
+						: new AllCallersRequester());
+
 				AliasResults expectedResults = parseExpectedQueryResults(q);
 				AliasResults results = runQuery(q);
-				compareQuery(q, expectedResults, results);
+				try {
+					compareQuery(q, expectedResults, results);
+				} catch (AssertionError e) {
+					AbstractBoomerangTest.this.options.removeVizFile();
+					throw e;
+				}
 				AbstractBoomerangTest.this.options.removeVizFile();
 			}
 
@@ -125,7 +132,7 @@ public class AbstractBoomerangTest {
 	private AliasResults runQuery(Query q) {
 		AliasFinder boomerang = new AliasFinder(icfg, options);
 		boomerang.startQuery();
-		return boomerang.findAliasAtStmt(q.getAp(), q.getStmt(),contextReuqester).withoutNullAllocationSites();
+		return boomerang.findAliasAtStmt(q.getAp(), q.getStmt(), contextReuqester).withoutNullAllocationSites();
 	}
 
 	private AliasResults parseExpectedQueryResults(Query q) {
@@ -195,7 +202,7 @@ public class AbstractBoomerangTest {
 
 	private boolean allocatesObjectOfInterest(NewExpr rightOp) {
 		SootClass interfaceType = Scene.v().getSootClass("test.core.selfrunning.AllocatedObject");
-		if(!interfaceType.isInterface())
+		if (!interfaceType.isInterface())
 			return false;
 		RefType allocatedType = rightOp.getBaseType();
 		return Scene.v().getActiveHierarchy().getImplementersOf(interfaceType).contains(allocatedType.getSootClass());
@@ -218,7 +225,7 @@ public class AbstractBoomerangTest {
 					if (allocatesObjectOfInterest((NewExpr) as.getRightOp())) {
 						Local local = (Local) as.getLeftOp();
 						AccessGraph accessGraph = new AccessGraph(local, ((NewExpr) as.getRightOp()).getBaseType());
-						out.add(accessGraph.deriveWithAllocationSite(as,true));
+						out.add(accessGraph.deriveWithAllocationSite(as, true));
 					}
 				}
 
@@ -233,21 +240,21 @@ public class AbstractBoomerangTest {
 		LinkedList<Query> queries = new LinkedList<>();
 		parseQuery(m, queries, new HashSet<SootMethod>());
 		if (queries.size() == 0)
-			throw new RuntimeException(
-					"No call to method queryFor was found within " + m.getName());
+			throw new RuntimeException("No call to method queryFor was found within " + m.getName());
 		if (queries.size() > 1)
 			System.err.println(
 					"More than one possible query found, might be unambigious, picking query " + queries.getLast());
 		return queries.getLast();
 	}
+
 	private void parseQuery(SootMethod m, LinkedList<Query> queries, Set<SootMethod> visited) {
 		if (!m.hasActiveBody() || visited.contains(m))
 			return;
 		visited.add(m);
 		Body activeBody = m.getActiveBody();
-		for(Unit callSite : icfg.getCallsFromWithin(m)){
-			for(SootMethod callee : icfg.getCalleesOfCallAt(callSite))
-				parseQuery(callee, queries,visited);
+		for (Unit callSite : icfg.getCallsFromWithin(m)) {
+			for (SootMethod callee : icfg.getCalleesOfCallAt(callSite))
+				parseQuery(callee, queries, visited);
 		}
 		for (Unit u : activeBody.getUnits()) {
 			if (!(u instanceof Stmt))
@@ -263,7 +270,7 @@ public class AbstractBoomerangTest {
 			if (!(param instanceof Local))
 				continue;
 			Local queryVar = (Local) param;
-			queries.add(new Query(new AccessGraph(queryVar, queryVar.getType()), stmt,m));
+			queries.add(new Query(new AccessGraph(queryVar, queryVar.getType()), stmt, m));
 		}
 	}
 
@@ -279,9 +286,9 @@ public class AbstractBoomerangTest {
 		String sootCp = userdir + "/target/test-classes";
 		if (includeJDK()) {
 			String javaHome = System.getProperty("java.home");
-			if(javaHome == null || javaHome.equals(""))
+			if (javaHome == null || javaHome.equals(""))
 				throw new RuntimeException("Could not get property java.home!");
-			sootCp += File.pathSeparator + javaHome+ "/lib/rt.jar";
+			sootCp += File.pathSeparator + javaHome + "/lib/rt.jar";
 			System.out.println(sootCp);
 			Options.v().setPhaseOption("cg", "trim-clinit:false");
 			Options.v().set_no_bodies_for_excluded(true);
@@ -336,7 +343,6 @@ public class AbstractBoomerangTest {
 		Scene.v().setEntryPoints(ePoints);
 	}
 
-
 	private String getTargetClass() {
 		SootClass sootClass = new SootClass("dummyClass");
 		SootMethod mainMethod = new SootMethod("main",
@@ -364,20 +370,20 @@ public class AbstractBoomerangTest {
 		return false;
 	}
 
-	
-	public List<String> excludedPackages(){
-		List<String > excludedPackages = new LinkedList<>();
-      excludedPackages.add("java.*");
-      excludedPackages.add("sun.*");
-      excludedPackages.add("javax.*");
-      excludedPackages.add("com.sun.*");
-      excludedPackages.add("com.ibm.*");
-      excludedPackages.add("org.xml.*");
-      excludedPackages.add("org.w3c.*");
-      excludedPackages.add("apple.awt.*");
-      excludedPackages.add("com.apple.*");
-      return excludedPackages;
+	public List<String> excludedPackages() {
+		List<String> excludedPackages = new LinkedList<>();
+		excludedPackages.add("java.*");
+		excludedPackages.add("sun.*");
+		excludedPackages.add("javax.*");
+		excludedPackages.add("com.sun.*");
+		excludedPackages.add("com.ibm.*");
+		excludedPackages.add("org.xml.*");
+		excludedPackages.add("org.w3c.*");
+		excludedPackages.add("apple.awt.*");
+		excludedPackages.add("com.apple.*");
+		return excludedPackages;
 	}
+
 	/**
 	 * The methods parameter describes the variable that a query is issued for.
 	 * Note: We misuse the @Deprecated annotation to highlight the method in the
