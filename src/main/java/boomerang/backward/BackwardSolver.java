@@ -18,7 +18,6 @@ public class BackwardSolver extends
     IFDSSolver<Unit, AccessGraph, SootMethod, BiDiInterproceduralCFG<Unit, SootMethod>> {
 
   private BoomerangContext context;
-  private long propagationCount;
 
   public BackwardSolver(BackwardProblem tabulationProblem, BoomerangContext context) {
     super(tabulationProblem, context.debugger);
@@ -37,19 +36,6 @@ public class BackwardSolver extends
     }
   }
 
-  @Override
-  public void awaitExecution() {
-    while (worklist != null && !worklist.isEmpty()) {
-      PathEdgeProcessingTask task = worklist.poll();
-      propagationCount++;
-      if (propagationCount % 1000 == 0) {
-        if (context.isOutOfBudget()) {
-          throw new BoomerangTimeoutException();
-        }
-      }
-      task.run();
-    }
-  }
 
 
   @Override

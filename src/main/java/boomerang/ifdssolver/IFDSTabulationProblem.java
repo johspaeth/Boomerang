@@ -70,4 +70,6 @@ public interface IFDSTabulationProblem<N, D, M, I extends BiDiInterproceduralCFG
 
 	void cleanup();
 	void onSolverAddIncoming(M callee, Pair<N, D> pair, IPathEdge<N, D> pe);
+	
+	Scheduler getScheduler(); 
 }

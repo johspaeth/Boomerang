@@ -11,7 +11,6 @@ import com.google.common.base.Stopwatch;
 
 import boomerang.accessgraph.AccessGraph;
 import boomerang.accessgraph.WrappedSootField;
-import boomerang.backward.BackwardFlowFunctions;
 import boomerang.backward.BackwardProblem;
 import boomerang.backward.BackwardSolver;
 import boomerang.bidi.PathEdgeStore;
@@ -22,7 +21,9 @@ import boomerang.forward.ForwardFlowFunctions;
 import boomerang.forward.ForwardProblem;
 import boomerang.forward.ForwardSolver;
 import boomerang.ifdssolver.IPathEdge;
+import boomerang.ifdssolver.IPropagationController;
 import boomerang.ifdssolver.PathEdge;
+import boomerang.ifdssolver.Scheduler;
 import boomerang.mock.DefaultBackwardDataFlowMocker;
 import boomerang.mock.DefaultForwardDataFlowMocker;
 import boomerang.mock.DefaultNativeCallHandler;
@@ -54,7 +55,6 @@ public class BoomerangContext {
 	 */
 	public IInfoflowCFG bwicfg;
 
-
 	/**
 	 * Native call handler, defines how aliases flow at native call sites.
 	 */
@@ -74,8 +74,9 @@ public class BoomerangContext {
 	private long budgetInMilliSeconds = 10000;
 	private boolean trackStaticFields;
 
-	private Set<PointOfIndirection> processedPOIs = new HashSet<>();
 	private Set<SootMethod> backwardVisitedMethods = new HashSet<>();
+
+	public ContextScheduler scheduler;
 
 	public BoomerangContext(IInfoflowCFG icfg, IInfoflowCFG bwicfg) {
 		this(icfg, bwicfg, new BoomerangOptions());
@@ -91,8 +92,11 @@ public class BoomerangContext {
 		this.budgetInMilliSeconds = options.getTimeBudget();
 		WrappedSootField.TRACK_STMT = options.getTrackStatementsInFields();
 		this.trackStaticFields = options.getTrackStaticFields();
-		if(!trackStaticFields)
-			System.err.println("Boomerang does not track static fields");
+		// if(!trackStaticFields)
+		// System.err.println("Boomerang does not track static fields");
+		this.scheduler = options.getScheduler();
+		this.scheduler.setContext(this);
+		this.propagationController = options.propagationController();
 
 	}
 
@@ -174,6 +178,8 @@ public class BoomerangContext {
 
 	private IContextRequester contextRequester;
 
+	public IPropagationController<Unit, AccessGraph> propagationController;
+
 	public boolean isOutOfBudget() {
 		if (startTime.elapsed(TimeUnit.MILLISECONDS) > budgetInMilliSeconds)
 			return true;
@@ -223,7 +229,7 @@ public class BoomerangContext {
 	}
 
 	public BackwardSolver getBackwardSolver() {
-		if(backwardSolver == null){
+		if (backwardSolver == null) {
 			BackwardProblem problem = new BackwardProblem(this);
 			backwardSolver = new BackwardSolver(problem, this);
 		}
@@ -234,21 +240,22 @@ public class BoomerangContext {
 		return (PathEdgeStore) getForwardSolver().getPathEdges();
 	}
 
-	public Set<? extends IPathEdge<Unit, AccessGraph>> getForwardIncomings(Pair<Unit,AccessGraph> startNode) {
+	public Set<? extends IPathEdge<Unit, AccessGraph>> getForwardIncomings(Pair<Unit, AccessGraph> startNode) {
 		return getForwardSolver().incoming(startNode, icfg.getMethodOf(startNode.getO1()));
 	}
+
 	public void registerPOI(Unit stmt, PointOfIndirection poi, AliasCallback cb) {
-		getForwardPathEdges().registerPointOfIndirectionAt(stmt, poi,cb);
+		getForwardPathEdges().registerPointOfIndirectionAt(stmt, poi, cb);
 	}
 
 	public void setContextRequester(IContextRequester req) {
 		this.contextRequester = req;
 	}
-	
-	public IContextRequester getContextRequester(){
+
+	public IContextRequester getContextRequester() {
 		return contextRequester;
 	}
-	
+
 	public Set<AccessGraph> getForwardTargetsFor(AccessGraph d2, Unit callSite, SootMethod callee) {
 		Collection<Unit> calleeSps = this.icfg.getStartPointsOf(callee);
 		Set<AccessGraph> factsInCallee = new HashSet<>();

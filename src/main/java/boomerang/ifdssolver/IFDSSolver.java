@@ -42,7 +42,7 @@ import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
 public abstract class IFDSSolver<N, D, M, I extends BiDiInterproceduralCFG<N, M>> {
 
 	private long propagationCount;
-	protected LinkedList<PathEdgeProcessingTask> worklist = new LinkedList<PathEdgeProcessingTask>();
+	protected Scheduler worklist;
 	protected IPathEdges<N, D, M, I> pathEdges;
 	protected PathEdgeFunctions<N, D, M> pathEdgeFunctions;
 	protected IIncomings<N, M, D> incomings;
@@ -57,6 +57,7 @@ public abstract class IFDSSolver<N, D, M, I extends BiDiInterproceduralCFG<N, M>
 	private IFDSTabulationProblem<N, D, M, I> tabulationProblem;
 
 	private Direction direction;
+	private IPropagationController<N, D> propagationController;
 
 	/**
 	 * Creates a solver for the given problem, which caches flow functions and
@@ -68,8 +69,10 @@ public abstract class IFDSSolver<N, D, M, I extends BiDiInterproceduralCFG<N, M>
 		this.tabulationProblem = tabulationProblem;
 		this.direction = tabulationProblem.getDirection();
 		this.icfg = tabulationProblem.interproceduralCFG();
+		this.worklist = tabulationProblem.getScheduler();
 		this.debugger = debug;
 		propagationCount = 0;
+		this.propagationController = tabulationProblem.propagationController();
 	}
 
 	/**
@@ -258,6 +261,8 @@ public abstract class IFDSSolver<N, D, M, I extends BiDiInterproceduralCFG<N, M>
 	}
 
 	public boolean propagate(IPathEdge<N, D> edge, PropagationType t) {
+		if(!propagationController.continuePropagate(edge))
+			return false;
 		boolean hasAlreadyProcessed = pathEdges.hasAlreadyProcessed(edge);
 		registerEdge(edge);
 		assert pathEdges.hasAlreadyProcessed(edge);
@@ -289,8 +294,8 @@ public abstract class IFDSSolver<N, D, M, I extends BiDiInterproceduralCFG<N, M>
 //		System.out.println(direction + " " + edge);
 	}
 
-	protected class PathEdgeProcessingTask implements Runnable {
-		private final IPathEdge<N, D> edge;
+	public class PathEdgeProcessingTask implements Runnable {
+		public final IPathEdge<N, D> edge;
 
 		public PathEdgeProcessingTask(IPathEdge<N, D> edge) {
 			this.edge = edge;
@@ -325,10 +330,7 @@ public abstract class IFDSSolver<N, D, M, I extends BiDiInterproceduralCFG<N, M>
 	}
 
 	public void awaitExecution() {
-		while (worklist != null && !worklist.isEmpty()) {
-			PathEdgeProcessingTask task = worklist.poll();
-			task.run();
-		}
+		worklist.awaitExecution();
 	}
 
 	protected Collection<IPathEdge<N, D>> endSummary(M m, Pair<N, D> d3) {
@@ -360,8 +362,6 @@ public abstract class IFDSSolver<N, D, M, I extends BiDiInterproceduralCFG<N, M>
 	public void cleanup() {
 		if (incomings != null)
 			this.incomings.clear();
-		if (worklist != null)
-			this.worklist.clear();
 		if (tabulationProblem != null)
 			tabulationProblem.cleanup();
 		this.incomings = null;

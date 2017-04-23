@@ -19,7 +19,6 @@ public class ForwardSolver extends
 
 
   private BoomerangContext context;
-  private long propagationCount;
 
 
 
@@ -66,19 +65,7 @@ public class ForwardSolver extends
     processExit(pathEdge);
     awaitExecution();
   }
-  @Override
-  public void awaitExecution() {
-    while (worklist != null && !worklist.isEmpty()) {
-      PathEdgeProcessingTask task = worklist.poll();
-      propagationCount++;
-      if (propagationCount % 1000 == 0) {
-        if (context.isOutOfBudget()) {
-          throw new BoomerangTimeoutException();
-        }
-      }
-      task.run();
-    }
-  }
+ 
 
   @Override
   public void onRegister(IPathEdge<Unit, AccessGraph> edge) {
