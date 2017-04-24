@@ -22,7 +22,7 @@ import soot.jimple.StaticInvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.solver.cfg.IInfoflowCFG;
 
-public class JSONOutputDebugger implements IBoomerangDebugger {
+public class JSONOutputDebugger extends DefaultBoomerangDebugger {
 	private BoomerangContext context;
 	private IInfoflowCFG icfg;
 	private File jsonFile;
@@ -32,10 +32,6 @@ public class JSONOutputDebugger implements IBoomerangDebugger {
 		this.jsonFile = jsonFile;
 	}
 
-	@Override
-	public void addIncoming(Direction direction, SootMethod callee, Pair<Unit, AccessGraph> pair,
-			IPathEdge<Unit, AccessGraph> pe) {
-	}
 
 	@Override
 	public void addSummary(Direction dir, SootMethod methodToSummary, IPathEdge<Unit, AccessGraph> summary) {
@@ -97,47 +93,6 @@ public class JSONOutputDebugger implements IBoomerangDebugger {
 		esg.addEdgeWithLabel(icfg.getMethodOf(start), esg.new ESGNode(start, startFact), esg.new ESGNode(target, targetFact), "indirectCallFlow");
 	}
 	
-	@Override
-	public void backwardStart(Direction backward, Unit stmt, AccessGraph d1, Unit s) {
-	}
-
-	@Override
-	public void onEnterCall(Unit n, Collection<? extends IPathEdge<Unit, AccessGraph>> nextCallEdges,
-			IPathEdge<Unit, AccessGraph> incEdge) {
-	}
-
-	@Override
-	public void onProcessCall(IPathEdge<Unit, AccessGraph> edge) {
-	}
-
-	@Override
-	public void onProcessExit(IPathEdge<Unit, AccessGraph> edge) {
-	}
-
-	@Override
-	public void onProcessNormal(IPathEdge<Unit, AccessGraph> edge) {
-	}
-
-	@Override
-	public void finishedQuery(Query q, AliasResults res) {
-	}
-
-	@Override
-	public void startQuery(Query q) {
-//		mainMethodId = id(icfg.getMethodOf(q.getStmt()));
-	}
-
-	@Override
-	public void onCurrentlyProcessingRecursiveQuery(Query q) {
-	}
-
-	@Override
-	public void onLoadingQueryFromCache(Query q, AliasResults aliasResults) {
-	}
-
-	@Override
-	public void onAllocationSiteReached(AssignStmt as, IPathEdge<Unit, AccessGraph> pe) {
-	}
 
 	@Override
 	public void onAliasQueryFinished(Query q, AliasResults res) {

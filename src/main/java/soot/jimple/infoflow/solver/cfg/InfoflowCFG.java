@@ -132,20 +132,14 @@ public class InfoflowCFG implements IInfoflowCFG {
 		while (listener.hasNext()) {
 			SootMethod method = listener.next().method();
 			if (method.getSubSignature().equals("java.lang.String toString()")) {
-//				if(method.hasActiveBody())
-//					method.setActiveBody(Jimple.v().newBody(method));
 				METHODS_TO_STRING.add(method);
 				IGNORED_METHODS.add(method);
 			}
 			if (method.getSubSignature().equals("boolean equals(java.lang.Object)")) {
-//				if(method.hasActiveBody())
-//					method.setActiveBody(Jimple.v().newBody(method));
 				METHODS_EQUALS.add(method);
 				IGNORED_METHODS.add(method);
 			}
 			if (method.getName().equals("hashCode")) {
-//				if(method.hasActiveBody())
-//					method.setActiveBody(Jimple.v().newBody(method));
 				IGNORED_METHODS.add(method);
 			}
 		}

@@ -68,8 +68,8 @@ class BackwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 		if(callSite == null && returnSite == null){
 			SootMethod callee = context.icfg.getMethodOf(prevEdge.getTarget());
 			if(context.getContextRequester().isEntryPointMethod(callee)){
-				Alloc alloc = new Alloc(prevEdge.factAtTarget(), prevEdge.getTarget(), callee,context, true);
-				alloc.execute();
+				Alloc alloc = new Alloc(prevEdge.factAtTarget(), prevEdge.getTarget(),true);
+				alloc.execute(context);
 			}
 			return Collections.emptySet();
 		}

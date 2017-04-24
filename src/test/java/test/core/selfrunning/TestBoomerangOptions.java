@@ -7,10 +7,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import boomerang.BoomerangOptions;
+import boomerang.debug.DefaultBoomerangDebugger;
 import boomerang.debug.IBoomerangDebugger;
 import boomerang.debug.JSONOutputDebugger;
-import boomerang.debug.NullBoomerangDebugger;
-import boomerang.debug.NullDebugger;
 
 public abstract class TestBoomerangOptions extends BoomerangOptions {
 	private File vizFile;
@@ -33,9 +32,11 @@ public abstract class TestBoomerangOptions extends BoomerangOptions {
 
 	@Override
 	public IBoomerangDebugger getDebugger() {
-		return (vizFile == null ? new NullBoomerangDebugger() :  new JSONOutputDebugger(vizFile));
+		return (true ? new DefaultBoomerangDebugger() :  new JSONOutputDebugger(vizFile));
 	}
 	public void removeVizFile() {
+		if(vizFile == null)
+			return;
 		File parentFile = vizFile.getParentFile();
 		if (vizFile.exists())
 			vizFile.delete();

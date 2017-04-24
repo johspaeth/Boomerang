@@ -30,6 +30,8 @@ import boomerang.mock.DefaultNativeCallHandler;
 import boomerang.mock.MockedDataFlow;
 import boomerang.mock.NativeCallHandler;
 import boomerang.pointsofindirection.AliasCallback;
+import boomerang.pointsofindirection.AllocationSiteHandler;
+import boomerang.pointsofindirection.AllocationSiteHandlers;
 import boomerang.pointsofindirection.PointOfIndirection;
 import heros.FlowFunction;
 import heros.solver.Pair;
@@ -265,5 +267,9 @@ public class BoomerangContext {
 	
 	public BoomerangOptions getOptions() {
 		return options;
+	}
+
+	public AllocationSiteHandlers allocationSiteHandlers() {
+		return options.allocationSiteHandlers();
 	}
 }

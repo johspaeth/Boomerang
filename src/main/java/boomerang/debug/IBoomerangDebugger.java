@@ -21,7 +21,7 @@ public void onCurrentlyProcessingRecursiveQuery(Query q);
 
 public void onLoadingQueryFromCache(Query q, AliasResults aliasResults);
 
-public void onAllocationSiteReached(AssignStmt as, IPathEdge<Unit, AccessGraph> pe);
+public void onAllocationSiteReached(Unit as, AccessGraph factAtTarget);
 
 public void onAliasQueryFinished(Query q, AliasResults res);
 

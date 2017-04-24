@@ -13,7 +13,7 @@ import soot.SootMethod;
 import soot.Unit;
 import soot.jimple.AssignStmt;
 
-public class NullBoomerangDebugger implements IBoomerangDebugger {
+public class DefaultBoomerangDebugger implements IBoomerangDebugger {
 
 	@Override
 	public void addIncoming(Direction direction, SootMethod callee, Pair<Unit, AccessGraph> pair,
@@ -70,7 +70,7 @@ public class NullBoomerangDebugger implements IBoomerangDebugger {
 	}
 
 	@Override
-	public void onAllocationSiteReached(AssignStmt as, IPathEdge<Unit, AccessGraph> pe) {
+	public void onAllocationSiteReached(Unit as,AccessGraph g) {
 		// TODO Auto-generated method stub
 		
 	}

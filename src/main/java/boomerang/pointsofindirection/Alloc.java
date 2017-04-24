@@ -12,7 +12,6 @@ public class Alloc {
 	private Unit target;
 	private SootMethod method;
 	private AccessGraph factAtTarget;
-	private BoomerangContext context;
 	private boolean isNullAlloc;
 
 	/**
@@ -20,15 +19,14 @@ public class Alloc {
 	 * 
 	 * @param pathEdge
 	 */
-	public Alloc(AccessGraph factAtTarget, Unit target, SootMethod method, BoomerangContext context, boolean isNullAlloc) {
+	public Alloc(AccessGraph factAtTarget, Unit target, boolean isNullAlloc) {
 		this.factAtTarget = factAtTarget;
-		this.method = method;
 		this.target = target;
-		this.context = context;
 		this.isNullAlloc = isNullAlloc;
 	}
 
-	public void execute() {
+	public void execute(BoomerangContext context) {
+		context.debugger.onAllocationSiteReached(target, factAtTarget);
 		AccessGraph alloc = factAtTarget.deriveWithAllocationSite(target,isNullAlloc);
 		if (target instanceof AssignStmt && ((AssignStmt) target).getRightOp() instanceof NewExpr)
 			alloc = alloc.deriveWithNewLocal(alloc.getBase(),
@@ -37,26 +35,6 @@ public class Alloc {
 		// start forward propagation from the path edge target with the
 		// allocation site.
 		context.getForwardSolver().startPropagationAlongPath(target, alloc, alloc.deriveWithoutAllocationSite(), null);
-
-		// Case in which the allocation site is also a field write statement
-		// (a.f = new)
-		// TODO Is this necessary?
-		// if (factAtTarget.getFieldCount() > 0) {
-		// Set<AccessGraph> bases = factAtTarget.popFirstField();
-		// for (AccessGraph base : bases) {
-		// for(WrappedSootField field : factAtTarget.getFirstField()){
-		// AliasFinder dart = new AliasFinder(context);
-		// AliasResults res = dart.findAliasAtStmt(base, target);
-		// Set<AccessGraph> withField =
-		// AliasResults.appendField(res.mayAliasSet(), field, context);
-		// for (AccessGraph alias : withField) {
-		// if (alias.equals(alloc))
-		// continue;
-		// ptsSolver.startPropagationAlongPath(target, alloc, alias, pathEdge);
-		// }
-		// }
-		// }
-		// }
 	}
 
 	@Override
