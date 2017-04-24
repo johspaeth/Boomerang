@@ -1,6 +1,5 @@
 package boomerang;
 
-import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Optional;
@@ -21,7 +20,6 @@ import soot.jimple.NewArrayExpr;
 import soot.jimple.NewExpr;
 import soot.jimple.NewMultiArrayExpr;
 import soot.jimple.NullConstant;
-import soot.jimple.StringConstant;
 import soot.jimple.infoflow.solver.cfg.IInfoflowCFG;
 
 public abstract class BoomerangOptions {
@@ -83,15 +81,16 @@ public abstract class BoomerangOptions {
 					final AccessGraph source) {
 				if (!isAllocationValue(rightOp))
 					return Optional.absent();
+
+				if (source.getFieldCount() > 0 && !source.firstFieldMustMatch(AliasFinder.ARRAY_FIELD)) {
+					return  Optional.absent();
+				}
+				if (source.getFieldCount() > 1 && source.firstFieldMustMatch(AliasFinder.ARRAY_FIELD))
+					return  Optional.absent();
 				return Optional.<AllocationSiteHandler>of(new AllocationSiteHandler() {
 					@Override
-					public Optional<Alloc> sendForwards() {
-						if (source.getFieldCount() > 0 && !source.firstFieldMustMatch(AliasFinder.ARRAY_FIELD)) {
-							return Optional.absent();
-						}
-						if (source.getFieldCount() > 1 && source.firstFieldMustMatch(AliasFinder.ARRAY_FIELD))
-							return Optional.absent();
-						return Optional.of(new Alloc(source,stmt, rightOp instanceof NullConstant));
+					public Alloc alloc() {
+						return new Alloc(source,stmt, rightOp instanceof NullConstant);
 					}
 				});
 			}
@@ -103,8 +102,8 @@ public abstract class BoomerangOptions {
 					return Optional.absent();
 				return Optional.<AllocationSiteHandler>of(new AllocationSiteHandler() {
 					@Override
-					public Optional<Alloc> sendForwards() {
-						return Optional.of(new Alloc(source,stmt ,false));
+					public Alloc alloc() {
+						return new Alloc(source,stmt ,false);
 					}
 				});
 			}
@@ -116,8 +115,8 @@ public abstract class BoomerangOptions {
 					return Optional.absent();
 				return Optional.<AllocationSiteHandler>of(new AllocationSiteHandler() {
 					@Override
-					public Optional<Alloc> sendForwards() {
-						return Optional.of(new Alloc(source,assignedCallSite, true));
+					public Alloc alloc() {
+						return new Alloc(source,assignedCallSite, true);
 					}
 				});
 			}
@@ -132,8 +131,8 @@ public abstract class BoomerangOptions {
 				}
 				return Optional.<AllocationSiteHandler>of(new AllocationSiteHandler() {
 					@Override
-					public Optional<Alloc> sendForwards() {
-						return Optional.of(new Alloc(source,stmt, true));
+					public Alloc alloc() {
+						return new Alloc(source,stmt, true);
 					}
 				});
 			}

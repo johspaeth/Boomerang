@@ -10,7 +10,6 @@ public class CallPOITest extends AbstractBoomerangTest {
 		B b = new B();
 	}
 	private class B{
-		//TODO Test fails if we remove "= null" here.
 		C c;
 	}
 	private class C implements AllocatedObject{

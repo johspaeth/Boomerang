@@ -6,5 +6,5 @@ import com.google.common.base.Optional;
 import boomerang.accessgraph.AccessGraph;
 
 public interface AllocationSiteHandler {
-	public Optional<Alloc> sendForwards();
+	public Alloc alloc();
 }

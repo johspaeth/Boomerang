@@ -74,8 +74,7 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 					Optional<AllocationSiteHandler> allocates = context.allocationSiteHandlers().assignStatement(as,
 							rightOp, source);
 					if (allocates.isPresent()) {
-						if (allocates.get().sendForwards().isPresent())
-							allocates.get().sendForwards().get().execute(context);
+						allocates.get().alloc().execute(context);
 						return Collections.emptySet();
 					} else if (rightOp instanceof CastExpr) {
 						CastExpr castExpr = (CastExpr) rightOp;
@@ -141,8 +140,7 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 						Optional<AllocationSiteHandler> handler = context.allocationSiteHandlers()
 								.arrayStoreStatement(as, rightOp, source);
 						if (handler.isPresent()) {
-							if (handler.get().sendForwards().isPresent())
-								handler.get().sendForwards().get().execute(context);
+							handler.get().alloc().execute(context);
 							return Collections.emptySet();
 						}
 						Set<AccessGraph> out = new HashSet<>();
@@ -158,8 +156,8 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 					if (source.baseMatches(base) && source.firstFirstFieldMayMatch(field)) {
 						Optional<AllocationSiteHandler> fieldWriteStatements = context.allocationSiteHandlers()
 								.fieldStoreStatement(as, fr, rightOp, source);
-						if (fieldWriteStatements.isPresent() && fieldWriteStatements.get().sendForwards().isPresent()) {
-							fieldWriteStatements.get().sendForwards().get().execute(context);
+						if (fieldWriteStatements.isPresent()) {
+							fieldWriteStatements.get().alloc().execute(context);
 						}
 						if (rightOp instanceof NullConstant) {
 							if (!source.firstFieldMustMatch(field))
@@ -301,8 +299,7 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 							Optional<AllocationSiteHandler> handler = context.allocationSiteHandlers()
 									.returnStmtViaCall(as, source, retOp);
 							if (handler.isPresent()) {
-								if (handler.get().sendForwards().isPresent())
-									handler.get().sendForwards().get().execute(context);
+								handler.get().alloc().execute(context);
 								return Collections.emptySet();
 							}
 						}

@@ -32,7 +32,7 @@ public abstract class TestBoomerangOptions extends BoomerangOptions {
 
 	@Override
 	public IBoomerangDebugger getDebugger() {
-		return (true ? new DefaultBoomerangDebugger() :  new JSONOutputDebugger(vizFile));
+		return (vizFile == null ? new DefaultBoomerangDebugger() :  new JSONOutputDebugger(vizFile));
 	}
 	public void removeVizFile() {
 		if(vizFile == null)
