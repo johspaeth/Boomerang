@@ -74,7 +74,12 @@ public class AbstractBoomerangTest {
 			protected void internalTransform(String phaseName, @SuppressWarnings("rawtypes") Map options) {
 				icfg = new InfoflowCFG(new JimpleBasedInterproceduralCFG(true));
 				AbstractBoomerangTest.this.options = new TestBoomerangOptions(AbstractBoomerangTest.this.getClass(),
-						name.getMethodName());
+						name.getMethodName()){
+
+							@Override
+							public IInfoflowCFG icfg() {
+								return icfg;
+							}};
 				Query q = parseQuery(sootTestMethod);
 				contextReuqester = (q.getMethod().equals(sootTestMethod) ? new NoContextRequester()
 						: new AllCallersRequester());
@@ -130,7 +135,7 @@ public class AbstractBoomerangTest {
 	}
 
 	private AliasResults runQuery(Query q) {
-		AliasFinder boomerang = new AliasFinder(icfg, options);
+		AliasFinder boomerang = new AliasFinder(options);
 		boomerang.startQuery();
 		return boomerang.findAliasAtStmt(q.getAp(), q.getStmt(), contextReuqester).withoutNullAllocationSites();
 	}

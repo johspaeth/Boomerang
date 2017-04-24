@@ -38,6 +38,7 @@ import soot.SootMethod;
 import soot.Unit;
 import soot.Value;
 import soot.jimple.ReturnStmt;
+import soot.jimple.infoflow.solver.cfg.BackwardsInfoflowCFG;
 import soot.jimple.infoflow.solver.cfg.IInfoflowCFG;
 
 @SuppressWarnings("serial")
@@ -71,29 +72,22 @@ public class BoomerangContext {
 	public MockedDataFlow backwardMockHandler = new DefaultBackwardDataFlowMocker(this);
 
 	Stopwatch startTime;
-	private long budgetInMilliSeconds = 10000;
-	private boolean trackStaticFields;
 
 	private Set<SootMethod> backwardVisitedMethods = new HashSet<>();
 
 	public ContextScheduler scheduler;
 
-	public BoomerangContext(IInfoflowCFG icfg, IInfoflowCFG bwicfg) {
-		this(icfg, bwicfg, new BoomerangOptions());
-	}
+	private BoomerangOptions options;
 
-	public BoomerangContext(IInfoflowCFG icfg, IInfoflowCFG bwicfg, BoomerangOptions options) {
-		this.icfg = icfg;
-		this.bwicfg = bwicfg;
+	public BoomerangContext(BoomerangOptions options) {
+		this.options = options;
+		this.icfg = options.icfg();
+		this.bwicfg = new BackwardsInfoflowCFG(icfg);
 		this.debugger = options.getDebugger();
 		if (debugger instanceof JSONOutputDebugger)
 			System.err.println("WARNING: Using JSON output slows down performance");
 		this.debugger.setContext(this);
-		this.budgetInMilliSeconds = options.getTimeBudget();
 		WrappedSootField.TRACK_STMT = options.getTrackStatementsInFields();
-		this.trackStaticFields = options.getTrackStaticFields();
-		// if(!trackStaticFields)
-		// System.err.println("Boomerang does not track static fields");
 		this.scheduler = options.getScheduler();
 		this.scheduler.setContext(this);
 		this.propagationController = options.propagationController();
@@ -181,7 +175,7 @@ public class BoomerangContext {
 	public IPropagationController<Unit, AccessGraph> propagationController;
 
 	public boolean isOutOfBudget() {
-		if (startTime.elapsed(TimeUnit.MILLISECONDS) > budgetInMilliSeconds)
+		if (startTime.elapsed(TimeUnit.MILLISECONDS) > options.getTimeBudget())
 			return true;
 		return false;
 	}
@@ -209,7 +203,7 @@ public class BoomerangContext {
 	}
 
 	public boolean trackStaticFields() {
-		return this.trackStaticFields;
+		return options.getTrackStaticFields();
 	}
 
 	public boolean visitedBackwardMethod(SootMethod m) {
@@ -267,5 +261,9 @@ public class BoomerangContext {
 			factsInCallee.addAll(targets);
 		}
 		return factsInCallee;
+	}
+	
+	public BoomerangOptions getOptions() {
+		return options;
 	}
 }

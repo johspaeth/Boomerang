@@ -61,7 +61,7 @@ class ForwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 			return Collections.emptySet();
 		}
 
-		if(AliasFinder.STRONG_UPDATES_FIELDS){
+		if(context.getOptions().stronglyUpdateFields()){
 			Unit curr = prevEdge.getTarget();
 			if (curr instanceof AssignStmt && ((AssignStmt) curr).getLeftOp() instanceof InstanceFieldRef) {
 				InstanceFieldRef instanceFieldRef = (InstanceFieldRef) ((AssignStmt) curr).getLeftOp();

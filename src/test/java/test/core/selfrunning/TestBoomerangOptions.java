@@ -7,9 +7,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import boomerang.BoomerangOptions;
+import boomerang.debug.IBoomerangDebugger;
 import boomerang.debug.JSONOutputDebugger;
+import boomerang.debug.NullBoomerangDebugger;
+import boomerang.debug.NullDebugger;
 
-public class TestBoomerangOptions extends BoomerangOptions {
+public abstract class TestBoomerangOptions extends BoomerangOptions {
 	private File vizFile;
 
 	public TestBoomerangOptions(Class testClassName, String testMethodName) {
@@ -25,9 +28,13 @@ public class TestBoomerangOptions extends BoomerangOptions {
 				throw new RuntimeException("Was not able to create directories for IDEViz output!");
 			}
 		}
-		this.setDebugger(new JSONOutputDebugger(vizFile));
+		
 	}
 
+	@Override
+	public IBoomerangDebugger getDebugger() {
+		return (vizFile == null ? new NullBoomerangDebugger() :  new JSONOutputDebugger(vizFile));
+	}
 	public void removeVizFile() {
 		File parentFile = vizFile.getParentFile();
 		if (vizFile.exists())

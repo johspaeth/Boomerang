@@ -27,7 +27,6 @@ import soot.jimple.infoflow.solver.cfg.IInfoflowCFG;
 
 public class AliasFinder {
 
-	public static boolean STRONG_UPDATES_FIELDS = true;
 	public static boolean HANDLE_EXCEPTION_FLOW = true;
 	public final static SootField ARRAY_FIELD = new SootField("array", RefType.v("java.lang.Object")) {
 		@Override
@@ -64,33 +63,9 @@ public class AliasFinder {
 		    }
 		return ARRAY_COPY;
 	} 
-	/**
-	 * Constructs an AliasFinder with the provided interprocedural control flow
-	 * graph.
-	 * 
-	 * @param cfg
-	 *            the interprocedural control flow graph.
-	 */
-	public AliasFinder(IInfoflowCFG cfg) {
-		this(cfg, new BackwardsInfoflowCFG(cfg), new BoomerangOptions());
-	}
 
-	public AliasFinder(IInfoflowCFG cfg, BoomerangOptions options) {
-		this(cfg, new BackwardsInfoflowCFG(cfg), options);
-	}
-
-	public AliasFinder(IInfoflowCFG cfg, BackwardsInfoflowCFG bwcfg, BoomerangOptions options) {
-		this.context = new BoomerangContext(cfg, bwcfg, options);
-	}
-	/**
-	 * Constructs an AliasFinder with the provided context. The context carries
-	 * global information, such as the call graph.
-	 * 
-	 * @param context
-	 *            Context object holding information for the overall analysis.
-	 */
-	public AliasFinder(BoomerangContext context) {
-		this.context = context;
+	public AliasFinder(BoomerangOptions options) {
+		this.context = new BoomerangContext(options);
 	}
 
 	/**
