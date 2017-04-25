@@ -51,7 +51,7 @@ public class AbstractBoomerangTest extends AbstractTestingFramework{
 	private BoomerangOptions options;
 
 	private boolean useIDEViz() {
-		return 	getTestCaseClassName().contains("LongTest");
+		return !getTestCaseClassName().contains("LongTest");
 	}
 	protected SceneTransformer createAnalysisTransformer() {
 		return new SceneTransformer() {

@@ -48,7 +48,7 @@ public abstract class AbstractTestingFramework {
 			analyze();
 		} catch(ImprecisionException e){
 			removeVizFile();
-			Assert.fail();
+			Assert.fail(e.getMessage());
 		}
 		removeVizFile();
 		// To never execute the @Test method...
@@ -192,7 +192,6 @@ public abstract class AbstractTestingFramework {
 
 	public List<String> excludedPackages() {
 		List<String> excludedPackages = new LinkedList<>();
-		excludedPackages.add("java.*");
 		excludedPackages.add("sun.*");
 		excludedPackages.add("javax.*");
 		excludedPackages.add("com.sun.*");
