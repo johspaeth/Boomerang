@@ -37,7 +37,7 @@ public abstract class AbstractTestingFramework {
 	@Rule
 	public TestName testMethodName = new TestName();
 	protected SootMethod sootTestMethod;
-	protected File ideVizFile = new File("target/IDEViz/" + getTestCaseClassName() + "/IDEViz-" + testMethodName + ".json");
+	protected File ideVizFile;
 
 	@Before
 	public void beforeTestCaseExecution() {
@@ -56,13 +56,11 @@ public abstract class AbstractTestingFramework {
 	}
 	
 	public void removeVizFile() {
-		if(ideVizFile == null)
-			return;
 		File parentFile = ideVizFile.getParentFile();
 		if (ideVizFile.exists())
 			ideVizFile.delete();
 		try {
-			if (isDirEmpty(parentFile.toPath()))
+			if (parentFile.exists() && isDirEmpty(parentFile.toPath()))
 				parentFile.delete();
 		} catch (IOException e) {
 			throw new RuntimeException("Was not able to delete directories for IDEViz output!");
@@ -76,7 +74,7 @@ public abstract class AbstractTestingFramework {
 	}
 
 	private void createVizFile() {
-		ideVizFile = new File("target/IDEViz/" + getTestCaseClassName() + "/IDEViz-" + testMethodName + ".json");
+		ideVizFile = new File("target/IDEViz/" + getTestCaseClassName() + "/IDEViz-" + testMethodName.getMethodName() + ".json");
 		if (!ideVizFile.getParentFile().exists()) {
 			try {
 				Files.createDirectories(ideVizFile.getParentFile().toPath());
