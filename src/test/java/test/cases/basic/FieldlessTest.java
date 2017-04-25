@@ -43,7 +43,6 @@ public class FieldlessTest extends AbstractBoomerangTest {
 		Object alias1 = new Allocation();
 		if (staticallyUnknown()) {
 			alias2 = alias1;
-			alias1 = new Object();
 		}
 
 		queryFor(alias2);

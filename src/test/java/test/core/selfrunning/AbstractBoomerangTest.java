@@ -8,33 +8,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TestName;
-
 import boomerang.AliasFinder;
 import boomerang.AliasResults;
+import boomerang.BoomerangOptions;
 import boomerang.Query;
 import boomerang.accessgraph.AccessGraph;
-import boomerang.accessgraph.WrappedSootField;
 import boomerang.context.AllCallersRequester;
 import boomerang.context.IContextRequester;
 import boomerang.context.NoContextRequester;
-import boomerang.preanalysis.PreparationTransformer;
+import boomerang.debug.DefaultBoomerangDebugger;
+import boomerang.debug.IBoomerangDebugger;
+import boomerang.debug.JSONOutputDebugger;
 import heros.solver.Pair;
 import soot.ArrayType;
 import soot.Body;
 import soot.G;
 import soot.Local;
 import soot.Modifier;
-import soot.PackManager;
 import soot.RefType;
 import soot.Scene;
 import soot.SceneTransformer;
 import soot.SootClass;
 import soot.SootMethod;
-import soot.Transform;
 import soot.Type;
 import soot.Unit;
 import soot.Value;
@@ -50,59 +45,40 @@ import soot.jimple.infoflow.solver.cfg.InfoflowCFG;
 import soot.jimple.toolkits.ide.icfg.JimpleBasedInterproceduralCFG;
 import soot.options.Options;
 
-public class AbstractBoomerangTest {
+public class AbstractBoomerangTest extends AbstractTestingFramework{
 	private IInfoflowCFG icfg;
-	@Rule
-	public TestName name = new TestName();
-	private SootMethod sootTestMethod;
 	private IContextRequester contextReuqester;
-	private TestBoomerangOptions options;
+	private BoomerangOptions options;
 
-	@Before
-	public void performQuery() {
-		WrappedSootField.TRACK_TYPE = false;
-
-		initializeSootWithEntryPoint(name.getMethodName());
-		analyze(name.getMethodName());
-		// To never execute the @Test method...
-		org.junit.Assume.assumeTrue(false);
+	private boolean useIDEViz() {
+		return 	getTestCaseClassName().contains("LongTest");
 	}
-
-	private void analyze(final String methodName) {
-		Transform transform = new Transform("wjtp.ifds", new SceneTransformer() {
-
+	protected SceneTransformer createAnalysisTransformer() {
+		return new SceneTransformer() {
 			protected void internalTransform(String phaseName, @SuppressWarnings("rawtypes") Map options) {
 				icfg = new InfoflowCFG(new JimpleBasedInterproceduralCFG(true));
-				AbstractBoomerangTest.this.options = new TestBoomerangOptions(AbstractBoomerangTest.this.getClass(),
-						name.getMethodName()){
+				AbstractBoomerangTest.this.options = new BoomerangOptions(){
+							@Override
+							public IBoomerangDebugger getDebugger() {
+								return (useIDEViz() ?  new JSONOutputDebugger(ideVizFile) : new DefaultBoomerangDebugger());
+							}
 
 							@Override
 							public IInfoflowCFG icfg() {
 								return icfg;
 							}};
-				Query q = parseQuery(sootTestMethod);
-				contextReuqester = (q.getMethod().equals(sootTestMethod) ? new NoContextRequester()
+				Query q = parseQuery();
+				contextReuqester = (q.getMethod().equals(testMethodName.getMethodName()) ? new NoContextRequester()
 						: new AllCallersRequester());
 
 				AliasResults expectedResults = parseExpectedQueryResults(q);
 				AliasResults results = runQuery(q);
-				try {
-					compareQuery(q, expectedResults, results);
-				} catch (AssertionError e) {
-					AbstractBoomerangTest.this.options.removeVizFile();
-					throw e;
-				}
-				AbstractBoomerangTest.this.options.removeVizFile();
+				compareQuery(q, expectedResults, results);
 			}
-
-		});
-		PackManager.v().getPack("wjtp").add(new Transform("wjtp.prepare", new PreparationTransformer()));
-		PackManager.v().getPack("wjtp").add(transform);
-		PackManager.v().getPack("cg").apply();
-		PackManager.v().getPack("wjtp").apply();
+		};
 	}
 
-	private void compareQuery(Query q, AliasResults expectedResults, AliasResults results) {
+	private void compareQuery(Query q, AliasResults expectedResults, AliasResults results){
 		System.out.println("Boomerang Allocations Sites: " + results.keySet());
 		System.out.println("Boomerang Results: " + results);
 		System.out.println("Expected Results: " + expectedResults);
@@ -131,7 +107,7 @@ public class AbstractBoomerangTest {
 		if (!missingVariables.isEmpty())
 			throw new RuntimeException("Unsound, missed variables " + missingVariables);
 		if (!falsePositiveAllocationSites.isEmpty())
-			Assert.fail("Imprecise results: " + answer);
+			throw new ImprecisionException("Imprecise results: " + answer);
 	}
 
 	private AliasResults runQuery(Query q) {
@@ -241,11 +217,11 @@ public class AbstractBoomerangTest {
 		return out;
 	}
 
-	private Query parseQuery(SootMethod m) {
+	private Query parseQuery() {
 		LinkedList<Query> queries = new LinkedList<>();
-		parseQuery(m, queries, new HashSet<SootMethod>());
+		parseQuery(sootTestMethod, queries, new HashSet<SootMethod>());
 		if (queries.size() == 0)
-			throw new RuntimeException("No call to method queryFor was found within " + m.getName());
+			throw new RuntimeException("No call to method queryFor was found within " + sootTestMethod.getName());
 		if (queries.size() > 1)
 			System.err.println(
 					"More than one possible query found, might be unambigious, picking query " + queries.getLast());
@@ -408,4 +384,5 @@ public class AbstractBoomerangTest {
 	protected boolean staticallyUnknown() {
 		return true;
 	}
+	
 }
