@@ -31,7 +31,7 @@ public class PreparationTransformer extends SceneTransformer {
   @Override
   protected void internalTransform(String phaseName, Map<String, String> options) {
     addNopStmtToMethods();
-    transformConstantInInvokes();
+//    transformConstantInInvokes();
   }
 
   private void transformConstantInInvokes() {
