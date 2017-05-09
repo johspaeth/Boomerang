@@ -7,12 +7,15 @@ import java.util.Set;
 import com.google.common.collect.ForwardingMultimap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 
 import boomerang.accessgraph.AccessGraph;
 import boomerang.accessgraph.FieldGraph;
 import boomerang.accessgraph.WrappedSootField;
 import heros.solver.Pair;
 import soot.Unit;
+import soot.Value;
+import soot.jimple.AssignStmt;
 import soot.jimple.infoflow.solver.cfg.IInfoflowCFG;
 
 public class AliasResults extends ForwardingMultimap<Pair<Unit, AccessGraph>, AccessGraph> {
@@ -166,5 +169,16 @@ public class AliasResults extends ForwardingMultimap<Pair<Unit, AccessGraph>, Ac
 
 	public boolean queryTimedout(){
 		return timedout;
+	}
+	
+	public Set<Value> getValues(){
+		Set<Value> res = Sets.newHashSet();
+		for(Pair<Unit, AccessGraph> key : this.keySet()){
+			if(key.getO1() instanceof AssignStmt){
+				AssignStmt as = (AssignStmt) key.getO1();
+				res.add(as.getRightOp());
+			}
+		}
+		return res;
 	}
 }
