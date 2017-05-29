@@ -6,3 +6,6 @@ ant.settings
 /target/
 /testBin/
 *.DS_Store
+.classpath
+.project
+.settings/
