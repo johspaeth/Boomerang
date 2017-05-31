@@ -123,14 +123,6 @@ public abstract class AbstractTestingFramework {
 			includeList.add("javax.servlet.*");
 			includeList.add("javax.crypto.*");
 
-			includeList.add("android.*");
-			includeList.add("org.apache.http.*");
-
-			includeList.add("de.test.*");
-			includeList.add("soot.*");
-			includeList.add("com.example.*");
-			includeList.add("libcore.icu.*");
-			includeList.add("securibench.*");
 			Options.v().set_include(includeList);
 
 		} else {
