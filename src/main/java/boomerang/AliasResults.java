@@ -12,11 +12,11 @@ import com.google.common.collect.Sets;
 import boomerang.accessgraph.AccessGraph;
 import boomerang.accessgraph.FieldGraph;
 import boomerang.accessgraph.WrappedSootField;
+import boomerang.cfg.IExtendedICFG;
 import heros.solver.Pair;
 import soot.Unit;
 import soot.Value;
 import soot.jimple.AssignStmt;
-import soot.jimple.infoflow.solver.cfg.IInfoflowCFG;
 
 public class AliasResults extends ForwardingMultimap<Pair<Unit, AccessGraph>, AccessGraph> {
 	private Multimap<Pair<Unit, AccessGraph>, AccessGraph> delegate;
@@ -141,7 +141,7 @@ public class AliasResults extends ForwardingMultimap<Pair<Unit, AccessGraph>, Ac
 		return out;
 	}
 
-	public String withMethodOfAllocationSite(IInfoflowCFG cfg) {
+	public String withMethodOfAllocationSite(IExtendedICFG cfg) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("{");
 		for (Pair<Unit, AccessGraph> k : keySet()) {

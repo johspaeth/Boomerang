@@ -309,9 +309,6 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 						return Collections.emptySet();
 					}
 				}
-				if (callee != null && !context.icfg.methodReadsValue(callee, source.getBase())) {
-					// return Collections.emptySet();
-				}
 				if (edge.factAtSource() != null) {
 					if (AliasFinder.IGNORED_METHODS.contains(callee)) {
 						return Collections.emptySet();

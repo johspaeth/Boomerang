@@ -14,6 +14,8 @@ import boomerang.accessgraph.WrappedSootField;
 import boomerang.backward.BackwardProblem;
 import boomerang.backward.BackwardSolver;
 import boomerang.bidi.PathEdgeStore;
+import boomerang.cfg.BackwardsInfoflowCFG;
+import boomerang.cfg.IExtendedICFG;
 import boomerang.context.IContextRequester;
 import boomerang.debug.IBoomerangDebugger;
 import boomerang.debug.JSONOutputDebugger;
@@ -40,8 +42,6 @@ import soot.SootMethod;
 import soot.Unit;
 import soot.Value;
 import soot.jimple.ReturnStmt;
-import soot.jimple.infoflow.solver.cfg.BackwardsInfoflowCFG;
-import soot.jimple.infoflow.solver.cfg.IInfoflowCFG;
 
 @SuppressWarnings("serial")
 public class BoomerangContext {
@@ -49,14 +49,14 @@ public class BoomerangContext {
 	/**
 	 * The inter-procedural control flow graph to be used.
 	 */
-	public IInfoflowCFG icfg;
+	public IExtendedICFG icfg;
 
 	public IBoomerangDebugger debugger;
 
 	/**
 	 * The inter-procedural backward control flow graph to be used.
 	 */
-	public IInfoflowCFG bwicfg;
+	public IExtendedICFG bwicfg;
 
 	/**
 	 * Native call handler, defines how aliases flow at native call sites.

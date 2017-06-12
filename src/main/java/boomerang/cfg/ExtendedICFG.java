@@ -6,7 +6,7 @@
  * 
  * Contributors: Christian Fritz, Steven Arzt, Siegfried Rasthofer, Eric Bodden, and others.
  ******************************************************************************/
-package soot.jimple.infoflow.solver.cfg;
+package boomerang.cfg;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,73 +50,29 @@ import soot.util.queue.QueueReader;
  * @author Steven Arzt
  * @author Eric Bodden
  */
-public class InfoflowCFG implements IInfoflowCFG {
+public class ExtendedICFG implements IExtendedICFG {
 
 	private static enum StaticFieldUse {
 		Unknown, Unused, Read, Write, ReadWrite
 	}
 
 	protected final Map<SootMethod, Map<SootField, StaticFieldUse>> staticFieldUses = new ConcurrentHashMap<SootMethod, Map<SootField, StaticFieldUse>>();
-	protected final Map<SootMethod, Boolean> methodSideEffects = new ConcurrentHashMap<SootMethod, Boolean>();
 
-	public static final Set<SootMethod> METHODS_TO_STRING = new HashSet<>();
-	public static final Set<SootMethod> METHODS_EQUALS = new HashSet<>();
-	public static final Set<SootMethod> IGNORED_METHODS = new HashSet<>();
+	private final Set<SootMethod> METHODS_TO_STRING = new HashSet<>();
+	private final Set<SootMethod> METHODS_EQUALS = new HashSet<>();
+	private final Set<SootMethod> IGNORED_METHODS = new HashSet<>();
 
 	protected final BiDiInterproceduralCFG<Unit, SootMethod> delegate;
 
-	protected final LoadingCache<Unit, UnitContainer> unitToPostdominator = IDESolver.DEFAULT_CACHE_BUILDER
-			.build(new CacheLoader<Unit, UnitContainer>() {
-				@Override
-				public UnitContainer load(Unit unit) throws Exception {
-					SootMethod method = getMethodOf(unit);
-					DirectedGraph<Unit> graph = delegate.getOrCreateUnitGraph(method);
-					MHGPostDominatorsFinder<Unit> postdominatorFinder = new MHGPostDominatorsFinder<Unit>(graph);
-					Unit postdom = postdominatorFinder.getImmediateDominator(unit);
-					if (postdom == null)
-						return new UnitContainer(method);
-					else
-						return new UnitContainer(postdom);
-				}
-			});
 
-	protected final LoadingCache<SootMethod, Local[]> methodToUsedLocals = IDESolver.DEFAULT_CACHE_BUILDER
-			.build(new CacheLoader<SootMethod, Local[]>() {
-				@Override
-				public Local[] load(SootMethod method) throws Exception {
-					if (!method.isConcrete() || !method.hasActiveBody())
-						return new Local[0];
-
-					List<Local> lcs = new ArrayList<Local>(method.getParameterCount() + (method.isStatic() ? 0 : 1));
-
-					for (Unit u : method.getActiveBody().getUnits())
-						useBox: for (ValueBox vb : u.getUseBoxes()) {
-							// Check for parameters
-							for (int i = 0; i < method.getParameterCount(); i++) {
-								if (method.getActiveBody().getParameterLocal(i) == vb.getValue()) {
-									lcs.add((Local) vb.getValue());
-									continue useBox;
-								}
-							}
-						}
-
-					// Add the "this" local
-					if (!method.isStatic())
-						lcs.add(method.getActiveBody().getThisLocal());
-
-					return lcs.toArray(new Local[lcs.size()]);
-				}
-			});
-	private FieldPreanalysis preanalysis;
-
-	public InfoflowCFG() {
+	public ExtendedICFG() {
 		this(true);
 	}
-	public InfoflowCFG(boolean exceptionAnalysis) {
+	public ExtendedICFG(boolean exceptionAnalysis) {
 		this(new JimpleBasedInterproceduralCFG(exceptionAnalysis));
 	}
 
-	public InfoflowCFG(BiDiInterproceduralCFG<Unit, SootMethod> delegate) {
+	public ExtendedICFG(BiDiInterproceduralCFG<Unit, SootMethod> delegate) {
 		this.delegate = delegate;
 		preanalysis();
 	}
@@ -145,25 +101,12 @@ public class InfoflowCFG implements IInfoflowCFG {
 		}
 	}
 
-	@Override
-	public boolean isEqualsMethod(SootMethod method) {
-		return METHODS_EQUALS.contains(method);
-	}
-
-	@Override
-	public boolean isToStringMethod(SootMethod method) {
-		return METHODS_TO_STRING.contains(method);
-	}
 
 	@Override
 	public boolean isIgnoredMethod(SootMethod method) {
 		return IGNORED_METHODS.contains(method);
 	}
 
-	@Override
-	public UnitContainer getPostdominatorOf(Unit u) {
-		return unitToPostdominator.getUnchecked(u);
-	}
 
 	// delegate methods follow
 
@@ -267,10 +210,6 @@ public class InfoflowCFG implements IInfoflowCFG {
 		return delegate.isReturnSite(n);
 	}
 
-	@Override
-	public boolean isStaticFieldRead(SootMethod method, SootField variable) {
-		return isStaticFieldUsed(method, variable, new HashSet<SootMethod>(), true);
-	}
 
 	@Override
 	public boolean isStaticFieldUsed(SootMethod method, SootField variable) {
@@ -370,79 +309,6 @@ public class InfoflowCFG implements IInfoflowCFG {
 		entry.put(variable, newUse);
 	}
 
-	@Override
-	public boolean hasSideEffects(SootMethod method) {
-		return hasSideEffects(method, new HashSet<SootMethod>());
-	}
-
-	private boolean hasSideEffects(SootMethod method, Set<SootMethod> runList) {
-		// Without a body, we cannot say much
-		if (!method.hasActiveBody())
-			return false;
-
-		// Do not process the same method twice
-		if (!runList.add(method))
-			return false;
-
-		// Do we already have an entry?
-		Boolean hasSideEffects = methodSideEffects.get(method);
-		if (hasSideEffects != null)
-			return hasSideEffects;
-
-		// Scan for references to this variable
-		for (Unit u : method.getActiveBody().getUnits()) {
-			if (u instanceof AssignStmt) {
-				AssignStmt assign = (AssignStmt) u;
-
-				if (assign.getLeftOp() instanceof FieldRef) {
-					methodSideEffects.put(method, true);
-					return true;
-				}
-			}
-
-			if (((Stmt) u).containsInvokeExpr())
-				for (Iterator<Edge> edgeIt = Scene.v().getCallGraph().edgesOutOf(u); edgeIt.hasNext();) {
-					Edge e = edgeIt.next();
-					if (hasSideEffects(e.getTgt().method(), runList))
-						return true;
-				}
-		}
-
-		// Variable is not read
-		methodSideEffects.put(method, false);
-		return false;
-	}
-
-	@Override
-	public void notifyMethodChanged(SootMethod m) {
-		if (delegate instanceof JimpleBasedInterproceduralCFG)
-			((JimpleBasedInterproceduralCFG) delegate).initializeUnitToOwner(m);
-	}
-
-	@Override
-	public boolean methodReadsValue(SootMethod m, Value v) {
-		Local[] reads = methodToUsedLocals.getUnchecked(m);
-		if (reads != null)
-			for (Local l : reads)
-				if (l == v)
-					return true;
-		return false;
-	}
-
-	@Override
-	public boolean containsAllocSiteOfType(SootMethod method, Type type) {
-		return (preanalysis == null ? true : preanalysis.containsAllocSiteOfType(method, type));
-	}
-
-	@Override
-	public boolean accessesField(SootMethod method, SootField field) {
-		return (preanalysis == null ? true : preanalysis.accessesField(method, field));
-	}
-
-	@Override
-	public boolean writesToField(SootMethod method, SootField field) {
-		return (preanalysis == null ? true : preanalysis.writesToField(method, field));
-	}
 
 	@Override
 	public boolean isReachable(Unit u) {

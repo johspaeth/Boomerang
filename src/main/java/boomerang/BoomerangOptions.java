@@ -6,6 +6,7 @@ import com.google.common.base.Optional;
 
 import boomerang.accessgraph.AccessGraph;
 import boomerang.allocationsitehandler.ReferenceType;
+import boomerang.cfg.IExtendedICFG;
 import boomerang.debug.DefaultBoomerangDebugger;
 import boomerang.debug.IBoomerangDebugger;
 import boomerang.ifdssolver.IPathEdge;
@@ -21,7 +22,6 @@ import soot.jimple.NewArrayExpr;
 import soot.jimple.NewExpr;
 import soot.jimple.NewMultiArrayExpr;
 import soot.jimple.NullConstant;
-import soot.jimple.infoflow.solver.cfg.IInfoflowCFG;
 
 public abstract class BoomerangOptions {
 
@@ -45,7 +45,7 @@ public abstract class BoomerangOptions {
 		return true;
 	}
 
-	public abstract IInfoflowCFG icfg();
+	public abstract IExtendedICFG icfg();
 
 	public String toString() {
 		String str = "====== Boomerang Options ======";
