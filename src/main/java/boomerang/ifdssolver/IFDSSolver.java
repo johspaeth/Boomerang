@@ -12,9 +12,11 @@ package boomerang.ifdssolver;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 
 import boomerang.ifdssolver.DefaultIFDSTabulationProblem.Direction;
 import heros.solver.Pair;
@@ -49,6 +51,7 @@ public abstract class IFDSSolver<N, D, M, I extends BiDiInterproceduralCFG<N, M>
 	protected final I icfg;
 	protected final IFDSDebugger<N, D, M, I> debugger;
 	protected ISummaries<N, M, D> summaries;
+	private Multimap<M, IPathEdge<N, D>> methodToPausedEdge = HashMultimap.create();
 
 	public enum PropagationType {
 		Normal, Call2Return, CallEnter, BalancedReturn, UnbalancedReturn
@@ -58,6 +61,7 @@ public abstract class IFDSSolver<N, D, M, I extends BiDiInterproceduralCFG<N, M>
 
 	private Direction direction;
 	private IPropagationController<N, D> propagationController;
+	private Multimap<Pair<N,D>,IncomingListener<N, D, M>> incomingListeners = HashMultimap.create();
 
 	/**
 	 * Creates a solver for the given problem, which caches flow functions and
@@ -356,6 +360,9 @@ public abstract class IFDSSolver<N, D, M, I extends BiDiInterproceduralCFG<N, M>
 		debugger.addIncoming(direction, callee, nextCallEdge.getTargetNode(), incEdge);
 		onRegister(incEdge);
 		tabulationProblem.onSolverAddIncoming(callee, nextCallEdge.getStartNode(), incEdge);
+		
+		for(IncomingListener<N, D, M> l : incomingListeners.get(nextCallEdge.getStartNode()))
+			l.hasIncomingEdge(incEdge);
 		return incomings.addIncoming(callee, nextCallEdge.getStartNode(), incEdge);
 	}
 
@@ -384,5 +391,25 @@ public abstract class IFDSSolver<N, D, M, I extends BiDiInterproceduralCFG<N, M>
 		if (!pathEdges.hasAlreadyProcessed(edge)){
 			propagate(edge, normal);
 		}
+	}
+	
+	public void attachIncomingListener(IncomingListener<N, D, M> listener){
+		Pair<N,D> sourcePair = listener.getSourcePair();
+		Set<? extends IPathEdge<N, D>> incs = incoming(sourcePair, icfg.getMethodOf(sourcePair.getO1()));
+		for(IPathEdge<N, D> edge : incs)
+			listener.hasIncomingEdge(edge);
+		incomingListeners.put(sourcePair, listener);
+	}
+
+	public void addMethodToPausedEdge(M m, IPathEdge<N, D> pathEdge) {
+		if(!icfg.getMethodOf(pathEdge.getTarget()).equals(m))
+			throw new RuntimeException("Wrong method associated");
+		methodToPausedEdge.put(m, pathEdge);
+	}
+
+	public void setVisitable(M m) {
+		Collection<IPathEdge<N, D>> collection = methodToPausedEdge.removeAll(m);
+		for(IPathEdge<N, D> edge : collection)
+			propagate(edge, PropagationType.CallEnter);
 	}
 }

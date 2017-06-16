@@ -5,26 +5,26 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.google.common.base.Optional;
-
-import boomerang.AliasFinder;
 import boomerang.BoomerangContext;
 import boomerang.accessgraph.AccessGraph;
 import boomerang.accessgraph.WrappedSootField;
 import boomerang.ifdssolver.DefaultIFDSTabulationProblem.Direction;
 import boomerang.ifdssolver.FlowFunctions;
 import boomerang.ifdssolver.IPathEdge;
-import boomerang.ifdssolver.PathEdge;
 import boomerang.pointsofindirection.ForwardAliasCallback;
 import boomerang.pointsofindirection.PointOfIndirection;
 import boomerang.pointsofindirection.StrongUpdateCallback;
+import heros.solver.Pair;
 import soot.Local;
+import soot.RefType;
 import soot.Scene;
 import soot.SootMethod;
+import soot.Type;
 import soot.Unit;
 import soot.Value;
 import soot.jimple.AssignStmt;
 import soot.jimple.InstanceFieldRef;
+import soot.jimple.NewExpr;
 
 class ForwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 
@@ -198,12 +198,39 @@ class ForwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 	@Override
 	protected Collection<? extends IPathEdge<Unit, AccessGraph>> callFunctionExtendor(
 			IPathEdge<Unit, AccessGraph> prevEdge, IPathEdge<Unit, AccessGraph> initialSelfLoopEdge,
-			SootMethod callee) {
+			final SootMethod callee) {
+		AccessGraph sourceFact = initialSelfLoopEdge.factAtSource();
+		if(callee.isStatic()){
+			context.addVisitableMethod(callee);
+		} else{
+			if(!sourceFact.isStatic() && callee.getActiveBody().getThisLocal().equals(sourceFact.getBase())){
+				if(sourceFact.getFieldCount() == 0){
+					context.getForwardSolver().attachIncomingListener(new AllocationListener(prevEdge.getStartNode(),context) {
+						@Override
+						public void discoveredAllocationSite(Pair<Unit, AccessGraph> allocNode) {
+							if(allocNode.getO2().hasNullAllocationSite())
+								return;
+							Type allocType = allocNode.getO2().getAllocationType();
+							if(Scene.v().getOrMakeFastHierarchy().canStoreType(allocType, callee.getActiveBody().getThisLocal().getType()))
+								context.addVisitableMethod(callee);
+						}
+					});
+				}
+			} else{
+				context.addVisitableMethod(callee);
+			}
+		}
+		
 
+		if(!context.visitableMethod(callee)){
+			context.getForwardSolver().addMethodToPausedEdge(callee, initialSelfLoopEdge);
+			return Collections.emptySet();
+		}
 		sanitize(Collections.singleton(initialSelfLoopEdge));
 		context.addAsVisitedBackwardMethod(callee);
 		return Collections.singleton(initialSelfLoopEdge);
 	}
+
 
 	@Override
 	public Collection<? extends IPathEdge<Unit, AccessGraph>> summaryCallback(SootMethod methodThatNeedsSummary,

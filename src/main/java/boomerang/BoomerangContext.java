@@ -23,14 +23,12 @@ import boomerang.forward.ForwardSolver;
 import boomerang.ifdssolver.IPathEdge;
 import boomerang.ifdssolver.IPropagationController;
 import boomerang.ifdssolver.PathEdge;
-import boomerang.ifdssolver.Scheduler;
 import boomerang.mock.DefaultBackwardDataFlowMocker;
 import boomerang.mock.DefaultForwardDataFlowMocker;
 import boomerang.mock.DefaultNativeCallHandler;
 import boomerang.mock.MockedDataFlow;
 import boomerang.mock.NativeCallHandler;
 import boomerang.pointsofindirection.AliasCallback;
-import boomerang.pointsofindirection.AllocationSiteHandler;
 import boomerang.pointsofindirection.AllocationSiteHandlers;
 import boomerang.pointsofindirection.PointOfIndirection;
 import heros.FlowFunction;
@@ -76,6 +74,7 @@ public class BoomerangContext {
 	Stopwatch startTime;
 
 	private Set<SootMethod> backwardVisitedMethods = new HashSet<>();
+	private Set<SootMethod> visitableMethods = new HashSet<>();
 
 	public ContextScheduler scheduler;
 
@@ -272,4 +271,15 @@ public class BoomerangContext {
 	public AllocationSiteHandlers allocationSiteHandlers() {
 		return options.allocationSiteHandlers();
 	}
+
+	public boolean visitableMethod(SootMethod callee) {
+		return visitableMethods.contains(callee);
+	}
+	
+	public void addVisitableMethod(SootMethod m){
+		visitableMethods.add(m);
+		getBackwardSolver().setVisitable(m);
+		getForwardSolver().setVisitable(m);
+	}
+
 }

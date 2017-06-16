@@ -36,6 +36,9 @@ public abstract class BoomerangOptions {
 		return true;
 	}
 
+	public boolean handleArrays() {
+		return true;
+	}
 	public boolean getTrackStatementsInFields() {
 		return false;
 	}

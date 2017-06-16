@@ -52,21 +52,6 @@ public class ForwardSolver extends
     awaitExecution();
   }
 
-
-  /**
-   * The provided forward path edge pathEdge will be propagated, while the propagation is limited
-   * along the propagation path of the backward path edge supplied as the second argument.
-   * 
-   * @param pathEdge The forward path edge to be scheduled in the worklist.
-   * @param bwedge The backward path edge along which the forward propagation will be done.
-   */
-  public void onMeet(final IPathEdge<Unit, AccessGraph> pathEdge) {
-//    pathEdges.register(pathEdge);
-    processExit(pathEdge);
-    awaitExecution();
-  }
- 
-
   @Override
   public void onRegister(IPathEdge<Unit, AccessGraph> edge) {
     context.sanityCheckEdge(edge);

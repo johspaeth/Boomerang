@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 import boomerang.AliasFinder;
+import heros.solver.Pair;
 import soot.ArrayType;
 import soot.Local;
 import soot.RefType;
@@ -16,6 +17,8 @@ import soot.SootField;
 import soot.Type;
 import soot.Unit;
 import soot.Value;
+import soot.jimple.AssignStmt;
+import soot.jimple.NewExpr;
 
 /**
  * An AccessGraph is represented by a local variable and a {@link FieldGraph}
@@ -587,5 +590,22 @@ public class AccessGraph {
 
 	public boolean hasNullAllocationSite() {
 		return isNullAllocsite;
+	}
+	
+
+	public Type getAllocationType() {
+		if(!hasAllocationSite())
+			throw new RuntimeException("Wrong state");
+		if(allocationSite instanceof AssignStmt){
+			AssignStmt as = (AssignStmt) allocationSite;
+			Value rightOp = as.getRightOp();
+			if(rightOp instanceof NewExpr){
+				NewExpr newExpr = (NewExpr) rightOp;
+				return newExpr.getBaseType();
+			}
+			Value leftOp = as.getLeftOp();
+			return leftOp.getType();
+		}
+		throw new RuntimeException("Allocation site not an Assign Stmt" + allocationSite);
 	}
 }
