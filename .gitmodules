@@ -1,0 +1,9 @@
+[submodule "IDEViz"]
+	path = IDEViz
+	url = https://github.com/johspaeth/IDEViz.git
+[submodule "soot"]
+	path = soot
+	url = https://github.com/johspaeth/soot.git
+[submodule "heros"]
+	path = heros
+	url = https://github.com/Sable/heros.git
