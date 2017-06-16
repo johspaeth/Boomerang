@@ -14,4 +14,17 @@ public class FixAfterInsertionLongTest  extends AbstractBoomerangTest{
 		Entry<Object, Object> query = entry.parent;
 		queryFor(query);
 	}
+
+	@Test
+	public void rotateLeftAndRightInLoop(){
+		Entry<Object, Object> entry = new Entry<Object,Object>(null,null,null);
+		while(true){
+			new FixAfterInsertion<>().rotateLeft(entry);	
+			new FixAfterInsertion<>().rotateRight(entry);
+			if(staticallyUnknown())
+				break;
+		}
+		Entry<Object, Object> query = entry.parent;
+		queryFor(query);
+	}
 }

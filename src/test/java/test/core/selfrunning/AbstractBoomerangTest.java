@@ -1,12 +1,13 @@
 package test.core.selfrunning;
 
-import java.io.File;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import com.google.common.collect.Lists;
 
 import boomerang.AliasFinder;
 import boomerang.AliasResults;
@@ -19,33 +20,27 @@ import boomerang.context.NoContextRequester;
 import boomerang.debug.DefaultBoomerangDebugger;
 import boomerang.debug.IBoomerangDebugger;
 import boomerang.debug.JSONOutputDebugger;
+import boomerang.ifdssolver.IPathEdge;
+import boomerang.ifdssolver.IPropagationController;
 import heros.solver.Pair;
-import soot.ArrayType;
 import soot.Body;
-import soot.G;
 import soot.Local;
-import soot.Modifier;
 import soot.RefType;
 import soot.Scene;
 import soot.SceneTransformer;
 import soot.SootClass;
 import soot.SootMethod;
-import soot.Type;
 import soot.Unit;
 import soot.Value;
-import soot.VoidType;
 import soot.jimple.AssignStmt;
 import soot.jimple.InvokeExpr;
-import soot.jimple.Jimple;
-import soot.jimple.JimpleBody;
 import soot.jimple.NewExpr;
 import soot.jimple.Stmt;
 import soot.jimple.infoflow.solver.cfg.IInfoflowCFG;
 import soot.jimple.infoflow.solver.cfg.InfoflowCFG;
 import soot.jimple.toolkits.ide.icfg.JimpleBasedInterproceduralCFG;
-import soot.options.Options;
 
-public class AbstractBoomerangTest extends AbstractTestingFramework{
+public class AbstractBoomerangTest extends AbstractTestingFramework {
 	private IInfoflowCFG icfg;
 	private IContextRequester contextReuqester;
 	private BoomerangOptions options;
@@ -53,6 +48,7 @@ public class AbstractBoomerangTest extends AbstractTestingFramework{
 	private boolean useIDEViz() {
 		return !getTestCaseClassName().contains("LongTest");
 	}
+
 	protected SceneTransformer createAnalysisTransformer() {
 		return new SceneTransformer() {
 			protected void internalTransform(String phaseName, @SuppressWarnings("rawtypes") Map options) {
@@ -66,7 +62,28 @@ public class AbstractBoomerangTest extends AbstractTestingFramework{
 							@Override
 							public IInfoflowCFG icfg() {
 								return icfg;
-							}};
+							}
+							
+							@Override
+							public IPropagationController<Unit, AccessGraph> propagationController() {
+								return (errorOnVisitMethod().isEmpty() ? super.propagationController() : createPropagationController());
+							}
+
+							private IPropagationController<Unit, AccessGraph> createPropagationController() {
+								return new IPropagationController<Unit, AccessGraph>() {
+
+									@Override
+									public boolean continuePropagate(IPathEdge<Unit, AccessGraph> edge) {
+										SootMethod methodOf = icfg.getMethodOf(edge.getTarget());
+										for(String m : errorOnVisitMethod())
+											if(methodOf.toString().equals(m))
+												throw new RuntimeException("Visited method " + m );
+										return true;
+									}
+								};
+							}
+							
+				};
 				Query q = parseQuery();
 				contextReuqester = (q.getMethod().equals(testMethodName.getMethodName()) ? new NoContextRequester()
 						: new AllCallersRequester());
@@ -78,7 +95,7 @@ public class AbstractBoomerangTest extends AbstractTestingFramework{
 		};
 	}
 
-	private void compareQuery(Query q, AliasResults expectedResults, AliasResults results){
+	private void compareQuery(Query q, AliasResults expectedResults, AliasResults results) {
 		System.out.println("Boomerang Allocations Sites: " + results.keySet());
 		System.out.println("Boomerang Results: " + results);
 		System.out.println("Expected Results: " + expectedResults);
@@ -255,100 +272,16 @@ public class AbstractBoomerangTest extends AbstractTestingFramework{
 		}
 	}
 
-	@SuppressWarnings("static-access")
-	private void initializeSootWithEntryPoint(String methodName) {
-		G.v().reset();
-		Options.v().set_whole_program(true);
-		Options.v().setPhaseOption("jb", "use-original-names:true");
-		Options.v().setPhaseOption("cg.spark", "on");
-		Options.v().setPhaseOption("cg.spark", "verbose:true");
-		Options.v().set_output_format(Options.output_format_none);
-		String userdir = System.getProperty("user.dir");
-		String sootCp = userdir + "/target/test-classes";
-		if (includeJDK()) {
-			String javaHome = System.getProperty("java.home");
-			if (javaHome == null || javaHome.equals(""))
-				throw new RuntimeException("Could not get property java.home!");
-			sootCp += File.pathSeparator + javaHome + "/lib/rt.jar";
-			System.out.println(sootCp);
-			Options.v().setPhaseOption("cg", "trim-clinit:false");
-			Options.v().set_no_bodies_for_excluded(true);
-			Options.v().set_allow_phantom_refs(true);
-
-			List<String> includeList = new LinkedList<String>();
-			includeList.add("java.lang.*");
-			includeList.add("java.util.*");
-			includeList.add("java.io.*");
-			includeList.add("sun.misc.*");
-			includeList.add("java.net.*");
-			includeList.add("javax.servlet.*");
-			includeList.add("javax.crypto.*");
-
-			includeList.add("android.*");
-			includeList.add("org.apache.http.*");
-
-			includeList.add("de.test.*");
-			includeList.add("soot.*");
-			includeList.add("com.example.*");
-			includeList.add("libcore.icu.*");
-			includeList.add("securibench.*");
-			Options.v().set_include(includeList);
-
-		} else {
-			Options.v().set_no_bodies_for_excluded(true);
-			Options.v().set_allow_phantom_refs(true);
-			// Options.v().setPhaseOption("cg", "all-reachable:true");
-		}
-
-		Options.v().set_exclude(excludedPackages());
-		Options.v().set_soot_classpath(sootCp);
-		// Options.v().set_main_class(this.getTargetClass());
-		SootClass sootTestCaseClass = Scene.v().forceResolve(getTestCaseClassName(), SootClass.BODIES);
-
-		for (SootMethod m : sootTestCaseClass.getMethods()) {
-			if (m.getName().equals(methodName))
-				sootTestMethod = m;
-		}
-		if (sootTestMethod == null)
-			throw new RuntimeException("The method with name " + methodName + " was not found in the Soot Scene.");
-		Scene.v().addBasicClass(getTargetClass(), SootClass.BODIES);
-		Scene.v().loadNecessaryClasses();
-		SootClass c = Scene.v().forceResolve(getTargetClass(), SootClass.BODIES);
-		if (c != null) {
-			c.setApplicationClass();
-		}
-
-		SootMethod methodByName = c.getMethodByName("main");
-		List<SootMethod> ePoints = new LinkedList<>();
-		ePoints.add(methodByName);
-		Scene.v().setEntryPoints(ePoints);
-	}
-
-	private String getTargetClass() {
-		SootClass sootClass = new SootClass("dummyClass");
-		SootMethod mainMethod = new SootMethod("main",
-				Arrays.asList(new Type[] { ArrayType.v(RefType.v("java.lang.String"), 1) }), VoidType.v(),
-				Modifier.PUBLIC | Modifier.STATIC);
-		sootClass.addMethod(mainMethod);
-		JimpleBody body = Jimple.v().newBody(mainMethod);
-		mainMethod.setActiveBody(body);
-		RefType testCaseType = RefType.v(getTestCaseClassName());
-		System.out.println(getTestCaseClassName());
-		Local allocatedTestObj = Jimple.v().newLocal("dummyObj", testCaseType);
-		body.getLocals().add(allocatedTestObj);
-		body.getUnits().add(Jimple.v().newAssignStmt(allocatedTestObj, Jimple.v().newNewExpr(testCaseType)));
-		body.getUnits().add(
-				Jimple.v().newInvokeStmt(Jimple.v().newVirtualInvokeExpr(allocatedTestObj, sootTestMethod.makeRef())));
-		Scene.v().addClass(sootClass);
-		return sootClass.toString();
-	}
-
 	private String getTestCaseClassName() {
 		return this.getClass().getName().replace("class ", "");
 	}
 
+	protected Collection<String> errorOnVisitMethod() {
+		return Lists.newLinkedList();
+	}
+
 	protected boolean includeJDK() {
-		return false;
+		return true;
 	}
 
 	public List<String> excludedPackages() {
@@ -384,5 +317,5 @@ public class AbstractBoomerangTest extends AbstractTestingFramework{
 	protected boolean staticallyUnknown() {
 		return true;
 	}
-	
+
 }

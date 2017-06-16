@@ -117,7 +117,7 @@ public class FixAfterInsertion<K,V>{
 	    }
 
 	    /** From CLR */
-	    private void rotateLeft(Entry<K,V> p) {
+	     void rotateLeft(Entry<K,V> p) {
 	        if (p != null) {
 	            Entry<K,V> r = p.right;
 	            p.right = r.left;
@@ -136,7 +136,7 @@ public class FixAfterInsertion<K,V>{
 	    }
 
 	    /** From CLR */
-	    private void rotateRight(Entry<K,V> p) {
+	     void rotateRight(Entry<K,V> p) {
 	        if (p != null) {
 	            Entry<K,V> l = p.left;
 	            p.left = l.right;
