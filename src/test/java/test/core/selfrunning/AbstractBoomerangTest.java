@@ -14,6 +14,8 @@ import boomerang.AliasResults;
 import boomerang.BoomerangOptions;
 import boomerang.Query;
 import boomerang.accessgraph.AccessGraph;
+import boomerang.cfg.ExtendedICFG;
+import boomerang.cfg.IExtendedICFG;
 import boomerang.context.AllCallersRequester;
 import boomerang.context.IContextRequester;
 import boomerang.context.NoContextRequester;
@@ -36,12 +38,10 @@ import soot.jimple.AssignStmt;
 import soot.jimple.InvokeExpr;
 import soot.jimple.NewExpr;
 import soot.jimple.Stmt;
-import soot.jimple.infoflow.solver.cfg.IInfoflowCFG;
-import soot.jimple.infoflow.solver.cfg.InfoflowCFG;
 import soot.jimple.toolkits.ide.icfg.JimpleBasedInterproceduralCFG;
 
-public class AbstractBoomerangTest extends AbstractTestingFramework {
-	private IInfoflowCFG icfg;
+public class AbstractBoomerangTest extends AbstractTestingFramework{
+	private IExtendedICFG icfg;
 	private IContextRequester contextReuqester;
 	private BoomerangOptions options;
 
@@ -52,7 +52,7 @@ public class AbstractBoomerangTest extends AbstractTestingFramework {
 	protected SceneTransformer createAnalysisTransformer() {
 		return new SceneTransformer() {
 			protected void internalTransform(String phaseName, @SuppressWarnings("rawtypes") Map options) {
-				icfg = new InfoflowCFG(new JimpleBasedInterproceduralCFG(true));
+				icfg = new ExtendedICFG(new JimpleBasedInterproceduralCFG(true));
 				AbstractBoomerangTest.this.options = new BoomerangOptions(){
 							@Override
 							public IBoomerangDebugger getDebugger() {
@@ -60,7 +60,7 @@ public class AbstractBoomerangTest extends AbstractTestingFramework {
 							}
 
 							@Override
-							public IInfoflowCFG icfg() {
+							public IExtendedICFG icfg() {
 								return icfg;
 							}
 							

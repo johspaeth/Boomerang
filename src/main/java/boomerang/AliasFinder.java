@@ -9,6 +9,8 @@ import boomerang.accessgraph.AccessGraph;
 import boomerang.accessgraph.SetBasedFieldGraph;
 import boomerang.accessgraph.WrappedSootField;
 import boomerang.backward.BackwardSolver;
+import boomerang.cfg.BackwardsInfoflowCFG;
+import boomerang.cfg.IExtendedICFG;
 import boomerang.context.IContextRequester;
 import boomerang.context.NoContextRequester;
 import boomerang.forward.ForwardSolver;
@@ -22,8 +24,6 @@ import soot.SootMethod;
 import soot.Type;
 import soot.Unit;
 import soot.jimple.ThrowStmt;
-import soot.jimple.infoflow.solver.cfg.BackwardsInfoflowCFG;
-import soot.jimple.infoflow.solver.cfg.IInfoflowCFG;
 
 public class AliasFinder {
 

@@ -1,4 +1,4 @@
-package soot.jimple.infoflow.solver.cfg;
+package boomerang.cfg;
 
 import soot.jimple.toolkits.ide.icfg.BackwardsInterproceduralCFG;
 
@@ -8,16 +8,16 @@ import soot.jimple.toolkits.ide.icfg.BackwardsInterproceduralCFG;
  * @author Steven Arzt
  * @author Eric Bodden
  */
-public class BackwardsInfoflowCFG extends InfoflowCFG {
+public class BackwardsInfoflowCFG extends ExtendedICFG {
 	
-	private final IInfoflowCFG baseCFG;
+	private final IExtendedICFG baseCFG;
 	
-	public BackwardsInfoflowCFG(IInfoflowCFG baseCFG) {
+	public BackwardsInfoflowCFG(IExtendedICFG baseCFG) {
 		super(new BackwardsInterproceduralCFG(baseCFG));
 		this.baseCFG = baseCFG;
 	}
 	
-	public IInfoflowCFG getBaseCFG() {
+	public IExtendedICFG getBaseCFG() {
 		return this.baseCFG;
 	}
 	

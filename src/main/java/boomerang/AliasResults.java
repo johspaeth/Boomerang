@@ -7,13 +7,16 @@ import java.util.Set;
 import com.google.common.collect.ForwardingMultimap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 
 import boomerang.accessgraph.AccessGraph;
 import boomerang.accessgraph.FieldGraph;
 import boomerang.accessgraph.WrappedSootField;
+import boomerang.cfg.IExtendedICFG;
 import heros.solver.Pair;
 import soot.Unit;
-import soot.jimple.infoflow.solver.cfg.IInfoflowCFG;
+import soot.Value;
+import soot.jimple.AssignStmt;
 
 public class AliasResults extends ForwardingMultimap<Pair<Unit, AccessGraph>, AccessGraph> {
 	private Multimap<Pair<Unit, AccessGraph>, AccessGraph> delegate;
@@ -138,7 +141,7 @@ public class AliasResults extends ForwardingMultimap<Pair<Unit, AccessGraph>, Ac
 		return out;
 	}
 
-	public String withMethodOfAllocationSite(IInfoflowCFG cfg) {
+	public String withMethodOfAllocationSite(IExtendedICFG cfg) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("{");
 		for (Pair<Unit, AccessGraph> k : keySet()) {
@@ -166,5 +169,16 @@ public class AliasResults extends ForwardingMultimap<Pair<Unit, AccessGraph>, Ac
 
 	public boolean queryTimedout(){
 		return timedout;
+	}
+	
+	public Set<Value> getValues(){
+		Set<Value> res = Sets.newHashSet();
+		for(Pair<Unit, AccessGraph> key : this.keySet()){
+			if(key.getO1() instanceof AssignStmt){
+				AssignStmt as = (AssignStmt) key.getO1();
+				res.add(as.getRightOp());
+			}
+		}
+		return res;
 	}
 }

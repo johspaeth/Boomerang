@@ -7,6 +7,7 @@ import boomerang.AliasResults;
 import boomerang.BoomerangContext;
 import boomerang.Query;
 import boomerang.accessgraph.AccessGraph;
+import boomerang.cfg.IExtendedICFG;
 import boomerang.ifdssolver.DefaultIFDSTabulationProblem.Direction;
 import boomerang.ifdssolver.IPathEdge;
 import heros.debug.visualization.ExplodedSuperGraph;
@@ -20,13 +21,12 @@ import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.InvokeExpr;
 import soot.jimple.StaticInvokeExpr;
 import soot.jimple.Stmt;
-import soot.jimple.infoflow.solver.cfg.IInfoflowCFG;
 
 public class JSONOutputDebugger extends DefaultBoomerangDebugger {
 	private BoomerangContext context;
-	private IInfoflowCFG icfg;
+	private IExtendedICFG icfg;
 	private File jsonFile;
-	private IDEToJSON<SootMethod, Unit, AccessGraph, Object, IInfoflowCFG> forwardJSON;
+	private IDEToJSON<SootMethod, Unit, AccessGraph, Object, IExtendedICFG> forwardJSON;
 
 	public JSONOutputDebugger(File jsonFile) {
 		this.jsonFile = jsonFile;
@@ -144,8 +144,8 @@ public class JSONOutputDebugger extends DefaultBoomerangDebugger {
 	
 	}
 	
-	private class BoomerangToJSON extends IDEToJSON<SootMethod, Unit, AccessGraph, Object, IInfoflowCFG>{
-		public BoomerangToJSON(File file, IInfoflowCFG icfg) {
+	private class BoomerangToJSON extends IDEToJSON<SootMethod, Unit, AccessGraph, Object, IExtendedICFG>{
+		public BoomerangToJSON(File file, IExtendedICFG icfg) {
 			super(file, icfg);
 		}
 

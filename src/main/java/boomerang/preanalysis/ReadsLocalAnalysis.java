@@ -13,15 +13,16 @@ import soot.Unit;
 import soot.Value;
 import soot.jimple.AssignStmt;
 import soot.jimple.InstanceFieldRef;
-import soot.jimple.infoflow.solver.cfg.IInfoflowCFG;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
+import boomerang.cfg.IExtendedICFG;
+
 public class ReadsLocalAnalysis {
   private SootMethod method;
-  private IInfoflowCFG icfg;
+  private IExtendedICFG icfg;
   private final LoadingCache<Pair<Local, SootField>, Boolean> methodToUsedLocals = CacheBuilder
       .newBuilder().build(new CacheLoader<Pair<Local, SootField>, Boolean>() {
         @Override
@@ -45,7 +46,7 @@ public class ReadsLocalAnalysis {
         }
       });
 
-  public ReadsLocalAnalysis(SootMethod m, IInfoflowCFG icfg) {
+  public ReadsLocalAnalysis(SootMethod m, IExtendedICFG icfg) {
     this.method = m;
     assert m.hasActiveBody();
     this.icfg = icfg;
