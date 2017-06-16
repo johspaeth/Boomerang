@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
 import boomerang.ifdssolver.DefaultIFDSTabulationProblem.Direction;
@@ -361,7 +362,7 @@ public abstract class IFDSSolver<N, D, M, I extends BiDiInterproceduralCFG<N, M>
 		onRegister(incEdge);
 		tabulationProblem.onSolverAddIncoming(callee, nextCallEdge.getStartNode(), incEdge);
 		
-		for(IncomingListener<N, D, M> l : incomingListeners.get(nextCallEdge.getStartNode()))
+		for(IncomingListener<N, D, M> l : Lists.newLinkedList(incomingListeners.get(nextCallEdge.getStartNode())))
 			l.hasIncomingEdge(incEdge);
 		return incomings.addIncoming(callee, nextCallEdge.getStartNode(), incEdge);
 	}

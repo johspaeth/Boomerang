@@ -3,7 +3,6 @@ package test.core.selfrunning;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -284,19 +283,6 @@ public class AbstractBoomerangTest extends AbstractTestingFramework{
 		return true;
 	}
 
-	public List<String> excludedPackages() {
-		List<String> excludedPackages = new LinkedList<>();
-		excludedPackages.add("java.*");
-		excludedPackages.add("sun.*");
-		excludedPackages.add("javax.*");
-		excludedPackages.add("com.sun.*");
-		excludedPackages.add("com.ibm.*");
-		excludedPackages.add("org.xml.*");
-		excludedPackages.add("org.w3c.*");
-		excludedPackages.add("apple.awt.*");
-		excludedPackages.add("com.apple.*");
-		return excludedPackages;
-	}
 
 	/**
 	 * The methods parameter describes the variable that a query is issued for.
