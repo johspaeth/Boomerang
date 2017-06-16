@@ -10,21 +10,21 @@ import boomerang.accessgraph.AccessGraph;
 import boomerang.accessgraph.WrappedSootField;
 import boomerang.ifdssolver.DefaultIFDSTabulationProblem.Direction;
 import boomerang.ifdssolver.FlowFunctions;
+import boomerang.ifdssolver.IFDSSolver.PropagationType;
 import boomerang.ifdssolver.IPathEdge;
 import boomerang.pointsofindirection.ForwardAliasCallback;
 import boomerang.pointsofindirection.PointOfIndirection;
 import boomerang.pointsofindirection.StrongUpdateCallback;
 import heros.solver.Pair;
 import soot.Local;
-import soot.RefType;
 import soot.Scene;
 import soot.SootMethod;
 import soot.Type;
 import soot.Unit;
 import soot.Value;
 import soot.jimple.AssignStmt;
+import soot.jimple.CastExpr;
 import soot.jimple.InstanceFieldRef;
-import soot.jimple.NewExpr;
 
 class ForwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 
@@ -55,7 +55,7 @@ class ForwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 
 	@Override
 	protected Collection<? extends IPathEdge<Unit, AccessGraph>> normalFunctionExtendor(
-			IPathEdge<Unit, AccessGraph> prevEdge, IPathEdge<Unit, AccessGraph> succEdge) {
+			IPathEdge<Unit, AccessGraph> prevEdge, final IPathEdge<Unit, AccessGraph> succEdge) {
 		assert prevEdge.getStartNode().equals(succEdge.getStartNode());
 		if (!isActivePath(succEdge.getTarget())) {
 			return Collections.emptySet();
@@ -75,6 +75,25 @@ class ForwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 					context.getForwardPathEdges().registerPointOfIndirectionAt(curr,
 							new PointOfIndirection(prevEdge.factAtTarget().dropTail(), curr, context),
 							strongUpdateCallback);
+					return Collections.emptySet();
+				}
+			}
+		}
+		
+		if(context.getOptions().typeCheckForCasts()){
+			Unit curr = prevEdge.getTarget();
+			if(curr instanceof AssignStmt && ((AssignStmt) curr).getRightOp() instanceof CastExpr){
+				final CastExpr cast = (CastExpr)((AssignStmt) curr).getRightOp();
+				if(succEdge.factAtTarget().getBase().equals(((AssignStmt) curr).getLeftOp())){
+					context.getForwardSolver().attachIncomingListener(new AllocationTypeListener(succEdge.getStartNode(), context) {
+
+						@Override
+						public void discoveredAllocationType(Type allocType) {
+							if(Scene.v().getOrMakeFastHierarchy().canStoreType( allocType,cast.getCastType())){
+								context.getForwardSolver().inject(succEdge, PropagationType.Normal);
+							}
+						}
+					});
 					return Collections.emptySet();
 				}
 			}
@@ -205,12 +224,9 @@ class ForwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 		} else{
 			if(!sourceFact.isStatic() && callee.getActiveBody().getThisLocal().equals(sourceFact.getBase())){
 				if(sourceFact.getFieldCount() == 0){
-					context.getForwardSolver().attachIncomingListener(new AllocationListener(prevEdge.getStartNode(),context) {
+					context.getForwardSolver().attachIncomingListener(new AllocationTypeListener(prevEdge.getStartNode(),context) {
 						@Override
-						public void discoveredAllocationSite(Pair<Unit, AccessGraph> allocNode) {
-							if(allocNode.getO2().hasNullAllocationSite())
-								return;
-							Type allocType = allocNode.getO2().getAllocationType();
+						public void discoveredAllocationType(Type allocType) {
 							if(Scene.v().getOrMakeFastHierarchy().canStoreType(allocType, callee.getActiveBody().getThisLocal().getType()))
 								context.addVisitableMethod(callee);
 						}

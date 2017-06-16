@@ -75,4 +75,8 @@ public abstract class BoomerangOptions {
 	public AllocationSiteHandlers allocationSiteHandlers() {
 		return new ReferenceType();
 	}
+
+	public boolean typeCheckForCasts() {
+		return true;
+	}
 }
