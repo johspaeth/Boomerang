@@ -33,26 +33,12 @@ public abstract class AbstractPathEdgeFunctions extends
     if (ap.isStatic() || method.isStatic())
       return;
     
-    Local thisLocal = method.getActiveBody().getThisLocal();
     assert ap.isStatic() || method.getActiveBody().getLocals().contains(ap.getBase());
-    if (ap.baseMatches(thisLocal)) {
-      assert ForwardFlowFunctions.hasCompatibleTypesForCall(ap, method.getDeclaringClass());
-    }
-
   }
 
   private void assertAccessPath(AccessGraph a) {
 	  assert a.isStatic() || a.getBase() != null;
 	  assert !(a.getBase() == null && a.hasSetBasedFieldGraph());
-    if (!WrappedSootField.TRACK_TYPE)
-      return;
-//    Type type = a.getBaseType();
-//    Local l = a.getBase();
-//    if (l == null)
-//      return;
-//    Type local = l.getType();
-//    assert type == null || Scene.v().getOrMakeFastHierarchy().canStoreType(local, type)
-//        || Scene.v().getOrMakeFastHierarchy().canStoreType(type, local);
   }
 
   @Override

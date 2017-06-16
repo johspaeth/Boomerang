@@ -26,38 +26,17 @@ public class SetBasedFieldGraph implements IFieldGraph {
 		if (!type) {
 			this.fields = new HashSet<>();
 			for (WrappedSootField f : fields) {
-				this.fields.add(new WrappedSootField(f.getField(), f.getField().getType(), null));
+				this.fields.add(new WrappedSootField(f.getField(), null));
 			}
 		} else {
 			if (allFields == null)
 				allFields = new HashSet<>();
 			allFields.addAll(fields);
-			if(!WrappedSootField.TRACK_TYPE)
 				this.fields =new HashSet<>(fields);// minimize(fields);
-			else
-				this.fields = minimize(fields);
 		}
 		// assert fields.size() > 1;
 	}
 
-	private Set<WrappedSootField> minimize(Set<WrappedSootField> fields) {
-		Map<SootField, Type> fieldsWithTypes = new HashMap<>();
-		for (WrappedSootField f : fields) {
-			SootField unwrappedField = f.getField();
-			if (!fieldsWithTypes.containsKey(f.getField()))
-				fieldsWithTypes.put(unwrappedField, unwrappedField.getType());
-			else {
-				Type a = fieldsWithTypes.get(unwrappedField);
-				Type b = f.getType();
-				Type commonSuperClass = superType(a, b);
-				fieldsWithTypes.put(unwrappedField, commonSuperClass);
-			}
-		}
-		Set<WrappedSootField> out = new HashSet<>();
-		for (Entry<SootField, Type> e : fieldsWithTypes.entrySet())
-			out.add(new WrappedSootField(e.getKey(), e.getValue(), null));
-		return out;
-	}
 
 	private Type superType(Type a, Type b) {
 		if (a.equals(b))
@@ -155,11 +134,6 @@ public class SetBasedFieldGraph implements IFieldGraph {
 		} else if (fields.size() != other.fields.size() || !fields.equals(other.fields))
 			return false;
 		return true;
-	}
-
-	@Override
-	public IFieldGraph noType() {
-		return new SetBasedFieldGraph(fields,false);
 	}
 
 }

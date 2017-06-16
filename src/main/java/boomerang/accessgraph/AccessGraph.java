@@ -34,10 +34,6 @@ public class AccessGraph {
 	 */
 	private final Local value;
 
-	/**
-	 * The type of the local variable value.
-	 */
-	private final Type type;
 
 	/**
 	 * The {@link FieldGraph} representing the accesses which yield to the
@@ -63,12 +59,12 @@ public class AccessGraph {
 	 * @param t
 	 *            The type of the base
 	 */
-	public AccessGraph(Local val, Type t) {
-		this(val, t, null, null, false);
+	public AccessGraph(Local val) {
+		this(val,  null, null, false);
 	}
 
-	public AccessGraph(Local val, Type t, Unit allocsite,boolean isNullAllocsite) {
-		this(val, t, null, allocsite, isNullAllocsite);
+	public AccessGraph(Local val, Unit allocsite,boolean isNullAllocsite) {
+		this(val, null, allocsite, isNullAllocsite);
 	}
 
 	/**
@@ -82,8 +78,8 @@ public class AccessGraph {
 	 * @param field
 	 *            the first field access
 	 */
-	public AccessGraph(Local val, Type t, WrappedSootField field) {
-		this(val, t, new FieldGraph(field), null,false);
+	public AccessGraph(Local val,  WrappedSootField field) {
+		this(val, new FieldGraph(field), null,false);
 	}
 
 	/**
@@ -97,14 +93,13 @@ public class AccessGraph {
 	 * @param field
 	 *            An array of field accesses
 	 */
-	public AccessGraph(Local val, Type t, WrappedSootField[] f) {
-		this(val, t, (f == null || f.length == 0 ? null : new FieldGraph(f)), null, false);
+	public AccessGraph(Local val, WrappedSootField[] f) {
+		this(val, (f == null || f.length == 0 ? null : new FieldGraph(f)), null, false);
 	}
 
-	protected AccessGraph(Local value, Type t, IFieldGraph fieldGraph, Unit sourceStmt, boolean isNullAllocsite) {
+	protected AccessGraph(Local value, IFieldGraph fieldGraph, Unit sourceStmt, boolean isNullAllocsite) {
 		this.value = value;
 		this.isNullAllocsite = isNullAllocsite;
-		this.type = (WrappedSootField.TRACK_TYPE ? t : null);
 //		if(apgs == null){
 //			apgs = new LinkedList<IFieldGraph>();
 //		}
@@ -129,15 +124,6 @@ public class AccessGraph {
 	 */
 	public Local getBase() {
 		return value;
-	}
-
-	/**
-	 * Retrieve the type of the base variable.
-	 * 
-	 * @return The type.
-	 */
-	public Type getBaseType() {
-		return (WrappedSootField.TRACK_TYPE ? type : value.getType());
 	}
 
 	/**
@@ -203,7 +189,7 @@ public class AccessGraph {
 	public String toString() {
 		String str = "";
 		if (value != null){
-			str += value.toString() + (WrappedSootField.TRACK_TYPE ? "(" + getBaseType() + ")" : "");
+			str += value.toString() ;
 		}
 		if (fieldGraph != null) {
 			
@@ -225,8 +211,8 @@ public class AccessGraph {
 	 *            The new type to be used.
 	 * @return The access graph
 	 */
-	public AccessGraph deriveWithNewLocal(Local local, Type type) {
-		return new AccessGraph(local, type, fieldGraph, allocationSite,isNullAllocsite);
+	public AccessGraph deriveWithNewLocal(Local local) {
+		return new AccessGraph(local, fieldGraph, allocationSite,isNullAllocsite);
 	}
 
 	/**
@@ -242,7 +228,7 @@ public class AccessGraph {
 		if(newapg.shouldOverApproximate()){
 			newapg = newapg.overapproximation();
 		}
-		return new AccessGraph(value, type, newapg, allocationSite,isNullAllocsite);
+		return new AccessGraph(value,  newapg, allocationSite,isNullAllocsite);
 	}
 
 	/**
@@ -259,69 +245,8 @@ public class AccessGraph {
 		if(newapg.shouldOverApproximate()){
 			newapg = newapg.overapproximation();
 		}
-		return new AccessGraph(value, type, newapg, allocationSite,isNullAllocsite);
+		return new AccessGraph(value,  newapg, allocationSite,isNullAllocsite);
 	}
-	
-	 /**
-	   * Checks if a field can be appended to a single access graph.
-	   * 
-	   * @param accessgraph The access graph
-	   * @param firstField The field to be appended
-	   * @return <code>true</code> if the field can be appended.
-	   */
-	  public boolean canAppend(WrappedSootField firstField) {
-		 if(!WrappedSootField.TRACK_TYPE)
-			 return true;
-	    if (firstField.getField().equals(AliasFinder.ARRAY_FIELD))
-	      return true;
-
-	    SootField field = firstField.getField();
-	    Type child = field.getDeclaringClass().getType();
-	    if (this.getFieldCount() < 1 && !hasSetBasedFieldGraph()) {
-	    	Type parent = this.getBaseType();
-	      return Scene.v().getOrMakeFastHierarchy().canStoreType(child, parent);
-	    } else {
-	      if (firstFirstFieldMayMatch(AliasFinder.ARRAY_FIELD))
-	        return true;
-	      for(WrappedSootField lastField : this.getLastField()){
-		      Type parent = lastField.getType();
-	  	    if(Scene.v().getOrMakeFastHierarchy().canStoreType(child,parent)){
-	  	    	return true;
-	  	    }
-	      }
-	    }
-	    return false;
-	  }
-
-	
-
-	/**
-	   * Checks if the field can be prepended to a single access graph.
-	   * 
-	   * @param accessgraph The access graph
-	   * @param firstField The field to be appended
-	   * @return <code>true</code> if the field can be appended.
-	   */
-	  public boolean canPrepend(WrappedSootField newFirstField) {
-		  if(!WrappedSootField.TRACK_TYPE)
-				 return true;
-//		  if(hasSetBasedFieldGraph())
-//			  return true;
-	    SootField newFirst = newFirstField.getField();
-	    if (newFirst.equals(AliasFinder.ARRAY_FIELD))
-	      return true;
-	    if (this.getFieldCount() < 1 && !hasSetBasedFieldGraph()) {
-	    	return true;
-	    } else {
-	      for(WrappedSootField oldFirstField : getFirstField()){
-	    	  if(oldFirstField.getField().equals(AliasFinder.ARRAY_FIELD))
-	    		  return true;
-	    	  if(Scene.v().getOrMakeFastHierarchy().canStoreType(newFirstField.getType(), oldFirstField.getField().getDeclaringClass().getType()))
-	    		  return true;
-	      }
-	    }
-	    return false;
-	  }
 	
 	/**
 	 * Add the provided field to the beginning of the field graph. This is
@@ -336,7 +261,7 @@ public class AccessGraph {
 		if(newapg.shouldOverApproximate()){
 			newapg = newapg.overapproximation();
 		}
-		return new AccessGraph(value, type, newapg, allocationSite,isNullAllocsite);
+		return new AccessGraph(value, newapg, allocationSite,isNullAllocsite);
 	}
 
 	/**
@@ -384,10 +309,10 @@ public class AccessGraph {
 
 		Set<IFieldGraph> newapg = fieldGraph.popFirstField();
 		if (newapg.isEmpty())
-			return Collections.singleton(new AccessGraph(value, type, null, allocationSite,isNullAllocsite));
+			return Collections.singleton(new AccessGraph(value, null, allocationSite,isNullAllocsite));
 		Set<AccessGraph> out = new HashSet<>();
 		for (IFieldGraph a : newapg) {
-				out.add(new AccessGraph(value, type, a, allocationSite,isNullAllocsite));
+				out.add(new AccessGraph(value, a, allocationSite,isNullAllocsite));
 		}
 		return out;
 	}
@@ -407,9 +332,9 @@ public class AccessGraph {
 
 		Set<AccessGraph> out = new HashSet<>();
 		if (newapg.isEmpty())
-			return Collections.singleton(new AccessGraph(value, type, null, allocationSite,isNullAllocsite));
+			return Collections.singleton(new AccessGraph(value, null, allocationSite,isNullAllocsite));
 		for (IFieldGraph a : newapg) {
-			out.add(new AccessGraph(value, type, a, allocationSite,isNullAllocsite));
+			out.add(new AccessGraph(value,  a, allocationSite,isNullAllocsite));
 		}
 		return out;
 	}
@@ -433,7 +358,7 @@ public class AccessGraph {
 	 * @return The derived access graph
 	 */
 	public AccessGraph deriveWithAllocationSite(Unit stmt, boolean isNullAllocsite) {
-		return new AccessGraph(value, type, fieldGraph, stmt, isNullAllocsite);
+		return new AccessGraph(value, fieldGraph, stmt, isNullAllocsite);
 	}
 
 	/**
@@ -454,7 +379,7 @@ public class AccessGraph {
 	 * @return The derived access graph
 	 */
 	public AccessGraph deriveWithoutAllocationSite() {
-		return new AccessGraph(value, type,fieldGraph, null, false);
+		return new AccessGraph(value, fieldGraph, null, false);
 	}
 
 	/**
@@ -463,7 +388,7 @@ public class AccessGraph {
 	 * @return The derived access graph
 	 */
 	public AccessGraph dropTail() {
-		return new AccessGraph(value, type, null, allocationSite,isNullAllocsite);
+		return new AccessGraph(value, null, allocationSite,isNullAllocsite);
 	}
 
 	/**
@@ -474,7 +399,7 @@ public class AccessGraph {
 	 * @return The derived access graph.
 	 */
 	public AccessGraph makeStatic() {
-		return new AccessGraph(null, null, fieldGraph, allocationSite,isNullAllocsite);
+		return new AccessGraph(null, fieldGraph, allocationSite,isNullAllocsite);
 	}
 
 	/**
@@ -507,21 +432,6 @@ public class AccessGraph {
 		return fieldGraph;
 	}
 	
-	/**
-	 * The type of the current access graph. (Type of the last field access or
-	 * of the base value, if it has no field accesses bound to it.)
-	 * 
-	 * @return The type of the graph
-	 */
-	public Collection<Type> getType() {
-		if(!isStatic() && getFieldCount() == 0)
-			return Collections.singleton(value.getType());
-		Collection<Type> out = new HashSet<>();
-		for(WrappedSootField lastField: getLastField()){
-			out.add(lastField.getType());
-		}
-		return out;
-	}
 
 	@Override
 	public int hashCode() {
@@ -532,8 +442,6 @@ public class AccessGraph {
 		int result = 1;
 		result = prime * result + ((fieldGraph == null) ? 0 : fieldGraph.hashCode());
 		result = prime * result + ((value == null) ? 0 : value.hashCode());
-		if(WrappedSootField.TRACK_TYPE)
-			result = prime * result + ((type == null) ? 0 : type.hashCode());
 		result = prime * result + ((allocationSite == null) ? 0 : allocationSite.hashCode());
 		this.hashCode = result;
 
@@ -553,13 +461,6 @@ public class AccessGraph {
 				return false;
 		} else if (!value.equals(other.value))
 			return false;
-		if(WrappedSootField.TRACK_TYPE){
-			if (type == null) {
-				if (other.type != null)
-					return false;
-			} else if (!type.equals(other.type))
-				return false;
-		}
 		if (allocationSite == null) {
 			if (other.allocationSite != null)
 				return false;
@@ -575,18 +476,13 @@ public class AccessGraph {
 	}
 
 	public boolean hasSetBasedFieldGraph() {
-		// TODO Auto-generated method stub
 		return fieldGraph instanceof SetBasedFieldGraph;
 	}
 
 	public AccessGraph overApproximate() {
-		// TODO Auto-generated method stub
-		return new AccessGraph(value, type, fieldGraph == null ? null : fieldGraph.overapproximation(), allocationSite,isNullAllocsite);
+		return new AccessGraph(value,fieldGraph == null ? null : fieldGraph.overapproximation(), allocationSite,isNullAllocsite);
 	}
 
-	public AccessGraph noType() {
-		return new AccessGraph(value,value != null ? value.getType() : null,fieldGraph == null ? null : fieldGraph.noType(), allocationSite,isNullAllocsite);
-	}
 
 	public boolean hasNullAllocationSite() {
 		return isNullAllocsite;

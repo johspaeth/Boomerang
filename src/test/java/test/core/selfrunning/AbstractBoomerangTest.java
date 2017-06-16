@@ -148,7 +148,7 @@ public class AbstractBoomerangTest extends AbstractTestingFramework{
 		AliasResults res = new AliasResults();
 		for (Pair<Unit, AccessGraph> allocatedVariableWithStack : allocationSiteWithCallStack) {
 			for (Local l : aliasedVariables) {
-				res.put(allocatedVariableWithStack, new AccessGraph(l, l.getType()));
+				res.put(allocatedVariableWithStack, new AccessGraph(l));
 			}
 		}
 		return res;
@@ -189,7 +189,7 @@ public class AbstractBoomerangTest extends AbstractTestingFramework{
 			if (as.getLeftOp() instanceof Local && as.getRightOp() instanceof NewExpr) {
 				if (allocatesObjectOfInterest((NewExpr) as.getRightOp())) {
 					Local local = (Local) as.getLeftOp();
-					AccessGraph accessGraph = new AccessGraph(local, ((NewExpr) as.getRightOp()).getBaseType());
+					AccessGraph accessGraph = new AccessGraph(local);
 					out.add(new Pair<Unit, AccessGraph>(as, accessGraph.deriveWithAllocationSite(as, true)));
 				}
 			}
@@ -222,7 +222,7 @@ public class AbstractBoomerangTest extends AbstractTestingFramework{
 				if (as.getLeftOp() instanceof Local && as.getRightOp() instanceof NewExpr) {
 					if (allocatesObjectOfInterest((NewExpr) as.getRightOp())) {
 						Local local = (Local) as.getLeftOp();
-						AccessGraph accessGraph = new AccessGraph(local, ((NewExpr) as.getRightOp()).getBaseType());
+						AccessGraph accessGraph = new AccessGraph(local);
 						out.add(accessGraph.deriveWithAllocationSite(as, true));
 					}
 				}
@@ -268,7 +268,7 @@ public class AbstractBoomerangTest extends AbstractTestingFramework{
 			if (!(param instanceof Local))
 				continue;
 			Local queryVar = (Local) param;
-			queries.add(new Query(new AccessGraph(queryVar, queryVar.getType()), stmt, m));
+			queries.add(new Query(new AccessGraph(queryVar), stmt, m));
 		}
 	}
 

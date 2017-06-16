@@ -41,7 +41,6 @@ public abstract class AbstractTestingFramework {
 
 	@Before
 	public void beforeTestCaseExecution() {
-		WrappedSootField.TRACK_TYPE = false;
 		initializeSootWithEntryPoint();
 		createVizFile();
 		try{

@@ -71,7 +71,4 @@ public class Query {
     return true;
   }
 
-  public Collection<Type> getType() {
-    return accessPath.getType();
-  }
 }

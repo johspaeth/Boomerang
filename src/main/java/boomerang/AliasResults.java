@@ -67,10 +67,6 @@ public class AliasResults extends ForwardingMultimap<Pair<Unit, AccessGraph>, Ac
 			BoomerangContext context) {
 		Set<AccessGraph> out = new HashSet<>();
 		for (AccessGraph v : in) {
-			if (!v.canAppend(fields[0])) {
-				continue;
-			}
-			;
 			AccessGraph newValue = v.appendFields(fields);
 
 			if (context.isValidAccessPath(newValue)) {
@@ -124,14 +120,6 @@ public class AliasResults extends ForwardingMultimap<Pair<Unit, AccessGraph>, Ac
 			return new HashSet<>(in);
 		Set<AccessGraph> out = new HashSet<>();
 		for (AccessGraph v : in) {
-			boolean canAppend = false;
-			for (WrappedSootField f : graph.getFirstField()) {
-				canAppend = canAppend || v.canAppend(f);
-			}
-			if (!canAppend) {
-				continue;
-			}
-			;
 			AccessGraph newValue = v.appendGraph(graph.getFieldGraph());
 
 			if (context.isValidAccessPath(newValue)) {

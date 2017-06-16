@@ -14,5 +14,4 @@ public interface IFieldGraph {
 	Collection<WrappedSootField> getExitNode();
 	boolean shouldOverApproximate();
 	IFieldGraph overapproximation();
-	IFieldGraph noType();
 }

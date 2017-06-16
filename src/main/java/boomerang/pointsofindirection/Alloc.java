@@ -29,8 +29,7 @@ public class Alloc {
 		context.debugger.onAllocationSiteReached(target, factAtTarget);
 		AccessGraph alloc = factAtTarget.deriveWithAllocationSite(target,isNullAlloc);
 		if (target instanceof AssignStmt && ((AssignStmt) target).getRightOp() instanceof NewExpr)
-			alloc = alloc.deriveWithNewLocal(alloc.getBase(),
-					((NewExpr) ((AssignStmt) target).getRightOp()).getBaseType());
+			alloc = alloc.deriveWithNewLocal(alloc.getBase());
 		assert alloc.hasAllocationSite() == true;
 		// start forward propagation from the path edge target with the
 		// allocation site.

@@ -29,7 +29,7 @@ public class DefaultNativeCallHandler extends NativeCallHandler {
 		//to the specified position of the destination array.
 		if(call.getInvokeExpr().getMethod().toString().contains("arraycopy"))
 			if(params[0].equals(source.getBase()) && params[2] instanceof Local) {
-				AccessGraph copied = source.deriveWithNewLocal((Local)params[2], source.getBaseType());
+				AccessGraph copied = source.deriveWithNewLocal((Local)params[2]);
 				Set<AccessGraph> out = new HashSet<>();
 				out.add(source);
 				out.add(copied);
@@ -48,7 +48,7 @@ public class DefaultNativeCallHandler extends NativeCallHandler {
 		//to the specified position of the destination array.
 		if(call.getInvokeExpr().getMethod().toString().contains("arraycopy"))
 			if(params[2].equals(source.getBase()) && params[0] instanceof Local) {
-				AccessGraph copied = source.deriveWithNewLocal((Local)params[0], source.getBaseType());
+				AccessGraph copied = source.deriveWithNewLocal((Local)params[0]);
 				Set<AccessGraph> out = new HashSet<>();
 				out.add(copied);
 				return out;

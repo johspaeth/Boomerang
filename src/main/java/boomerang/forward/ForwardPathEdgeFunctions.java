@@ -70,7 +70,7 @@ class ForwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 					// System.out.println("STRONG UPDATE " + curr);
 					StrongUpdateCallback strongUpdateCallback = new StrongUpdateCallback(succEdge, context);
 					context.getForwardPathEdges().registerPointOfIndirectionAt(curr,
-							new PointOfIndirection(new AccessGraph((Local) base, ((Local) base).getType()), curr, context),
+							new PointOfIndirection(new AccessGraph((Local) base), curr, context),
 							strongUpdateCallback);
 					context.getForwardPathEdges().registerPointOfIndirectionAt(curr,
 							new PointOfIndirection(prevEdge.factAtTarget().dropTail(), curr, context),
@@ -84,7 +84,7 @@ class ForwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 			Unit curr = prevEdge.getTarget();
 			if(curr instanceof AssignStmt && ((AssignStmt) curr).getRightOp() instanceof CastExpr){
 				final CastExpr cast = (CastExpr)((AssignStmt) curr).getRightOp();
-				if(succEdge.factAtTarget().getBase().equals(((AssignStmt) curr).getLeftOp())){
+				if(!succEdge.factAtTarget().isStatic() && succEdge.factAtTarget().getBase().equals(((AssignStmt) curr).getLeftOp())){
 					context.getForwardSolver().attachIncomingListener(new AllocationTypeListener(succEdge.getStartNode(), context) {
 
 						@Override

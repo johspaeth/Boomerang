@@ -5,8 +5,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.google.common.base.Optional;
-
 import boomerang.AliasFinder;
 import boomerang.BoomerangContext;
 import boomerang.accessgraph.AccessGraph;
@@ -15,10 +13,8 @@ import boomerang.ifdssolver.FlowFunctions;
 import boomerang.ifdssolver.IFDSSolver.PropagationType;
 import boomerang.ifdssolver.IPathEdge;
 import boomerang.ifdssolver.PathEdge;
-import boomerang.pointsofindirection.AliasCallback;
 import boomerang.pointsofindirection.ForwardAliasCallback;
 import boomerang.pointsofindirection.PointOfIndirection;
-import boomerang.pointsofindirection.StrongUpdateCallback;
 import heros.FlowFunction;
 import soot.Local;
 import soot.PrimType;
@@ -67,19 +63,12 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 							&& identityStmt.getLeftOp() instanceof Local) {
 						Local leftOp = (Local) identityStmt.getLeftOp();
 						// e = d;
-						if (Scene.v().getOrMakeFastHierarchy().canStoreType( source.getBaseType(),((Local) leftOp).getType())){
 							HashSet<AccessGraph> out = new HashSet<AccessGraph>();
 							out.add(source);
-							out.add(source.deriveWithNewLocal((Local) leftOp, source.getBaseType()));
+							out.add(source.deriveWithNewLocal((Local) leftOp));
 							return out;
-						} else{
-							return Collections.emptySet();
-						}
 					}
 				}
-				assert thisLocal == null || !source.baseMatches(thisLocal)
-						|| ForwardFlowFunctions.hasCompatibleTypesForCall(source, method.getDeclaringClass()) : edge
-								.toString();
 				assert source.isStatic() || method.getActiveBody().getLocals().contains(source.getBase());
 
 				if (!(curr instanceof AssignStmt)) {
@@ -131,17 +120,17 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 					InstanceFieldRef fr = (InstanceFieldRef) leftOp;
 					Value base = fr.getBase();
 					SootField field = fr.getField();
-					if(!source.isStatic()){
+					if (!source.isStatic()) {
 						if (source.getBase().equals(base) && source.firstFirstFieldMayMatch(field)) {
 							if (rightOp instanceof Local) {
 								Local local = (Local) rightOp;
-								AccessGraph a = new AccessGraph(local, local.getType());
+								AccessGraph a = new AccessGraph(local);
 								context.getBackwardSolver().inject(new PathEdge<Unit, AccessGraph>(null, a, curr, a),
 										PropagationType.Normal);
 							}
 						}
-						//Strong update on fields
-						if(source.baseAndFirstFieldMatches(base, field))
+						// Strong update on fields
+						if (source.baseAndFirstFieldMatches(base, field))
 							return Collections.emptySet();
 					}
 				} else if (leftOp instanceof ArrayRef) {
@@ -150,7 +139,7 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 					if (source.baseMatches(base) && source.firstFirstFieldMayMatch(AliasFinder.ARRAY_FIELD)
 							&& rightOp instanceof Local) {
 						Local local = (Local) rightOp;
-						AccessGraph a = new AccessGraph(local, local.getType());
+						AccessGraph a = new AccessGraph(local);
 						context.getBackwardSolver().inject(new PathEdge<Unit, AccessGraph>(null, a, curr, a),
 								PropagationType.Normal);
 					}
@@ -159,11 +148,8 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 					CastExpr castExpr = (CastExpr) rightOp;
 					Value op = castExpr.getOp();
 					if (op instanceof Local) {
-						if (!source.isStatic() && source.baseMatches(op)
-								&& typeCompatible(castExpr.getCastType(), source.getBaseType())) {
-							Type newType = (Scene.v().getOrMakeFastHierarchy().canStoreType(castExpr.getCastType(),
-									source.getBaseType()) ? castExpr.getCastType() : source.getBaseType());
-							out.add(source.deriveWithNewLocal((Local) leftOp, newType));
+						if (!source.isStatic() && source.baseMatches(op)) {
+							out.add(source.deriveWithNewLocal((Local) leftOp));
 						}
 					}
 				}
@@ -171,9 +157,7 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 
 					if (leftOp instanceof Local) {
 						// e = d;
-						if (typeCompatible(((Local) leftOp).getType(), source.getBaseType())) {
-							out.add(source.deriveWithNewLocal((Local) leftOp, source.getBaseType()));
-						}
+						out.add(source.deriveWithNewLocal((Local) leftOp));
 					} else if (leftOp instanceof InstanceFieldRef) {
 						// d.f = e;
 						InstanceFieldRef fr = (InstanceFieldRef) leftOp;
@@ -183,13 +167,11 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 						if (base instanceof Local) {
 							Local lBase = (Local) base;
 
-							AccessGraph withNewLocal = source.deriveWithNewLocal(lBase, lBase.getType());
-							WrappedSootField newFirstField = new WrappedSootField(field, source.getBaseType(), curr);
-							if (withNewLocal.canPrepend(newFirstField)) {
-								AccessGraph newAp = withNewLocal.prependField(newFirstField);
-								out.add(newAp);
-								computeAliasesOnInstanceWrite(curr, succ, source, lBase, field, (Local) rightOp, edge);
-							}
+							AccessGraph withNewLocal = source.deriveWithNewLocal(lBase);
+							WrappedSootField newFirstField = new WrappedSootField(field, curr);
+							AccessGraph newAp = withNewLocal.prependField(newFirstField);
+							out.add(newAp);
+							computeAliasesOnInstanceWrite(curr, succ, source, lBase, field, (Local) rightOp, edge);
 						}
 					} else if (leftOp instanceof ArrayRef) {
 						ArrayRef fr = (ArrayRef) leftOp;
@@ -198,9 +180,9 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 						if (base instanceof Local) {
 							Local lBase = (Local) base;
 
-							AccessGraph withNewLocal = source.deriveWithNewLocal(lBase, lBase.getType());
+							AccessGraph withNewLocal = source.deriveWithNewLocal(lBase);
 							AccessGraph newAp = withNewLocal.prependField(
-									new WrappedSootField(AliasFinder.ARRAY_FIELD, source.getBaseType(), curr));
+									new WrappedSootField(AliasFinder.ARRAY_FIELD, curr));
 							out.add(newAp);
 							computeAliasesOnInstanceWrite(curr, succ, source, lBase, AliasFinder.ARRAY_FIELD,
 									(Local) rightOp, edge);
@@ -211,12 +193,12 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 						StaticFieldRef fr = (StaticFieldRef) leftOp;
 						SootField field = fr.getField();
 
-						AccessGraph newAp = source
-								.prependField(new WrappedSootField(field, source.getBaseType(), curr)).makeStatic();
+						AccessGraph newAp = source.prependField(new WrappedSootField(field, curr))
+								.makeStatic();
 
-						if(newAp.hasSetBasedFieldGraph()){
+						if (newAp.hasSetBasedFieldGraph()) {
 							newAp = source.dropTail()
-									.prependField(new WrappedSootField(field, source.getBaseType(), curr)).makeStatic();
+									.prependField(new WrappedSootField(field, curr)).makeStatic();
 							out.add(newAp);
 						}
 						out.add(newAp);
@@ -233,8 +215,7 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 						if (leftOp instanceof Local && !source.baseMatches(leftOp)) {
 
 							for (WrappedSootField wrappedField : source.getFirstField()) {
-								AccessGraph deriveWithNewLocal = source.deriveWithNewLocal((Local) leftOp,
-										wrappedField.getType());
+								AccessGraph deriveWithNewLocal = source.deriveWithNewLocal((Local) leftOp);
 
 								out.addAll(deriveWithNewLocal.popFirstField());
 							}
@@ -248,7 +229,7 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 						Set<AccessGraph> withoutFirstField = source.popFirstField();
 						for (AccessGraph a : withoutFirstField) {
 							for (WrappedSootField wrappedField : source.getFirstField())
-								out.add(a.deriveWithNewLocal((Local) leftOp, wrappedField.getType()));
+								out.add(a.deriveWithNewLocal((Local) leftOp));
 						}
 					}
 				} else if (rightOp instanceof StaticFieldRef && context.trackStaticFields()) {
@@ -258,7 +239,7 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 							Set<AccessGraph> withoutFirstField = source.popFirstField();
 							for (AccessGraph a : withoutFirstField) {
 								for (WrappedSootField wrappedField : source.getFirstField())
-									out.add(a.deriveWithNewLocal((Local) leftOp, wrappedField.getType()));
+									out.add(a.deriveWithNewLocal((Local) leftOp));
 							}
 						}
 					}
@@ -273,12 +254,12 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 			final SootField field, Local rightLocal, final IPathEdge<Unit, AccessGraph> edge) {
 		WrappedSootField[] toAppend;
 		if (source.getFieldGraph() == null)
-			toAppend = new WrappedSootField[] { new WrappedSootField(field, source.getBaseType(), curr) };
+			toAppend = new WrappedSootField[] { new WrappedSootField(field, curr) };
 		else
-			toAppend = source.getFieldGraph().prependField(new WrappedSootField(field, source.getBaseType(), curr))
+			toAppend = source.getFieldGraph().prependField(new WrappedSootField(field, curr))
 					.getFields();
 		if (toAppend.length > 0)
-			context.registerPOI(curr, new PointOfIndirection(new AccessGraph(lBase, lBase.getType()), curr, context),
+			context.registerPOI(curr, new PointOfIndirection(new AccessGraph(lBase), curr, context),
 					new ForwardAliasCallback(edge.getStart(), edge.factAtSource(), succ, toAppend, context));
 	}
 
@@ -296,7 +277,7 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 		return new FlowFunction<AccessGraph>() {
 			@Override
 			public Set<AccessGraph> computeTargets(AccessGraph source) {
-				if(context.icfg.isIgnoredMethod(callee))
+				if (context.icfg.isIgnoredMethod(callee))
 					Collections.emptySet();
 				assert source != null;
 				Set<AccessGraph> out = new HashSet<>();
@@ -320,9 +301,7 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 					for (int i = 0; i < paramLocals.length; i++) {
 						Value arg = ie.getArg(i);
 						if (arg instanceof Local && source.baseMatches(arg)) {
-							if (typeCompatible(paramLocals[i].getType(), source.getBaseType())) {
-								out.add(source.deriveWithNewLocal(paramLocals[i], source.getBaseType()));
-							}
+							out.add(source.deriveWithNewLocal(paramLocals[i]));
 						}
 					}
 					final Value[] callArgs = new Value[ie.getArgCount()];
@@ -335,12 +314,11 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 						InstanceInvokeExpr iIExpr = (InstanceInvokeExpr) is.getInvokeExpr();
 
 						if (source.baseMatches(iIExpr.getBase())) {
-							if (callee != null && !hasCompatibleTypesForCall(source, callee.getDeclaringClass()))
-								return Collections.emptySet();
 							if (context.isIgnoredMethod(callee)) {
 								return Collections.emptySet();
 							}
-						if (d1 != null && d1.hasAllocationSite() && (source.getFieldCount() < 1 && !source.hasSetBasedFieldGraph())) {
+							if (d1 != null && d1.hasAllocationSite()
+									&& (source.getFieldCount() < 1 && !source.hasSetBasedFieldGraph())) {
 								Unit sourceStmt = d1.getSourceStmt();
 								if (sourceStmt instanceof AssignStmt) {
 									AssignStmt as = (AssignStmt) sourceStmt;
@@ -352,7 +330,8 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 										SootClass methodClass = callee.getDeclaringClass();
 										if (typeClass != null && methodClass != null && typeClass != methodClass
 												&& !typeClass.isInterface()) {
-											if (!Scene.v().getOrMakeFastHierarchy().isSubclass(typeClass, methodClass)) {
+											if (!Scene.v().getOrMakeFastHierarchy().isSubclass(typeClass,
+													methodClass)) {
 												return Collections.emptySet();
 											}
 										}
@@ -363,7 +342,7 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 								}
 							}
 
-							AccessGraph replacedThisValue = source.deriveWithNewLocal(thisLocal, source.getBaseType());
+							AccessGraph replacedThisValue = source.deriveWithNewLocal(thisLocal);
 							if (context.isValidAccessPath(replacedThisValue)) {
 								out.add(replacedThisValue);
 							}
@@ -387,7 +366,7 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 			@Override
 			public Set<AccessGraph> computeTargets(AccessGraph source) {
 				HashSet<AccessGraph> out = new HashSet<AccessGraph>();
-				if(context.icfg.isIgnoredMethod(callee))
+				if (context.icfg.isIgnoredMethod(callee))
 					Collections.emptySet();
 				// mapping of fields of AccessPath those will be killed in
 				// callToReturn
@@ -404,25 +383,17 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 							if (paramLocals[i] == source.getBase()) {
 								Value arg = ie.getArg(i);
 								if (arg instanceof Local) {
-									if (typeCompatible(((Local) arg).getType(), source.getBaseType())) {
-										AccessGraph deriveWithNewLocal = source.deriveWithNewLocal((Local) arg,
-												source.getBaseType());
-										out.add(deriveWithNewLocal);
-									}
+									AccessGraph deriveWithNewLocal = source.deriveWithNewLocal((Local) arg);
+									out.add(deriveWithNewLocal);
 								}
 
 							}
 						}
 						if (!callee.isStatic() && ie instanceof InstanceInvokeExpr) {
 							if (source.baseMatches(thisLocal)) {
-
 								InstanceInvokeExpr iIExpr = (InstanceInvokeExpr) is.getInvokeExpr();
-								Local newBase = (Local) iIExpr.getBase();
-								if (typeCompatible(newBase.getType(), source.getBaseType())) {
-									AccessGraph possibleAccessPath = source.deriveWithNewLocal((Local) iIExpr.getBase(),
-											source.getBaseType());
-									out.add(possibleAccessPath);
-								}
+								AccessGraph possibleAccessPath = source.deriveWithNewLocal((Local) iIExpr.getBase());
+								out.add(possibleAccessPath);
 							}
 						}
 					}
@@ -438,7 +409,7 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 					// d = return out;
 					if (leftOp instanceof Local) {
 						if (returns instanceof Local && source.getBase() == returns) {
-							out.add(source.deriveWithNewLocal((Local) leftOp, source.getBaseType()));
+							out.add(source.deriveWithNewLocal((Local) leftOp));
 						}
 					}
 				}

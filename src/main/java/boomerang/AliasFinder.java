@@ -9,19 +9,15 @@ import boomerang.accessgraph.AccessGraph;
 import boomerang.accessgraph.SetBasedFieldGraph;
 import boomerang.accessgraph.WrappedSootField;
 import boomerang.backward.BackwardSolver;
-import boomerang.cfg.BackwardsInfoflowCFG;
-import boomerang.cfg.IExtendedICFG;
 import boomerang.context.IContextRequester;
 import boomerang.context.NoContextRequester;
 import boomerang.forward.ForwardSolver;
-import boomerang.ifdssolver.IFDSSolver;
 import heros.solver.Pair;
 import soot.Local;
 import soot.RefType;
 import soot.Scene;
 import soot.SootField;
 import soot.SootMethod;
-import soot.Type;
 import soot.Unit;
 import soot.jimple.ThrowStmt;
 
@@ -90,8 +86,8 @@ public class AliasFinder {
 	 *         associated values are sets of access graph pointing to the
 	 *         particular allocation site.
 	 */
-	public AliasResults findAliasAtStmt(Local local, Type t, WrappedSootField field, Unit stmt) {
-		return findAliasAtStmt(local, t, field, stmt, new NoContextRequester());
+	public AliasResults findAliasAtStmt(Local local, WrappedSootField field, Unit stmt) {
+		return findAliasAtStmt(local, field, stmt, new NoContextRequester());
 	}
 
 	/**
@@ -116,13 +112,13 @@ public class AliasFinder {
 	 *         associated values are sets of access graph pointing to the
 	 *         particular allocation site.
 	 */
-	public AliasResults findAliasAtStmt(Local local, Type type, WrappedSootField field, Unit stmt,
+	public AliasResults findAliasAtStmt(Local local, WrappedSootField field, Unit stmt,
 			IContextRequester req) {
 		AccessGraph ap;
 		if (field == null) {
-			ap = new AccessGraph(local, type);
+			ap = new AccessGraph(local);
 		} else {
-			ap = new AccessGraph(local, type, field);
+			ap = new AccessGraph(local, field);
 		}
 		return findAliasAtStmt(ap, stmt, req);
 	}

@@ -41,7 +41,7 @@ class PerStatementPathEdges {
 
 	void register(IPathEdge<Unit, AccessGraph> pe) {
 		Pair<Unit, AccessGraph> typeLessBackwardNode = new Pair<Unit, AccessGraph>(pe.getTarget(),
-				pe.factAtTarget().noType());
+				pe.factAtTarget());
 		forwardPathEdges.put(pe.getStartNode(), pe.getTargetNode());
 		reversePathEdges.put(typeLessBackwardNode, pe.getStartNode());
 		if (!processedPathEdges.add(pe))
@@ -227,7 +227,7 @@ class PerStatementPathEdges {
 		}
 		visited.add(visit);
 		Multimap<Pair<Unit, AccessGraph>, AccessGraph> pathEdges = HashMultimap.create();
-		Pair<Unit, AccessGraph> o = new Pair<>(stmt, fact.noType());
+		Pair<Unit, AccessGraph> o = new Pair<>(stmt, fact);
 		if (!reversePathEdges.containsKey(o))
 			return HashMultimap.create();
 

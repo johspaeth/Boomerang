@@ -1,7 +1,6 @@
 package boomerang.accessgraph;
 
 import soot.SootField;
-import soot.Type;
 import soot.Unit;
 
 /**
@@ -12,14 +11,11 @@ import soot.Unit;
  */
 public class WrappedSootField {
   private SootField field;
-  private Type type;
   private Unit stmt;
-  public static boolean TRACK_TYPE = true;
   public static boolean TRACK_STMT = true;
 
-  public WrappedSootField(SootField f, Type t, Unit s) {
+  public WrappedSootField(SootField f, Unit s) {
     this.field = f;
-    this.type = (TRACK_TYPE ? t : null);
     this.stmt = (TRACK_STMT ? s : null);
   }
 
@@ -33,9 +29,6 @@ public class WrappedSootField {
     final int prime = 31;
     int result = 1;
     result = prime * result + ((field == null) ? 0 : field.hashCode());
-    if(TRACK_TYPE){
-    	result = prime * result + ((type == null) ? 0 : type.hashCode());
-    }
     result = prime * result + ((stmt == null) ? 0 : stmt.hashCode());
     return result;
   }
@@ -54,13 +47,6 @@ public class WrappedSootField {
         return false;
     } else if (!field.equals(other.field))
       return false;
-    if(TRACK_TYPE){
-	    if (type == null) {
-	      if (other.type != null)
-	        return false;
-	    } else if (!type.equals(other.type))
-	      return false;
-    }
     if (stmt == null) {
       if (other.stmt != null)
         return false;
@@ -70,10 +56,7 @@ public class WrappedSootField {
   }
 
   public String toString() {
-    return field.getName().toString()  + (TRACK_TYPE ?  "(" + type + ")" : "");// + (stmt != null ? "@" + stmt
+    return field.getName().toString();
   }
 
-  public Type getType() {
-    return (TRACK_TYPE ? type :field.getType());
-  }
 }

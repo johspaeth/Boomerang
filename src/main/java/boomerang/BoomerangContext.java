@@ -156,14 +156,6 @@ public class BoomerangContext {
 		if (ap.getBase() instanceof PrimitiveType) {
 			return false;
 		}
-		if (!ap.isStatic() && !m.isStatic()) {
-			Local thisLocal = m.getActiveBody().getThisLocal();
-			if (ap.baseMatches(thisLocal)) {
-				if (!ForwardFlowFunctions.hasCompatibleTypesForCall(ap, m.getDeclaringClass())) {
-					return false;
-				}
-			}
-		}
 		return true;
 	};
 
@@ -192,14 +184,6 @@ public class BoomerangContext {
 
 		if (ap.getBase() instanceof PrimitiveType) {
 			throw new IllegalArgumentException("The queried variable is not of pointer type");
-		}
-		if (!ap.isStatic() && !m.isStatic()) {
-			Local thisLocal = m.getActiveBody().getThisLocal();
-			if (ap.baseMatches(thisLocal)) {
-				if (!ForwardFlowFunctions.hasCompatibleTypesForCall(ap, m.getDeclaringClass())) {
-					throw new IllegalArgumentException("The type is incompatible");
-				}
-			}
 		}
 	}
 

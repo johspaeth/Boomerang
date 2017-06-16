@@ -25,8 +25,6 @@ public class ForwardAliasCallback extends AliasCallback{
 	public void newAliasEncountered(PointOfIndirection poi,AccessGraph alias, Pair<Unit,AccessGraph> origin){
 		if(!executed.add(alias))
 			return;
-		if(!alias.canAppend(toAppend[0]))
-			return;
 		if(alias.hasSetBasedFieldGraph())
 			return;
 		PathEdge<Unit, AccessGraph> edge = new PathEdge<Unit,AccessGraph>(sourceStmt,sourceFact,targetStmt,alias.appendFields(toAppend));

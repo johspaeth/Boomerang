@@ -57,7 +57,7 @@ class BackwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 							InstanceInvokeExpr iie = (InstanceInvokeExpr) invokeExpr;
 							Value base = iie.getBase();
 							if(base instanceof Local){
-								context.getBackwardSolver().startPropagation(new AccessGraph((Local) base, base.getType()), callSite);
+								context.getBackwardSolver().startPropagation(new AccessGraph((Local) base), callSite);
 							}
 						}
 					}
