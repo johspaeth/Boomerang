@@ -118,10 +118,6 @@ public class BoomerangContext {
 		return false;
 	}
 
-	public boolean isIgnoredMethod(SootMethod m) {
-		return false;
-	}
-
 	public void sanityCheckEdge(IPathEdge<Unit, AccessGraph> edge) {
 		if (edge.getStart() == null)
 			return;
@@ -130,7 +126,6 @@ public class BoomerangContext {
 		assert m1 == m2 : "The path edge " + edge + "contains statements of two different method: " + m1.toString()
 				+ " and " + m2.toString();
 		;
-		assert !isIgnoredMethod(m1) : "The path edge resides in a method which should be ignored " + m1.toString();
 	}
 
 	public boolean isReturnValue(SootMethod method, Local base) {

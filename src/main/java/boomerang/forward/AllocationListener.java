@@ -29,14 +29,12 @@ public abstract class AllocationListener implements IncomingListener<Unit, Acces
 	public void hasIncomingEdge(IPathEdge<Unit, AccessGraph> edge) {
 		if(!triggered.add(edge.getStartNode()))
 			return;
-		System.out.println(edge.getStartNode());
 		if(sourcePair.getO2().hasAllocationSite())
 			return;
 		if(edge.getStartNode().getO2().hasAllocationSite()){
 			discoveredAllocationSite(edge.getStartNode());
 			return;
 		}
-		System.out.println(edge);
 		context.getForwardSolver().attachIncomingListener(new AllocationListener(edge.getStartNode(),context) {
 			@Override
 			public void discoveredAllocationSite(Pair<Unit, AccessGraph> allocNode) {

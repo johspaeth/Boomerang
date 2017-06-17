@@ -58,7 +58,6 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 					if (identityStmt.getRightOp() instanceof CaughtExceptionRef)
 						return Collections.emptySet();
 				}
-				assert !context.isIgnoredMethod(context.icfg.getMethodOf(curr));
 				if (!(curr instanceof AssignStmt)) {
 					return Collections.singleton(source);
 				}
@@ -251,11 +250,9 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 							if (source.baseMatches(iIExpr.getBase())) {
 								if (source.getFieldCount() == 0 && !source.hasSetBasedFieldGraph())
 									return Collections.emptySet();
-								if (!context.isIgnoredMethod(callee)) {
-									AccessGraph replacedThisValue = source.deriveWithNewLocal(thisLocal);
-									if (context.isValidAccessPath(replacedThisValue)) {
-										out.add(replacedThisValue);
-									}
+								AccessGraph replacedThisValue = source.deriveWithNewLocal(thisLocal);
+								if (context.isValidAccessPath(replacedThisValue)) {
+									out.add(replacedThisValue);
 								}
 							}
 						}
@@ -270,17 +267,15 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 					if (leftOp instanceof Local && source.baseMatches(leftOp)) {
 						ReturnStmt retSite = (ReturnStmt) calleeSp;
 						Value retOp = retSite.getOp();
-						if (!context.isIgnoredMethod(callee)) {
-							if (retOp instanceof Local) {
-								AccessGraph possibleAccessPath = source.deriveWithNewLocal((Local) retOp);
-								out.add(possibleAccessPath);
-							}
-							Optional<AllocationSiteHandler> handler = context.allocationSiteHandlers()
-									.returnStmtViaCall(as, source, retOp);
-							if (handler.isPresent()) {
-								handler.get().alloc().execute(context);
-								return Collections.emptySet();
-							}
+						if (retOp instanceof Local) {
+							AccessGraph possibleAccessPath = source.deriveWithNewLocal((Local) retOp);
+							out.add(possibleAccessPath);
+						}
+						Optional<AllocationSiteHandler> handler = context.allocationSiteHandlers()
+								.returnStmtViaCall(as, source, retOp);
+						if (handler.isPresent()) {
+							handler.get().alloc().execute(context);
+							return Collections.emptySet();
 						}
 					}
 

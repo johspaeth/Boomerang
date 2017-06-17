@@ -219,7 +219,7 @@ class ForwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 			IPathEdge<Unit, AccessGraph> prevEdge, IPathEdge<Unit, AccessGraph> initialSelfLoopEdge,
 			final SootMethod callee) {
 		AccessGraph sourceFact = initialSelfLoopEdge.factAtSource();
-		if(callee.isStatic()){
+		if(!context.getOptions().onTheFlyCallGraphGeneration() || callee.isStatic()){
 			context.addVisitableMethod(callee);
 		} else{
 			if(!sourceFact.isStatic() && callee.getActiveBody().getThisLocal().equals(sourceFact.getBase())){

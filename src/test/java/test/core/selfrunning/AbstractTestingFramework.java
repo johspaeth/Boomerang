@@ -14,7 +14,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
 
-import boomerang.accessgraph.WrappedSootField;
 import boomerang.preanalysis.PreparationTransformer;
 import soot.ArrayType;
 import soot.G;

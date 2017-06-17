@@ -79,4 +79,8 @@ public abstract class BoomerangOptions {
 	public boolean typeCheckForCasts() {
 		return true;
 	}
+	
+	public boolean onTheFlyCallGraphGeneration(){
+		return true;
+	}
 }
