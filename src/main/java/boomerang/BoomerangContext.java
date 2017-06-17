@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.lang.model.type.PrimitiveType;
 
+import com.beust.jcommander.internal.Sets;
 import com.google.common.base.Stopwatch;
 
 import boomerang.accessgraph.AccessGraph;
@@ -31,6 +32,7 @@ import boomerang.mock.DefaultNativeCallHandler;
 import boomerang.mock.MockedDataFlow;
 import boomerang.mock.NativeCallHandler;
 import boomerang.pointsofindirection.AliasCallback;
+import boomerang.pointsofindirection.Alloc;
 import boomerang.pointsofindirection.AllocationSiteHandlers;
 import boomerang.pointsofindirection.PointOfIndirection;
 import heros.FlowFunction;
@@ -161,6 +163,8 @@ public class BoomerangContext {
 	private IContextRequester contextRequester;
 
 	public IPropagationController<Unit, AccessGraph> propagationController;
+
+	private Set<Alloc> allocs = Sets.newHashSet();
 
 	public boolean isOutOfBudget() {
 		if (startTime.elapsed(TimeUnit.MILLISECONDS) > options.getTimeBudget())

@@ -84,8 +84,8 @@ class ForwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 			Unit curr = prevEdge.getTarget();
 			if(curr instanceof AssignStmt && ((AssignStmt) curr).getRightOp() instanceof CastExpr){
 				final CastExpr cast = (CastExpr)((AssignStmt) curr).getRightOp();
-				if(!succEdge.factAtTarget().isStatic() && succEdge.factAtTarget().getBase().equals(((AssignStmt) curr).getLeftOp())){
-					context.getForwardSolver().attachIncomingListener(new AllocationTypeListener(succEdge.getStartNode(), context) {
+				if(!succEdge.factAtTarget().isStatic() && succEdge.factAtTarget().getBase() != null &&  succEdge.factAtTarget().getBase().equals(((AssignStmt) curr).getLeftOp())){
+					context.getForwardSolver().attachAllocationListener(succEdge.getStartNode(),context.icfg.getMethodOf(succEdge.getTarget()), new AllocationTypeListener(){
 
 						@Override
 						public void discoveredAllocationType(Type allocType) {
@@ -224,7 +224,8 @@ class ForwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 		} else{
 			if(!sourceFact.isStatic() && callee.getActiveBody().getThisLocal().equals(sourceFact.getBase())){
 				if(sourceFact.getFieldCount() == 0){
-					context.getForwardSolver().attachIncomingListener(new AllocationTypeListener(prevEdge.getStartNode(),context) {
+					SootMethod m = context.icfg.getMethodOf(prevEdge.getTarget());
+					context.getForwardSolver().attachAllocationListener(prevEdge.getStartNode(),m, new AllocationTypeListener(){
 						@Override
 						public void discoveredAllocationType(Type allocType) {
 							if(Scene.v().getOrMakeFastHierarchy().canStoreType(allocType, callee.getActiveBody().getThisLocal().getType()))

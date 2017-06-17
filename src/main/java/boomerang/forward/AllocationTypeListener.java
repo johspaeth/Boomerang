@@ -6,11 +6,8 @@ import heros.solver.Pair;
 import soot.Type;
 import soot.Unit;
 
-public abstract class AllocationTypeListener extends AllocationListener{
+public abstract class AllocationTypeListener implements AllocationSiteListener{
 
-	public AllocationTypeListener(Pair<Unit, AccessGraph> sourcePair, BoomerangContext context) {
-		super(sourcePair, context);
-	}
 	
 	@Override
 	public void discoveredAllocationSite(Pair<Unit, AccessGraph> allocNode) {

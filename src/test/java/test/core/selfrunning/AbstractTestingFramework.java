@@ -42,9 +42,9 @@ public abstract class AbstractTestingFramework {
 	public void beforeTestCaseExecution() {
 		initializeSootWithEntryPoint();
 		createVizFile();
-		try{
+		try {
 			analyze();
-		} catch(ImprecisionException e){
+		} catch (ImprecisionException e) {
 			removeVizFile();
 			Assert.fail(e.getMessage());
 		}
@@ -52,7 +52,7 @@ public abstract class AbstractTestingFramework {
 		// To never execute the @Test method...
 		org.junit.Assume.assumeTrue(false);
 	}
-	
+
 	public void removeVizFile() {
 		File parentFile = ideVizFile.getParentFile();
 		if (ideVizFile.exists())
@@ -72,7 +72,8 @@ public abstract class AbstractTestingFramework {
 	}
 
 	private void createVizFile() {
-		ideVizFile = new File("target/IDEViz/" + getTestCaseClassName() + "/IDEViz-" + testMethodName.getMethodName() + ".json");
+		ideVizFile = new File(
+				"target/IDEViz/" + getTestCaseClassName() + "/IDEViz-" + testMethodName.getMethodName() + ".json");
 		if (!ideVizFile.getParentFile().exists()) {
 			try {
 				Files.createDirectories(ideVizFile.getParentFile().toPath());
@@ -82,7 +83,7 @@ public abstract class AbstractTestingFramework {
 		}
 	}
 
-	private void analyze(){
+	private void analyze() {
 		PackManager.v().getPack("wjtp").add(new Transform("wjtp.prepare", new PreparationTransformer()));
 		Transform transform = new Transform("wjtp.ifds", createAnalysisTransformer());
 		PackManager.v().getPack("wjtp").add(transform);
@@ -91,7 +92,6 @@ public abstract class AbstractTestingFramework {
 	}
 
 	protected abstract SceneTransformer createAnalysisTransformer() throws ImprecisionException;
-	
 
 	@SuppressWarnings("static-access")
 	private void initializeSootWithEntryPoint() {
@@ -139,7 +139,8 @@ public abstract class AbstractTestingFramework {
 				sootTestMethod = m;
 		}
 		if (sootTestMethod == null)
-			throw new RuntimeException("The method with name " + testMethodName.getMethodName() + " was not found in the Soot Scene.");
+			throw new RuntimeException(
+					"The method with name " + testMethodName.getMethodName() + " was not found in the Soot Scene.");
 		Scene.v().addBasicClass(getTargetClass(), SootClass.BODIES);
 		Scene.v().loadNecessaryClasses();
 		SootClass c = Scene.v().forceResolve(getTargetClass(), SootClass.BODIES);
@@ -155,20 +156,27 @@ public abstract class AbstractTestingFramework {
 
 	private String getTargetClass() {
 		SootClass sootClass = new SootClass("dummyClass");
-		SootMethod mainMethod = new SootMethod("main",
-				Arrays.asList(new Type[] { ArrayType.v(RefType.v("java.lang.String"), 1) }), VoidType.v(),
+		Type paramType = ArrayType.v(RefType.v("java.lang.String"), 1);
+		SootMethod mainMethod = new SootMethod("main", Arrays.asList(new Type[] { paramType }), VoidType.v(),
 				Modifier.PUBLIC | Modifier.STATIC);
 		sootClass.addMethod(mainMethod);
 		JimpleBody body = Jimple.v().newBody(mainMethod);
 		mainMethod.setActiveBody(body);
 		RefType testCaseType = RefType.v(getTestCaseClassName());
 		System.out.println(getTestCaseClassName());
+
+		Local loc = Jimple.v().newLocal("l0", paramType);
+		body.getLocals().add(loc);
+		body.getUnits().add(Jimple.v().newIdentityStmt(loc, Jimple.v().newParameterRef(paramType, 0)));
 		Local allocatedTestObj = Jimple.v().newLocal("dummyObj", testCaseType);
 		body.getLocals().add(allocatedTestObj);
 		body.getUnits().add(Jimple.v().newAssignStmt(allocatedTestObj, Jimple.v().newNewExpr(testCaseType)));
 		body.getUnits().add(
 				Jimple.v().newInvokeStmt(Jimple.v().newVirtualInvokeExpr(allocatedTestObj, sootTestMethod.makeRef())));
+		body.getUnits().add(Jimple.v().newReturnVoidStmt());
+
 		Scene.v().addClass(sootClass);
+		body.validate();
 		return sootClass.toString();
 	}
 
