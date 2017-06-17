@@ -61,7 +61,6 @@ public class ForwardSolver extends IFDSSolver<Unit, AccessGraph, SootMethod, BiD
 			propagate(pathEdge, PropagationType.Normal);
 		}
 
-		awaitExecution();
 	}
 
 	@Override

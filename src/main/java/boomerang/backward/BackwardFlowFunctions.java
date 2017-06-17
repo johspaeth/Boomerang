@@ -341,7 +341,7 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 
 								// Fields that do not have a null assignment
 								// must turn around
-								if ((source.getFieldCount() == 1 || source.hasSetBasedFieldGraph())
+								if ((source.getFieldCount() == 1)
 										&& !source.isStatic()) {
 									SootMethod caller = context.icfg.getMethodOf(callSite);
 									if (callee.isConstructor() && (!caller.isConstructor()
@@ -430,7 +430,7 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 					// mapping of return value
 					if (leftOp instanceof Local && !source.isStatic() && source.getBase().equals(leftOp)) {
 						sourceIsKilled = true;
-						if(callees.isEmpty()){
+						if(callees.isEmpty() && source.getFieldCount() == 0 && !source.hasSetBasedFieldGraph()){
 							new Alloc(source, callSite, false).execute(context);
 						}
 					}

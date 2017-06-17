@@ -58,7 +58,7 @@ public class PrimitiveTypeAndReferenceType implements AllocationSiteHandlers {
 	@Override
 	public Optional<AllocationSiteHandler> returnStmtViaCall(final AssignStmt assignedCallSite,
 			final AccessGraph source, Value retOp) {
-		if (!(retOp instanceof NullConstant))
+		if (!(retOp instanceof NullConstant) || source.getFieldCount() != 0 || source.hasSetBasedFieldGraph())
 			return Optional.absent();
 		return Optional.<AllocationSiteHandler>of(new AllocationSiteHandler() {
 			@Override

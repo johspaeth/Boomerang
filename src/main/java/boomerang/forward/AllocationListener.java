@@ -27,6 +27,7 @@ public class AllocationListener implements IncomingListener<Unit, AccessGraph, S
 		this.sourcePair = sourcePair;
 		this.method = m;
 		this.context = context;
+		triggered.add(sourcePair);
 		if(sourcePair.getO2().hasAllocationSite())
 			discoveredAllocationSite(sourcePair);
 	}
