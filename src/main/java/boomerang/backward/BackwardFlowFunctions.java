@@ -47,7 +47,6 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 	public FlowFunction<AccessGraph> getNormalFlowFunction(final IPathEdge<Unit, AccessGraph> edge, final Unit succ) {
 		final Unit curr = edge.getTarget();
 		final SootMethod method = context.icfg.getMethodOf(curr);
-		context.addAsVisitedBackwardMethod(method);
 		final Local thisLocal = method.isStatic() ? null : method.getActiveBody().getThisLocal();
 		return new FlowFunction<AccessGraph>() {
 			@Override
@@ -154,10 +153,8 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 
 						if (rightOp instanceof Local) {
 							Set<AccessGraph> out = new HashSet<>();
-							for (WrappedSootField wrappedField : source.getFirstField()) {
-								out.addAll(source.deriveWithNewLocal((Local) rightOp)
+							out.addAll(source.deriveWithNewLocal((Local) rightOp)
 										.popFirstField());
-							}
 							if (!source.firstFieldMustMatch(field))
 								out.add(source);
 
@@ -184,8 +181,7 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 							Set<AccessGraph> newAp = source.popFirstField();
 							Set<AccessGraph> out = new HashSet<>();
 							for (AccessGraph a : newAp) {
-								for (WrappedSootField wrappedField : source.getFirstField())
-									out.add(a.deriveWithNewLocal((Local) rightOp));
+								out.add(a.deriveWithNewLocal((Local) rightOp));
 							}
 							return out;
 						}
@@ -301,20 +297,19 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 					Collections.emptySet();
 				AccessGraph derivedSource = source;
 				Set<AccessGraph> out = new HashSet<>();
-				if (!context.getContextRequester().continueAtCallSite(callSite, callee)
-						&& !context.visitedBackwardMethod(context.icfg.getMethodOf(callSite))) {
-					boolean isParam = false;
-					for (Local l : paramLocals) {
-						if (source.getBase().equals(l)) {
-							isParam = true;
-						}
-					}
-					if (source.isStatic() || isParam || source.getBase().equals(thisLocal)) {
-						Alloc alloc = new Alloc(source, edge.getTarget(), true);
-						alloc.execute(context,edge);
-					}
-					return Collections.emptySet();
-				}
+//				if (!context.getContextRequester().continueAtCallSite(callSite, callee)) {
+//					boolean isParam = false;
+//					for (Local l : paramLocals) {
+//						if (source.getBase().equals(l)) {
+//							isParam = true;
+//						}
+//					}
+//					if (source.isStatic() || isParam || source.getBase().equals(thisLocal)) {
+//						Alloc alloc = new Alloc(source, edge.getTarget(), true);
+//						alloc.execute(context,edge);
+//					}
+//					return Collections.emptySet();
+//				}
 
 				if (context.trackStaticFields() && source.isStatic())
 					return Collections.singleton(source);

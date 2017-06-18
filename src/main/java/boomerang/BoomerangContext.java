@@ -190,13 +190,6 @@ public class BoomerangContext {
 		return options.getTrackStaticFields();
 	}
 
-	public boolean visitedBackwardMethod(SootMethod m) {
-		return backwardVisitedMethods.contains(m);
-	}
-
-	public void addAsVisitedBackwardMethod(SootMethod m) {
-		backwardVisitedMethods.add(m);
-	}
 
 	public ForwardSolver getForwardSolver() {
 		if (forwardSolver == null) {

@@ -35,14 +35,14 @@ public class Alloc {
 			@Override
 			public void discoveredPropagationSource(Pair<Unit, AccessGraph> origin) {
 				if(factAtTarget.getFieldCount() == 0 && origin.getO2().getFieldCount() == 0){
-					if(Scene.v().getOrMakeFastHierarchy().canStoreType(factAtTarget.getBase().getType(),origin.getO2().getBase().getType()))
+					if(Scene.v().getOrMakeFastHierarchy().canStoreType(factAtTarget.getBase().getType(),origin.getO2().getBase().getType())){
 						sendForward(context);
+					}
 				} else{
 					sendForward(context);
 				}
 			}
 		});
-//		sendForward(context);
 	}
 
 	private void sendForward(BoomerangContext context) {
@@ -53,13 +53,14 @@ public class Alloc {
 		assert alloc.hasAllocationSite() == true;
 		// start forward propagation from the path edge target with the
 		// allocation site.
+		this.method = context.icfg.getMethodOf(target);
 		System.out.println(this);
 		context.getForwardSolver().startPropagationAlongPath(target, alloc, alloc.deriveWithoutAllocationSite(), null);
 	}
 
 	@Override
 	public String toString() {
-		return "Alloc [" + target + " €" + method + "]";
+		return "Alloc [" + factAtTarget + " "+ target + " €" + method + "]";
 	}
 
 	@Override

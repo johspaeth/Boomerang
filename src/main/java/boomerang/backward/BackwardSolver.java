@@ -24,8 +24,6 @@ public class BackwardSolver
 		@Override
 		protected PropagationOriginListener createItem(PairWithMethod key) {
 			PropagationOriginListener allocationListener = new PropagationOriginListener(key.sourcePair,key.method, context);
-			System.out.println(key.sourcePair + " "  + key.method);
-
 			return allocationListener;
 		}
 	};
@@ -40,7 +38,7 @@ public class BackwardSolver
 
 	public void startPropagation(AccessGraph d1, Unit stmt) {
 		for (Unit s : icfg.getSuccsOf(stmt)) {
-			PathEdge<Unit, AccessGraph> edge = new PathEdge<Unit, AccessGraph>(stmt, d1.propagationOrigin(), s, d1);
+			PathEdge<Unit, AccessGraph> edge = new PathEdge<Unit, AccessGraph>(null, d1.propagationOrigin(), s, d1);
 			debugger.backwardStart(Direction.BACKWARD, stmt, d1, s);
 			propagate(edge, PropagationType.Normal);
 		}

@@ -409,7 +409,7 @@ public class AccessGraph {
 	 * @return <code>true</code> if it is static.
 	 */
 	public boolean isStatic() {
-		return value == null && (getFieldCount() > 0);
+		return value == null && (getFieldCount() > 0 || hasSetBasedFieldGraph());
 	}
 
 	/**

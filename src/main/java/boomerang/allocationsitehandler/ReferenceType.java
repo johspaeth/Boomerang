@@ -27,7 +27,8 @@ public class ReferenceType implements AllocationSiteHandlers {
 			final AccessGraph source) {
 		if (!isAllocationValue(rightOp))
 			return Optional.absent();
-
+		if(source.hasSetBasedFieldGraph())
+			return Optional.absent();
 		if (source.getFieldCount() > 0 && !source.firstFieldMustMatch(AliasFinder.ARRAY_FIELD)) {
 			return Optional.absent();
 		}
