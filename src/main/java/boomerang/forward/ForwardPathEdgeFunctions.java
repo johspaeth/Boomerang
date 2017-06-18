@@ -196,7 +196,8 @@ class ForwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 			final SootMethod callee) {
 		AccessGraph sourceFact = initialSelfLoopEdge.factAtSource();
 		if(!context.getOptions().onTheFlyCallGraphGeneration() || context.icfg.getCalleesOfCallAt(prevEdge.getTarget()).size() == 1){
-			context.addVisitableMethod(callee);
+			if(!sourceFact.isStatic())	
+				context.addVisitableMethod(callee);
 		} else{
 			if(!sourceFact.isStatic() && callee.getActiveBody().getThisLocal().equals(sourceFact.getBase())){
 				if(sourceFact.getFieldCount() == 0 && !sourceFact.hasSetBasedFieldGraph()){
@@ -210,7 +211,8 @@ class ForwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 					});
 				}
 			} else{
-				context.addVisitableMethod(callee);
+				if(!sourceFact.isStatic())
+					context.addVisitableMethod(callee);
 			}
 		}
 		

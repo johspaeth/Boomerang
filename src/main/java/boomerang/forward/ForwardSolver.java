@@ -24,7 +24,6 @@ public class ForwardSolver extends IFDSSolver<Unit, AccessGraph, SootMethod, BiD
 		@Override
 		protected AllocationListener createItem(PairWithMethod key) {
 			AllocationListener allocationListener = new AllocationListener(key.sourcePair,key.method, context);
-			context.getForwardSolver().attachIncomingListener(allocationListener);
 			return allocationListener;
 		}
 	};
@@ -78,6 +77,10 @@ public class ForwardSolver extends IFDSSolver<Unit, AccessGraph, SootMethod, BiD
 	}
 
 	public void attachAllocationListener(Pair<Unit, AccessGraph> sourcePair, SootMethod m, AllocationSiteListener l) {
+		if(!allocationListenersPerSource.containsKey(new PairWithMethod(sourcePair,m))){
+			AllocationListener allocationListener = allocationListenersPerSource.getOrCreate(new PairWithMethod(sourcePair,m));
+			context.getForwardSolver().attachIncomingListener(allocationListener);
+		}
 		AllocationListener listeners = allocationListenersPerSource.getOrCreate(new PairWithMethod(sourcePair,m));
 		listeners.addListener(l);
 	}

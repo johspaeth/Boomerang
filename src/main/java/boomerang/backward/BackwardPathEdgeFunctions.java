@@ -65,8 +65,10 @@ class BackwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 				}
 			}
 			return Collections.emptySet();
-		} else if(context.icfg.getCalleesOfCallAt(callSite).size() == 1)
-			context.addVisitableMethod(callee);
+		} else if(context.icfg.getCalleesOfCallAt(callSite).size() == 1){
+			if(!initialSelfLoop.factAtTarget().isStatic())
+				context.addVisitableMethod(callee);
+		}
 		return Collections.singleton(pathEdge);
 	}
 

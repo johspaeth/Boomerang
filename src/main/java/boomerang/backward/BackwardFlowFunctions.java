@@ -213,11 +213,7 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 					return Collections.emptySet();
 				}
 				if (context.trackStaticFields() && source.isStatic()) {
-					if (callee != null && isFirstFieldUsedTransitivelyInMethod(source, callee)) {
-						return Collections.singleton(source);
-					} else {
-						return Collections.emptySet();
-					}
+					return Collections.singleton(source);
 				}
 				if (context.icfg.isIgnoredMethod(callee)) {
 					return Collections.emptySet();
@@ -368,12 +364,7 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 				boolean sourceIsKilled = false;
 
 				if (context.trackStaticFields() && source.isStatic()) {
-					boolean staticFieldUsed = isFirstFieldUsedTransitivelyInMethod(source, callees);
-					if (!staticFieldUsed) {
-						return Collections.singleton(source);
-					} else {
-						return Collections.emptySet();
-					}
+					return Collections.emptySet();
 				}
 				Set<AccessGraph> out = new HashSet<>();
 				if (callSite instanceof Stmt) {

@@ -52,7 +52,6 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 		final Unit curr = edge.getTarget();
 
 		final SootMethod method = context.icfg.getMethodOf(curr);
-		final Local thisLocal = method.isStatic() ? null : method.getActiveBody().getThisLocal();
 		return new FlowFunction<AccessGraph>() {
 
 			@Override
@@ -166,11 +165,6 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 
 						if (base instanceof Local) {
 							Local lBase = (Local) base;
-
-							AccessGraph withNewLocal = source.deriveWithNewLocal(lBase);
-							WrappedSootField newFirstField = new WrappedSootField(field, curr);
-							AccessGraph newAp = withNewLocal.prependField(newFirstField);
-							out.add(newAp);
 							computeAliasesOnInstanceWrite(curr, succ, source, lBase, field, (Local) rightOp, edge);
 						}
 					} else if (leftOp instanceof ArrayRef) {
@@ -179,11 +173,6 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 
 						if (base instanceof Local) {
 							Local lBase = (Local) base;
-
-							AccessGraph withNewLocal = source.deriveWithNewLocal(lBase);
-							AccessGraph newAp = withNewLocal.prependField(
-									new WrappedSootField(AliasFinder.ARRAY_FIELD, curr));
-							out.add(newAp);
 							computeAliasesOnInstanceWrite(curr, succ, source, lBase, AliasFinder.ARRAY_FIELD,
 									(Local) rightOp, edge);
 
@@ -278,11 +267,7 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 				Stmt is = (Stmt) callSite;
 				source = source.hasAllocationSite() ? source.deriveWithoutAllocationSite() : source;
 				if (context.trackStaticFields() && source.isStatic()) {
-					if (callee != null && isFirstFieldUsedTransitivelyInMethod(source, callee)) {
-						return Collections.singleton(source);
-					} else {
-						return Collections.emptySet();
-					}
+					return Collections.singleton(source);
 				}
 				if (edge.factAtSource() != null) {
 					if (context.icfg.isIgnoredMethod(callee)) {
@@ -419,11 +404,7 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 			public Set<AccessGraph> computeTargets(AccessGraph source) {
 
 				if (context.trackStaticFields() && source.isStatic()) {
-					if (!isFirstFieldUsedTransitivelyInMethod(source, callees)) {
-						return Collections.singleton(source);
-					} else {
-						return Collections.emptySet();
-					}
+					return Collections.emptySet();
 				}
 				Set<AccessGraph> out = new HashSet<>();
 				boolean sourceIsKilled = false;

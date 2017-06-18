@@ -5,9 +5,15 @@ import java.util.Arrays;
 import boomerang.BoomerangContext;
 import boomerang.accessgraph.AccessGraph;
 import boomerang.accessgraph.WrappedSootField;
+import boomerang.forward.AllocationTypeListener;
 import boomerang.ifdssolver.IFDSSolver.PropagationType;
 import boomerang.ifdssolver.PathEdge;
 import heros.solver.Pair;
+import soot.RefType;
+import soot.Scene;
+import soot.SootClass;
+import soot.SootField;
+import soot.Type;
 import soot.Unit;
 
 public class ForwardAliasCallback extends AliasCallback{
@@ -22,13 +28,31 @@ public class ForwardAliasCallback extends AliasCallback{
 		this.targetStmt = targetStmt;
 		this.toAppend = toAppend;
 	}
-	public void newAliasEncountered(PointOfIndirection poi,AccessGraph alias, Pair<Unit,AccessGraph> origin){
+	public void newAliasEncountered(PointOfIndirection poi,final AccessGraph alias, Pair<Unit,AccessGraph> origin){
 		if(!executed.add(alias))
 			return;
 		if(alias.hasSetBasedFieldGraph())
 			return;
-		PathEdge<Unit, AccessGraph> edge = new PathEdge<Unit,AccessGraph>(sourceStmt,sourceFact,targetStmt,alias.appendFields(toAppend));
-		context.getForwardSolver().inject(edge, PropagationType.Normal);
+		context.getForwardSolver().attachAllocationListener(origin, context.icfg.getMethodOf(targetStmt), new AllocationTypeListener() {
+			
+			@Override
+			public void discoveredAllocationType(Type type) {
+				if(type instanceof RefType){
+					RefType refType = (RefType) type;
+					if(hasField(refType.getSootClass(),toAppend[0].getField())){
+						PathEdge<Unit, AccessGraph> edge = new PathEdge<Unit,AccessGraph>(sourceStmt,sourceFact,targetStmt,alias.appendFields(toAppend));
+						context.getForwardSolver().inject(edge, PropagationType.Normal);	
+					} 
+				}
+			}
+		});
+	}
+	protected boolean hasField(SootClass sootClass, SootField field) {
+		if(sootClass.getFields().contains(field))
+			return true;
+		if(!sootClass.hasSuperclass())
+			return false;
+		return hasField(sootClass.getSuperclass(), field);
 	}
 	@Override
 	public int hashCode() {

@@ -9,18 +9,4 @@ import soot.SootMethod;
 
 public abstract class AbstractFlowFunctions {
 	protected BoomerangContext context;
-	protected boolean isFirstFieldUsedTransitivelyInMethod(AccessGraph source, final SootMethod callee) {
-        for(WrappedSootField wrappedField :  source.getFirstField()){
-      	  if(context.icfg.isStaticFieldUsed(callee, wrappedField.getField()))
-      		  return true;
-        }
-		return false;
-	}
-	protected boolean isFirstFieldUsedTransitivelyInMethod(AccessGraph source,  Collection<SootMethod> callees) {
-        for(SootMethod callee:  callees){
-      	  if(isFirstFieldUsedTransitivelyInMethod(source,callee))
-      		  return true;
-        }
-		return false;
-	}
 }
