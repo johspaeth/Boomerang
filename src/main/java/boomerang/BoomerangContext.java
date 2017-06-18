@@ -75,7 +75,7 @@ public class BoomerangContext {
 
 	Stopwatch startTime;
 
-	private Set<SootMethod> backwardVisitedMethods = new HashSet<>();
+	private Set<SootMethod> callingContexts = new HashSet<>();
 	private Set<SootMethod> visitableMethods = new HashSet<>();
 
 	public ContextScheduler scheduler;
@@ -253,9 +253,17 @@ public class BoomerangContext {
 	}
 	
 	public void addVisitableMethod(SootMethod m){
-		visitableMethods.add(m);
+		if(!visitableMethods.add(m))
+			return;
 		getBackwardSolver().setVisitable(m);
 		getForwardSolver().setVisitable(m);
 	}
 
+	public void expandContext(SootMethod m){
+		callingContexts.add(m);
+	}
+
+	public boolean isExpandingContext(SootMethod m){
+		return callingContexts.contains(m);
+	}
 }

@@ -165,6 +165,11 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 
 						if (base instanceof Local) {
 							Local lBase = (Local) base;
+
+							AccessGraph withNewLocal = source.deriveWithNewLocal(lBase);
+							WrappedSootField newFirstField = new WrappedSootField(field, curr);
+							AccessGraph newAp = withNewLocal.prependField(newFirstField);
+							out.add(newAp);
 							computeAliasesOnInstanceWrite(curr, succ, source, lBase, field, (Local) rightOp, edge);
 						}
 					} else if (leftOp instanceof ArrayRef) {
@@ -173,6 +178,11 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 
 						if (base instanceof Local) {
 							Local lBase = (Local) base;
+
+							AccessGraph withNewLocal = source.deriveWithNewLocal(lBase);
+							AccessGraph newAp = withNewLocal.prependField(
+									new WrappedSootField(AliasFinder.ARRAY_FIELD, curr));
+							out.add(newAp);
 							computeAliasesOnInstanceWrite(curr, succ, source, lBase, AliasFinder.ARRAY_FIELD,
 									(Local) rightOp, edge);
 

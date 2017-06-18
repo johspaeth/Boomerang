@@ -3,23 +3,22 @@ package boomerang.backward;
 import java.util.Collection;
 import java.util.Collections;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
-
-import boomerang.AliasResults;
 import boomerang.BoomerangContext;
 import boomerang.accessgraph.AccessGraph;
 import boomerang.forward.AbstractPathEdgeFunctions;
 import boomerang.ifdssolver.DefaultIFDSTabulationProblem.Direction;
-import boomerang.pointsofindirection.Alloc;
 import boomerang.ifdssolver.FlowFunctions;
 import boomerang.ifdssolver.IPathEdge;
 import boomerang.ifdssolver.PathEdge;
+import boomerang.pointsofindirection.Alloc;
+import heros.solver.Pair;
 import soot.Local;
 import soot.Scene;
 import soot.SootMethod;
 import soot.Unit;
 import soot.Value;
+import soot.jimple.ArrayRef;
+import soot.jimple.AssignStmt;
 import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.InvokeExpr;
 import soot.jimple.Stmt;
@@ -35,6 +34,11 @@ class BackwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 	@Override
 	protected Collection<? extends IPathEdge<Unit, AccessGraph>> normalFunctionExtendor(
 			IPathEdge<Unit, AccessGraph> prevEdge, IPathEdge<Unit, AccessGraph> succEdge) {
+		SootMethod m = context.icfg.getMethodOf(succEdge.getTarget());
+		if(!context.visitableMethod(m)){
+			context.getBackwardSolver().addMethodToPausedEdge(m, succEdge);
+			return Collections.emptySet();
+		}
 		return Collections.singleton(succEdge);
 	}
 
@@ -46,24 +50,23 @@ class BackwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 		PathEdge<Unit, AccessGraph> pathEdge = new PathEdge<>(null, initialSelfLoop.factAtSource(), initialSelfLoop.getTarget(),
 				initialSelfLoop.factAtTarget());
 		Unit callSite = prevEdge.getTarget();
-		if(!context.visitableMethod(callee)){
-			context.getBackwardSolver().addMethodToPausedEdge(callee, pathEdge);
-			if(context.getOptions().onTheFlyCallGraphGeneration() && !callee.isStatic()){
-				if(callSite instanceof Stmt){
-					Stmt stmt = (Stmt) callSite;
-					if(stmt.containsInvokeExpr()){
-						InvokeExpr invokeExpr = stmt.getInvokeExpr();
-						if(invokeExpr instanceof InstanceInvokeExpr){
-							InstanceInvokeExpr iie = (InstanceInvokeExpr) invokeExpr;
-							Value base = iie.getBase();
-							if(base instanceof Local){
-								context.getBackwardSolver().startPropagation(new AccessGraph((Local) base), callSite);
-							}
+		AccessGraph target = initialSelfLoop.factAtTarget();
+		if(context.getOptions().onTheFlyCallGraphGeneration() && !callee.isStatic()){
+			if(callSite instanceof Stmt){
+				Stmt stmt = (Stmt) callSite;
+				if(stmt.containsInvokeExpr()){
+					InvokeExpr invokeExpr = stmt.getInvokeExpr();
+					if(invokeExpr instanceof InstanceInvokeExpr){
+						InstanceInvokeExpr iie = (InstanceInvokeExpr) invokeExpr;
+						Value base = iie.getBase();
+						if(base instanceof Local){
+							context.getBackwardSolver().startPropagation(new AccessGraph((Local) base), callSite);
 						}
+						if (target.getFieldCount() == 0 && !target.hasSetBasedFieldGraph() && target.baseMatches(base))
+							return Collections.emptySet();
 					}
 				}
 			}
-			return Collections.emptySet();
 		}
 		return Collections.singleton(pathEdge);
 	}
@@ -86,19 +89,28 @@ class BackwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 	protected Collection<? extends IPathEdge<Unit, AccessGraph>> unbalancedReturnFunctionExtendor(
 			IPathEdge<Unit, AccessGraph> prevEdge, IPathEdge<Unit, AccessGraph> succEdge, Unit callSite,
 			Unit returnSite) {
-			SootMethod callee = context.icfg.getMethodOf(prevEdge.getTarget());
+		SootMethod callee = context.icfg.getMethodOf(prevEdge.getTarget());
 		AccessGraph target = prevEdge.factAtTarget();
 		boolean isParamOrStatic = (target.isStatic() || (target.getBase() != null && BoomerangContext.isParameterOrThisValue(callee, target.getBase())));
 		if(isParamOrStatic){
 			if(callSite == null && returnSite == null){
-			if(context.getContextRequester().isEntryPointMethod(callee)){
-				Alloc alloc = new Alloc(prevEdge.factAtTarget(), prevEdge.getTarget(),true);
-				alloc.execute(context,prevEdge);
+				if(context.getContextRequester().isEntryPointMethod(callee)){
+					Alloc alloc = new Alloc(prevEdge.factAtTarget(), prevEdge.getTarget(),true);
+					alloc.execute(context,prevEdge);
+				}
+				return Collections.emptySet();
+			} else if(!target.isStatic()){
+				if(context.isExpandingContext(callee)){
+					if(context.getContextRequester().continueAtCallSite(callSite, callee)){
+						context.addVisitableMethod(context.icfg.getMethodOf(callSite));
+						context.expandContext(context.icfg.getMethodOf(callSite));
+					} else{
+						Alloc alloc = new Alloc(prevEdge.factAtTarget(), prevEdge.getTarget(),true);
+						alloc.execute(context,prevEdge);
+					}
+				}
 			}
-			return Collections.emptySet();
-			} else if(!target.isStatic() && context.getContextRequester().continueAtCallSite(callSite, callee)){
-				context.addVisitableMethod(context.icfg.getMethodOf(callSite));
-			}
+			
 		}
 		succEdge = new PathEdge<Unit, AccessGraph>(null, succEdge.factAtSource(), succEdge.getTarget(),
 				succEdge.factAtTarget());

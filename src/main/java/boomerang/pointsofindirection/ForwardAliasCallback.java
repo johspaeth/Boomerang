@@ -36,13 +36,6 @@ public class ForwardAliasCallback extends AliasCallback{
 		PathEdge<Unit, AccessGraph> edge = new PathEdge<Unit,AccessGraph>(sourceStmt,sourceFact,targetStmt,alias.appendFields(toAppend));
 		context.getForwardSolver().inject(edge, PropagationType.Normal);	
 	}
-	protected boolean hasField(SootClass sootClass, SootField field) {
-		if(sootClass.getFields().contains(field))
-			return true;
-		if(!sootClass.hasSuperclass())
-			return false;
-		return hasField(sootClass.getSuperclass(), field);
-	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;

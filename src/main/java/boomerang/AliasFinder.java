@@ -193,6 +193,7 @@ public class AliasFinder {
 		ForwardSolver forwardSolver = context.getForwardSolver();
 		boolean timedout = false;
 		context.addVisitableMethod(context.icfg.getMethodOf(stmt));
+		context.expandContext(context.icfg.getMethodOf(stmt));
 		try{
 			backwardSolver.startPropagation(accessGraph, stmt);
 			backwardSolver.awaitExecution();
