@@ -139,7 +139,7 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 							&& rightOp instanceof Local) {
 						Local local = (Local) rightOp;
 						AccessGraph a = new AccessGraph(local);
-						context.getBackwardSolver().inject(new PathEdge<Unit, AccessGraph>(null, a, curr, a),
+						context.getBackwardSolver().inject(new PathEdge<Unit, AccessGraph>(null, a.propagationOrigin(), curr, a),
 								PropagationType.Normal);
 					}
 				}

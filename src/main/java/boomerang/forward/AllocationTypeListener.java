@@ -11,8 +11,6 @@ public abstract class AllocationTypeListener implements AllocationSiteListener{
 	
 	@Override
 	public void discoveredAllocationSite(Pair<Unit, AccessGraph> allocNode) {
-		if(allocNode.getO2().hasNullAllocationSite())
-			return;
 		discoveredAllocationType(allocNode.getO2().getAllocationType());
 	}
 

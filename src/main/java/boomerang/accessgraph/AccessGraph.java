@@ -18,7 +18,9 @@ import soot.Type;
 import soot.Unit;
 import soot.Value;
 import soot.jimple.AssignStmt;
+import soot.jimple.InstanceFieldRef;
 import soot.jimple.NewExpr;
+import soot.jimple.NopStmt;
 
 /**
  * An AccessGraph is represented by a local variable and a {@link FieldGraph}
@@ -496,14 +498,25 @@ public class AccessGraph {
 		if(allocationSite instanceof AssignStmt){
 			AssignStmt as = (AssignStmt) allocationSite;
 			Value rightOp = as.getRightOp();
+			Value leftOp = as.getLeftOp();
 			if(rightOp instanceof NewExpr){
 				NewExpr newExpr = (NewExpr) rightOp;
 				return newExpr.getBaseType();
 			}
-			Value leftOp = as.getLeftOp();
+			if(leftOp instanceof InstanceFieldRef){
+				InstanceFieldRef ifr = (InstanceFieldRef) leftOp;
+				return ifr.getField().getType();
+			}
+			
 			return leftOp.getType();
 		}
-		throw new RuntimeException("Allocation site not an Assign Stmt" + allocationSite);
+		if(allocationSite instanceof NopStmt){
+			if(hasSetBasedFieldGraph() || getFieldCount() == 0)
+				return value.getType();
+			WrappedSootField[] fields = getFieldGraph().getFields();
+			return fields[fields.length-1].getField().getType();
+		}
+		throw new RuntimeException("Allocation site not an Assign Stmt" + allocationSite + this);
 	}
 
 	public AccessGraph propagationOrigin() {

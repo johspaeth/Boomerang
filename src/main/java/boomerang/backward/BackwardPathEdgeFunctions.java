@@ -46,10 +46,9 @@ class BackwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 		PathEdge<Unit, AccessGraph> pathEdge = new PathEdge<>(null, initialSelfLoop.factAtSource(), initialSelfLoop.getTarget(),
 				initialSelfLoop.factAtTarget());
 		Unit callSite = prevEdge.getTarget();
-		if(!context.visitableMethod(callee) && context.icfg.getCalleesOfCallAt(callSite).size() != 1){
+		if(!context.visitableMethod(callee)){
 			context.getBackwardSolver().addMethodToPausedEdge(callee, pathEdge);
-			
-			if(context.getOptions().onTheFlyCallGraphGeneration()){
+			if(context.getOptions().onTheFlyCallGraphGeneration() && !callee.isStatic()){
 				if(callSite instanceof Stmt){
 					Stmt stmt = (Stmt) callSite;
 					if(stmt.containsInvokeExpr()){
@@ -65,9 +64,6 @@ class BackwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 				}
 			}
 			return Collections.emptySet();
-		} else if(context.icfg.getCalleesOfCallAt(callSite).size() == 1){
-			if(!initialSelfLoop.factAtTarget().isStatic())
-				context.addVisitableMethod(callee);
 		}
 		return Collections.singleton(pathEdge);
 	}
@@ -90,13 +86,19 @@ class BackwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 	protected Collection<? extends IPathEdge<Unit, AccessGraph>> unbalancedReturnFunctionExtendor(
 			IPathEdge<Unit, AccessGraph> prevEdge, IPathEdge<Unit, AccessGraph> succEdge, Unit callSite,
 			Unit returnSite) {
-		if(callSite == null && returnSite == null){
 			SootMethod callee = context.icfg.getMethodOf(prevEdge.getTarget());
+		AccessGraph target = prevEdge.factAtTarget();
+		boolean isParamOrStatic = (target.isStatic() || (target.getBase() != null && BoomerangContext.isParameterOrThisValue(callee, target.getBase())));
+		if(isParamOrStatic){
+			if(callSite == null && returnSite == null){
 			if(context.getContextRequester().isEntryPointMethod(callee)){
 				Alloc alloc = new Alloc(prevEdge.factAtTarget(), prevEdge.getTarget(),true);
 				alloc.execute(context,prevEdge);
 			}
 			return Collections.emptySet();
+			} else if(!target.isStatic() && context.getContextRequester().continueAtCallSite(callSite, callee)){
+				context.addVisitableMethod(context.icfg.getMethodOf(callSite));
+			}
 		}
 		succEdge = new PathEdge<Unit, AccessGraph>(null, succEdge.factAtSource(), succEdge.getTarget(),
 				succEdge.factAtTarget());

@@ -48,4 +48,27 @@ public class ArrayTest extends AbstractBoomerangTest{
     Object query = copiedArray[3];
     queryFor(query);
   }
+
+	@Test
+	public void arrayWithTwoObjectAndFieldTest() {
+		B b = new B();
+		b.f = new A();
+		C a = new C();
+		a.f = new Object();
+		Object[] container = new Object[2];
+		container[0] = b;
+		container[1] = a;
+		Object bAlias = container[0];
+		B casted = (B) bAlias;
+		Object query = casted.f;
+		queryFor(query);
+	}
+
+	private static class B {
+		Object f;
+	}
+
+	private static class C {
+		Object f;
+	}
 }

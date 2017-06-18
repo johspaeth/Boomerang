@@ -5,6 +5,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
+
 import boomerang.BoomerangContext;
 import boomerang.accessgraph.AccessGraph;
 import boomerang.accessgraph.WrappedSootField;
@@ -28,6 +32,8 @@ import soot.jimple.InstanceFieldRef;
 
 class ForwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 
+	private Multimap<Unit,IPathEdge<Unit,AccessGraph>> pausedAtCastStmt = HashMultimap.create();
+	private Set<Unit> activatedCasts = Sets.newHashSet();
 	ForwardPathEdgeFunctions(FlowFunctions<Unit, AccessGraph, SootMethod> flowFunctions, BoomerangContext c) {
 		super(flowFunctions, c, Direction.FORWARD);
 	}
@@ -72,25 +78,47 @@ class ForwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 		}
 		
 		if(context.getOptions().typeCheckForCasts()){
-			Unit curr = prevEdge.getTarget();
+			final Unit curr = prevEdge.getTarget();
 			if(curr instanceof AssignStmt && ((AssignStmt) curr).getRightOp() instanceof CastExpr){
 				final CastExpr cast = (CastExpr)((AssignStmt) curr).getRightOp();
-				if(!succEdge.factAtTarget().isStatic() && succEdge.factAtTarget().getBase() != null &&  succEdge.factAtTarget().getBase().equals(((AssignStmt) curr).getLeftOp())){
-					context.getForwardSolver().attachAllocationListener(succEdge.getStartNode(),context.icfg.getMethodOf(succEdge.getTarget()), new AllocationTypeListener(){
-
-						@Override
-						public void discoveredAllocationType(Type allocType) {
-							if(Scene.v().getOrMakeFastHierarchy().canStoreType( allocType,cast.getCastType())){
-								context.getForwardSolver().inject(succEdge, PropagationType.Normal);
+				AccessGraph target = succEdge.factAtTarget();
+				if(!target.isStatic() && target.getBase() != null &&  target.getBase().equals(((AssignStmt) curr).getLeftOp())){
+					pauseEdgeAtCast(succEdge, curr);
+					if(target.getFieldCount() == 0 && !target.hasSetBasedFieldGraph()){
+						context.getForwardSolver().attachAllocationListener(succEdge.getStartNode(),context.icfg.getMethodOf(succEdge.getTarget()), new AllocationTypeListener(){
+	
+							@Override
+							public void discoveredAllocationType(Type allocType) {
+								if(Scene.v().getOrMakeFastHierarchy().canStoreType(allocType,cast.getCastType())){
+									activateCastStmt(curr);
+								}
 							}
-						}
-					});
+						});
+					}
 					return Collections.emptySet();
 				}
 			}
 		}
 		return Collections.singleton(succEdge);
 	}
+
+	protected void activateCastStmt(Unit castStmt) {
+		if(!activatedCasts.add(castStmt))
+			return;
+		for(IPathEdge<Unit,AccessGraph> pausedEdge : pausedAtCastStmt.removeAll(castStmt)){
+			context.getForwardSolver().inject(pausedEdge, PropagationType.Normal);
+		}
+	}
+
+
+	private void pauseEdgeAtCast(IPathEdge<Unit, AccessGraph> succEdge, Unit castStmt) {
+		if(activatedCasts.contains(castStmt)){
+			context.getForwardSolver().inject(succEdge, PropagationType.Normal);
+		} else{
+			pausedAtCastStmt.put(castStmt,succEdge);
+		}
+	}
+
 
 	@Override
 	protected Collection<? extends IPathEdge<Unit, AccessGraph>> call2ReturnFunctionExtendor(
@@ -195,7 +223,7 @@ class ForwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 			IPathEdge<Unit, AccessGraph> prevEdge, IPathEdge<Unit, AccessGraph> initialSelfLoopEdge,
 			final SootMethod callee) {
 		AccessGraph sourceFact = initialSelfLoopEdge.factAtSource();
-		if(!context.getOptions().onTheFlyCallGraphGeneration() || context.icfg.getCalleesOfCallAt(prevEdge.getTarget()).size() == 1){
+		if(!context.getOptions().onTheFlyCallGraphGeneration() || callee.isStatic()){
 			if(!sourceFact.isStatic())	
 				context.addVisitableMethod(callee);
 		} else{

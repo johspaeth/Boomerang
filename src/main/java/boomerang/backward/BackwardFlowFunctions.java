@@ -132,7 +132,7 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 						Set<AccessGraph> out = new HashSet<>();
 						out.add(source);
 						if (rightOp instanceof Local)
-							out.add(new AccessGraph((Local) rightOp));
+							out.addAll(source.deriveWithNewLocal((Local) rightOp).popFirstField());
 						return out;
 					}
 				} else if (leftOp instanceof InstanceFieldRef) {
@@ -240,8 +240,6 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 						if (!callee.isStatic() && ie instanceof InstanceInvokeExpr) {
 							InstanceInvokeExpr iIExpr = (InstanceInvokeExpr) is.getInvokeExpr();
 							if (source.baseMatches(iIExpr.getBase())) {
-								if (source.getFieldCount() == 0 && !source.hasSetBasedFieldGraph())
-									return Collections.emptySet();
 								AccessGraph replacedThisValue = source.deriveWithNewLocal(thisLocal);
 								if (context.isValidAccessPath(replacedThisValue)) {
 									out.add(replacedThisValue);

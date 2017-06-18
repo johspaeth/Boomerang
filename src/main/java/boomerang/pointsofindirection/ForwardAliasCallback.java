@@ -33,19 +33,8 @@ public class ForwardAliasCallback extends AliasCallback{
 			return;
 		if(alias.hasSetBasedFieldGraph())
 			return;
-		context.getForwardSolver().attachAllocationListener(origin, context.icfg.getMethodOf(targetStmt), new AllocationTypeListener() {
-			
-			@Override
-			public void discoveredAllocationType(Type type) {
-				if(type instanceof RefType){
-					RefType refType = (RefType) type;
-					if(hasField(refType.getSootClass(),toAppend[0].getField())){
-						PathEdge<Unit, AccessGraph> edge = new PathEdge<Unit,AccessGraph>(sourceStmt,sourceFact,targetStmt,alias.appendFields(toAppend));
-						context.getForwardSolver().inject(edge, PropagationType.Normal);	
-					} 
-				}
-			}
-		});
+		PathEdge<Unit, AccessGraph> edge = new PathEdge<Unit,AccessGraph>(sourceStmt,sourceFact,targetStmt,alias.appendFields(toAppend));
+		context.getForwardSolver().inject(edge, PropagationType.Normal);	
 	}
 	protected boolean hasField(SootClass sootClass, SootField field) {
 		if(sootClass.getFields().contains(field))

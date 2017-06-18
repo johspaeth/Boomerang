@@ -84,7 +84,7 @@ public class AbstractBoomerangTest extends AbstractTestingFramework{
 							
 				};
 				Query q = parseQuery();
-				contextReuqester = (q.getMethod().equals(testMethodName.getMethodName()) ? new NoContextRequester()
+				contextReuqester = (q.getMethod().getName().toString().equals(testMethodName.getMethodName()) ? new NoContextRequester()
 						: new AllCallersRequester());
 
 				AliasResults expectedResults = parseExpectedQueryResults(q);
