@@ -71,7 +71,7 @@ public class ReferenceType implements AllocationSiteHandlers {
 			Value rightOp, final AccessGraph source) {
 		if (!(rightOp instanceof NullConstant))
 			return Optional.absent();
-		if (source.getFieldCount() != 1) {
+		if (source.getFieldCount() != 1 || !source.hasSetBasedFieldGraph()) {
 			return Optional.absent();
 		}
 		return Optional.<AllocationSiteHandler>of(new AllocationSiteHandler() {
