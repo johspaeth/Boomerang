@@ -49,6 +49,7 @@ public class AccessGraph {
 	private Unit allocationSite;
 
 	private boolean isNullAllocsite;
+	private boolean propagationOrigin;
 
 	/**
 	 * Constructs an access graph with empty field graph, but specified base
@@ -433,34 +434,28 @@ public class AccessGraph {
 	}
 	
 
+	
+
 	@Override
 	public int hashCode() {
-//		if (hashCode != 0)
-//			return hashCode;
-
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((fieldGraph == null) ? 0 : fieldGraph.hashCode());
-		result = prime * result + ((value == null) ? 0 : value.hashCode());
 		result = prime * result + ((allocationSite == null) ? 0 : allocationSite.hashCode());
-		this.hashCode = result;
-
-		return this.hashCode;
+		result = prime * result + ((fieldGraph == null) ? 0 : fieldGraph.hashCode());
+		result = prime * result + (propagationOrigin ? 1231 : 1237);
+		result = prime * result + ((value == null) ? 0 : value.hashCode());
+		return result;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj == this || super.equals(obj))
+		if (this == obj)
 			return true;
-		if (obj == null || getClass() != obj.getClass())
+		if (obj == null)
 			return false;
-
+		if (getClass() != obj.getClass())
+			return false;
 		AccessGraph other = (AccessGraph) obj;
-		if (value == null) {
-			if (other.value != null)
-				return false;
-		} else if (!value.equals(other.value))
-			return false;
 		if (allocationSite == null) {
 			if (other.allocationSite != null)
 				return false;
@@ -471,7 +466,13 @@ public class AccessGraph {
 				return false;
 		} else if (!fieldGraph.equals(other.fieldGraph))
 			return false;
-		assert this.hashCode() == obj.hashCode();
+		if (propagationOrigin != other.propagationOrigin)
+			return false;
+		if (value == null) {
+			if (other.value != null)
+				return false;
+		} else if (!value.equals(other.value))
+			return false;
 		return true;
 	}
 
@@ -503,5 +504,15 @@ public class AccessGraph {
 			return leftOp.getType();
 		}
 		throw new RuntimeException("Allocation site not an Assign Stmt" + allocationSite);
+	}
+
+	public AccessGraph propagationOrigin() {
+		AccessGraph a = new AccessGraph(value, fieldGraph, allocationSite, isNullAllocsite);
+		a.propagationOrigin = true;
+		return a;
+	}
+
+	public boolean isPropagationOrigin() {
+		return propagationOrigin;
 	}
 }

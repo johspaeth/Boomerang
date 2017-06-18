@@ -2,6 +2,10 @@ package boomerang.pointsofindirection;
 
 import boomerang.BoomerangContext;
 import boomerang.accessgraph.AccessGraph;
+import boomerang.backward.PropagationSourceListener;
+import boomerang.ifdssolver.IPathEdge;
+import heros.solver.Pair;
+import soot.Scene;
 import soot.SootMethod;
 import soot.Unit;
 import soot.jimple.AssignStmt;
@@ -25,7 +29,23 @@ public class Alloc {
 		this.isNullAlloc = isNullAlloc;
 	}
 
-	public void execute(BoomerangContext context) {
+	public void execute(final BoomerangContext context, IPathEdge<Unit, AccessGraph> edge) {
+		context.getBackwardSolver().attachPropagationOriginListener(edge.getStartNode(), context.icfg.getMethodOf(edge.getTarget()), new PropagationSourceListener() {
+			
+			@Override
+			public void discoveredPropagationSource(Pair<Unit, AccessGraph> origin) {
+				if(factAtTarget.getFieldCount() == 0 && origin.getO2().getFieldCount() == 0){
+					if(Scene.v().getOrMakeFastHierarchy().canStoreType(factAtTarget.getBase().getType(),origin.getO2().getBase().getType()))
+						sendForward(context);
+				} else{
+					sendForward(context);
+				}
+			}
+		});
+//		sendForward(context);
+	}
+
+	private void sendForward(BoomerangContext context) {
 		context.debugger.onAllocationSiteReached(target, factAtTarget);
 		AccessGraph alloc = factAtTarget.deriveWithAllocationSite(target,isNullAlloc);
 		if (target instanceof AssignStmt && ((AssignStmt) target).getRightOp() instanceof NewExpr)
@@ -33,6 +53,7 @@ public class Alloc {
 		assert alloc.hasAllocationSite() == true;
 		// start forward propagation from the path edge target with the
 		// allocation site.
+		System.out.println(this);
 		context.getForwardSolver().startPropagationAlongPath(target, alloc, alloc.deriveWithoutAllocationSite(), null);
 	}
 

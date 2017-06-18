@@ -43,11 +43,11 @@ class BackwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 			IPathEdge<Unit, AccessGraph> prevEdge, final IPathEdge<Unit, AccessGraph> initialSelfLoop,
 			SootMethod callee) {
 
-		PathEdge<Unit, AccessGraph> pathEdge = new PathEdge<>(null, initialSelfLoop.factAtSource(), initialSelfLoop.getTarget(),
-				initialSelfLoop.factAtTarget());
+//		PathEdge<Unit, AccessGraph> pathEdge = new PathEdge<>(null, initialSelfLoop.factAtSource(), initialSelfLoop.getTarget(),
+//				initialSelfLoop.factAtTarget());
 		Unit callSite = prevEdge.getTarget();
 		if(!context.visitableMethod(callee) && context.icfg.getCalleesOfCallAt(callSite).size() != 1){
-			context.getBackwardSolver().addMethodToPausedEdge(callee, pathEdge);
+			context.getBackwardSolver().addMethodToPausedEdge(callee, initialSelfLoop);
 			
 			if(context.getOptions().onTheFlyCallGraphGeneration()){
 				if(callSite instanceof Stmt){
@@ -67,7 +67,7 @@ class BackwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 			return Collections.emptySet();
 		}
 		context.addAsVisitedBackwardMethod(callee);
-		return Collections.singleton(pathEdge);
+		return Collections.singleton(initialSelfLoop);
 	}
 
 	@Override
@@ -75,7 +75,6 @@ class BackwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 			IPathEdge<Unit, AccessGraph> calleeEdge, IPathEdge<Unit, AccessGraph> succEdge,
 			IPathEdge<Unit, AccessGraph> incEdge) {
 
-		AccessGraph targetFact = succEdge.factAtTarget();
 		return Collections.singleton(succEdge);
 	}
 
@@ -94,12 +93,12 @@ class BackwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 			SootMethod callee = context.icfg.getMethodOf(prevEdge.getTarget());
 			if(context.getContextRequester().isEntryPointMethod(callee)){
 				Alloc alloc = new Alloc(prevEdge.factAtTarget(), prevEdge.getTarget(),true);
-				alloc.execute(context);
+				alloc.execute(context,prevEdge);
 			}
 			return Collections.emptySet();
 		}
-		succEdge = new PathEdge<Unit, AccessGraph>(null, succEdge.factAtTarget(), succEdge.getTarget(),
-				succEdge.factAtTarget());
+//		succEdge = new PathEdge<Unit, AccessGraph>(null, succEdge.factAtSource(), succEdge.getTarget(),
+//				succEdge.factAtTarget());
 //		if(!context.visitableMethod(context.icfg.getMethodOf(callSite))){
 //			context.getBackwardSolver().addMethodToPausedEdge(context.icfg.getMethodOf(callSite), succEdge);
 //			return Collections.emptySet();

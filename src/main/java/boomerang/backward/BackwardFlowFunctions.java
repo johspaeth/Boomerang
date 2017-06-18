@@ -70,7 +70,7 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 					Optional<AllocationSiteHandler> allocates = context.allocationSiteHandlers().assignStatement(as,
 							rightOp, source);
 					if (allocates.isPresent()) {
-						allocates.get().alloc().execute(context);
+						allocates.get().alloc().execute(context,edge);
 						return Collections.emptySet();
 					} else if (rightOp instanceof CastExpr) {
 						CastExpr castExpr = (CastExpr) rightOp;
@@ -127,7 +127,7 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 						Optional<AllocationSiteHandler> handler = context.allocationSiteHandlers()
 								.arrayStoreStatement(as, rightOp, source);
 						if (handler.isPresent()) {
-							handler.get().alloc().execute(context);
+							handler.get().alloc().execute(context,edge);
 							return Collections.emptySet();
 						}
 						Set<AccessGraph> out = new HashSet<>();
@@ -144,7 +144,7 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 						Optional<AllocationSiteHandler> fieldWriteStatements = context.allocationSiteHandlers()
 								.fieldStoreStatement(as, fr, rightOp, source);
 						if (fieldWriteStatements.isPresent()) {
-							fieldWriteStatements.get().alloc().execute(context);
+							fieldWriteStatements.get().alloc().execute(context,edge);
 						}
 						if (rightOp instanceof NullConstant) {
 							if (!source.firstFieldMustMatch(field))
@@ -274,7 +274,7 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 						Optional<AllocationSiteHandler> handler = context.allocationSiteHandlers()
 								.returnStmtViaCall(as, source, retOp);
 						if (handler.isPresent()) {
-							handler.get().alloc().execute(context);
+							handler.get().alloc().execute(context,edge);
 							return Collections.emptySet();
 						}
 					}
@@ -311,7 +311,7 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 					}
 					if (source.isStatic() || isParam || source.getBase().equals(thisLocal)) {
 						Alloc alloc = new Alloc(source, edge.getTarget(), true);
-						alloc.execute(context);
+						alloc.execute(context,edge);
 					}
 					return Collections.emptySet();
 				}
@@ -347,7 +347,7 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 									if (callee.isConstructor() && (!caller.isConstructor()
 											|| !caller.getActiveBody().getThisLocal().equals(newBase))) {
 										Alloc alloc = new Alloc(source, edge.getTarget(), true);
-										alloc.execute(context);
+										alloc.execute(context,edge);
 										return Collections.emptySet();
 									}
 								}
@@ -431,7 +431,7 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 					if (leftOp instanceof Local && !source.isStatic() && source.getBase().equals(leftOp)) {
 						sourceIsKilled = true;
 						if(callees.isEmpty() && source.getFieldCount() == 0 && !source.hasSetBasedFieldGraph()){
-							new Alloc(source, callSite, false).execute(context);
+							new Alloc(source, callSite, false).execute(context,edge);
 						}
 					}
 					
