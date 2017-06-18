@@ -37,10 +37,6 @@ public class AliasFinder {
 	 */
 	public BoomerangContext context;
 
-	/**
-	 * Methods to be ignored by the analysis.
-	 */
-	public static Set<SootMethod> IGNORED_METHODS = new HashSet<SootMethod>();
 
 	/**
 	 * Holds the System.arraycopy method and is used within the flow functions

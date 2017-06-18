@@ -213,12 +213,8 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 						// e = a.f && source == a.f.*
 						// replace in source
 						if (leftOp instanceof Local && !source.baseMatches(leftOp)) {
-
-							for (WrappedSootField wrappedField : source.getFirstField()) {
-								AccessGraph deriveWithNewLocal = source.deriveWithNewLocal((Local) leftOp);
-
-								out.addAll(deriveWithNewLocal.popFirstField());
-							}
+							AccessGraph deriveWithNewLocal = source.deriveWithNewLocal((Local) leftOp);
+							out.addAll(deriveWithNewLocal.popFirstField());
 						}
 					}
 				} else if (rightOp instanceof ArrayRef) {
@@ -228,8 +224,7 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 
 						Set<AccessGraph> withoutFirstField = source.popFirstField();
 						for (AccessGraph a : withoutFirstField) {
-							for (WrappedSootField wrappedField : source.getFirstField())
-								out.add(a.deriveWithNewLocal((Local) leftOp));
+							out.add(a.deriveWithNewLocal((Local) leftOp));
 						}
 					}
 				} else if (rightOp instanceof StaticFieldRef && context.trackStaticFields()) {
@@ -238,8 +233,7 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 						if (leftOp instanceof Local) {
 							Set<AccessGraph> withoutFirstField = source.popFirstField();
 							for (AccessGraph a : withoutFirstField) {
-								for (WrappedSootField wrappedField : source.getFirstField())
-									out.add(a.deriveWithNewLocal((Local) leftOp));
+								out.add(a.deriveWithNewLocal((Local) leftOp));
 							}
 						}
 					}
@@ -291,7 +285,7 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 					}
 				}
 				if (edge.factAtSource() != null) {
-					if (AliasFinder.IGNORED_METHODS.contains(callee)) {
+					if (context.icfg.isIgnoredMethod(callee)) {
 						return Collections.emptySet();
 					}
 				}

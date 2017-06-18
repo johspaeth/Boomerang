@@ -219,7 +219,7 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 						return Collections.emptySet();
 					}
 				}
-				if (AliasFinder.IGNORED_METHODS.contains(callee)) {
+				if (context.icfg.isIgnoredMethod(callee)) {
 					return Collections.emptySet();
 				}
 				HashSet<AccessGraph> out = new HashSet<AccessGraph>();
