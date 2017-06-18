@@ -53,11 +53,14 @@ public class ForwardSolver extends IFDSSolver<Unit, AccessGraph, SootMethod, BiD
 	 *            Provides the path along which the analysis is allowed to
 	 *            propagate
 	 */
-	public void startPropagationAlongPath(final Unit stmt, final AccessGraph d1, final AccessGraph d2,
-			final IPathEdge<Unit, AccessGraph> bwedge) {
+	public void startPropagationAlongPath(final Unit stmt, final AccessGraph d1, final AccessGraph d2) {
+		SootMethod m = icfg.getMethodOf(stmt);
 		for (Unit succStmt : icfg.getSuccsOf(stmt)) {
 			PathEdge<Unit, AccessGraph> pathEdge = new PathEdge<Unit, AccessGraph>(stmt, d1, succStmt, d2);
-			propagate(pathEdge, PropagationType.Normal);
+			if(context.visitableMethod(m))
+				propagate(pathEdge, PropagationType.Normal);
+			else
+				addMethodToPausedEdge(m, pathEdge);
 		}
 
 	}

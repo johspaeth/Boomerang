@@ -67,6 +67,9 @@ class BackwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 					}
 				}
 			}
+		} else if(callee.isStatic()){
+			if(!target.isStatic())
+				context.addVisitableMethod(callee);
 		}
 		return Collections.singleton(pathEdge);
 	}
@@ -75,7 +78,11 @@ class BackwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 	protected Collection<? extends IPathEdge<Unit, AccessGraph>> balancedReturnFunctionExtendor(
 			IPathEdge<Unit, AccessGraph> calleeEdge, IPathEdge<Unit, AccessGraph> succEdge,
 			IPathEdge<Unit, AccessGraph> incEdge) {
-
+		SootMethod caller = context.icfg.getMethodOf(incEdge.getTarget());
+		if(!context.visitableMethod(caller)){
+			context.getBackwardSolver().addMethodToPausedEdge(caller, succEdge);
+			return Collections.emptySet();
+		}
 		return Collections.singleton(succEdge);
 	}
 
@@ -112,8 +119,12 @@ class BackwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 			}
 			
 		}
+		
 		succEdge = new PathEdge<Unit, AccessGraph>(null, succEdge.factAtSource(), succEdge.getTarget(),
 				succEdge.factAtTarget());
+		
+		if(callSite == null)
+			return Collections.emptySet();
 		if(!context.visitableMethod(context.icfg.getMethodOf(callSite))){
 			context.getBackwardSolver().addMethodToPausedEdge(context.icfg.getMethodOf(callSite), succEdge);
 			return Collections.emptySet();

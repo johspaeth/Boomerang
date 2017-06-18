@@ -55,7 +55,7 @@ public class Alloc {
 		// allocation site.
 		this.method = context.icfg.getMethodOf(target);
 		System.out.println(this);
-		context.getForwardSolver().startPropagationAlongPath(target, alloc, alloc.deriveWithoutAllocationSite(), null);
+		context.getForwardSolver().startPropagationAlongPath(target, alloc, alloc.deriveWithoutAllocationSite());
 	}
 
 	@Override
