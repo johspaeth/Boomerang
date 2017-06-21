@@ -6,17 +6,17 @@ import test.core.selfrunning.AbstractBoomerangTest;
 import test.core.selfrunning.AllocatedObject;
 
 public class CallPOITest extends AbstractBoomerangTest {
-	private class A{
+	private static class A{
 		B b = new B();
 	}
-	private class B{
+	private static class B{
 		C c;
 	}
-	private class C implements AllocatedObject{
+	private static class C implements AllocatedObject{
 		
 	}
 
-	private void allocation(A a) {
+	private static void allocation(A a) {
 		B intermediate = a.b;
 		C d = new C();
 		intermediate.c = d;

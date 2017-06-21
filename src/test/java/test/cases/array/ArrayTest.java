@@ -33,11 +33,18 @@ public class ArrayTest extends AbstractBoomerangTest {
 	public void doubleArray() {
 		Object[][] array = new Object[3][3];
 		array[1][2] = new A();
-		array[2][3] = new A();
+		array[2][3] = new Object();
 		Object query = array[3][3];
 		queryFor(query);
 	}
-
+	@Test
+	public void threeDimensionalArray() {
+		Object[][][] array = new Object[3][3][1];
+		array[1][2][1] = new A();
+		array[2][3][0] = new Object();
+		Object query = array[3][3][2];
+		queryFor(query);
+	}
 	@Test
 	public void arrayCopyTest() {
 		Object[] copiedArray = new Object[3];
