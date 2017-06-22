@@ -47,31 +47,12 @@ public abstract class AbstractTestingFramework {
 		try{
 			analyze();
 		} catch(ImprecisionException e){
-			removeVizFile();
 			Assert.fail(e.getMessage());
 		}
-		removeVizFile();
 		// To never execute the @Test method...
 		org.junit.Assume.assumeTrue(false);
 	}
 	
-	public void removeVizFile() {
-		File parentFile = ideVizFile.getParentFile();
-		if (ideVizFile.exists())
-			ideVizFile.delete();
-		try {
-			if (parentFile.exists() && isDirEmpty(parentFile.toPath()))
-				parentFile.delete();
-		} catch (IOException e) {
-			throw new RuntimeException("Was not able to delete directories for IDEViz output!");
-		}
-	}
-
-	private static boolean isDirEmpty(final Path directory) throws IOException {
-		try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(directory)) {
-			return !dirStream.iterator().hasNext();
-		}
-	}
 
 	private void createVizFile() {
 		ideVizFile = new File("target/IDEViz/" + getTestCaseClassName() + "/IDEViz-" + testMethodName.getMethodName() + ".json");
