@@ -200,14 +200,14 @@ public class AccessGraph {
 	public String toString() {
 		String str = "";
 		if (value != null){
-			str += value.toString() + (WrappedSootField.TRACK_TYPE ? "(" + getBaseType() + ")" : "");
+			str += value.toString();
 		}
 		if (fieldGraph != null) {
 			
 			 str += fieldGraph.toString();
 		}
 		if (allocationSite != null) {
-			str += " at " +allocationSite.toString();
+			str += "(alloc)";
 		}
 		return str;
 	}
