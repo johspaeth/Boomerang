@@ -31,7 +31,8 @@ public abstract class AbstractFlowFunctions {
 	protected static boolean typeCompatible(Type a, Type b){
 //		if(!WrappedSootField.TRACK_TYPE)
 //			return true;
-		return Scene.v().getOrMakeFastHierarchy().canStoreType(a,b)
+		
+		return true || Scene.v().getOrMakeFastHierarchy().canStoreType(a,b)
 				|| Scene.v().getOrMakeFastHierarchy().canStoreType(b,a);
 	}
 	protected boolean isFirstFieldUsedTransitivelyInMethod(AccessGraph source, final SootMethod callee) {

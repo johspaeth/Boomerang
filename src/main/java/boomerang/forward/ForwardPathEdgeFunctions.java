@@ -102,10 +102,6 @@ class ForwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 
 		AccessGraph d1 = prevEdge.factAtSource();
 
-		AccessGraph targetFact = succEdge.factAtTarget();
-		if(!targetFact .isStatic() && Scene.v().getPointsToAnalysis().reachingObjects(targetFact.getBase()).isEmpty()){
-			return Collections.emptySet();
-		}
 		HashSet<IPathEdge<Unit, AccessGraph>> out = new HashSet<>();
 		if (d1.hasAllocationSite()) {
 			out.add(succEdge);
@@ -148,10 +144,6 @@ class ForwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 	protected Collection<? extends IPathEdge<Unit, AccessGraph>> balancedReturnFunctionExtendor(
 			IPathEdge<Unit, AccessGraph> prevEdge, IPathEdge<Unit, AccessGraph> succEdge,
 			IPathEdge<Unit, AccessGraph> incEdge) {
-		AccessGraph targetFact = succEdge.factAtTarget();
-		if(!targetFact.isStatic() && Scene.v().getPointsToAnalysis().reachingObjects(targetFact.getBase()).isEmpty()){
-			return Collections.emptySet();
-		}
 		
 		if (!isActivePath(succEdge.getTarget())) {
 			return Collections.emptySet();
