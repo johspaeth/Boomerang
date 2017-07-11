@@ -15,6 +15,7 @@ import soot.jimple.NewArrayExpr;
 import soot.jimple.NewExpr;
 import soot.jimple.NewMultiArrayExpr;
 import soot.jimple.NullConstant;
+import soot.jimple.ReturnStmt;
 
 public class PrimitiveTypeAndReferenceType implements AllocationSiteHandlers {
 
@@ -54,16 +55,15 @@ public class PrimitiveTypeAndReferenceType implements AllocationSiteHandlers {
 			}
 		});
 	}
-
 	@Override
 	public Optional<AllocationSiteHandler> returnStmtViaCall(final AssignStmt assignedCallSite,
-			final AccessGraph source, Value retOp) {
-		if (!(retOp instanceof NullConstant))
+			final AccessGraph source,ReturnStmt returnSite, Value retOp) {
+		if (!(retOp instanceof Constant))
 			return Optional.absent();
 		return Optional.<AllocationSiteHandler>of(new AllocationSiteHandler() {
 			@Override
 			public Alloc alloc() {
-				return new Alloc(source, assignedCallSite, true);
+				return new Alloc(source,assignedCallSite, returnSite, retOp instanceof NullConstant);
 			}
 		});
 	}

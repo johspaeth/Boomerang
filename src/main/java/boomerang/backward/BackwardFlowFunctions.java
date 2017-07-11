@@ -297,7 +297,7 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 								}
 							}
 							Optional<AllocationSiteHandler> handler = context.allocationSiteHandlers()
-									.returnStmtViaCall(as, source, retOp);
+									.returnStmtViaCall(as, source, retSite,retOp);
 							if (handler.isPresent()) {
 								handler.get().alloc().execute(context);
 								return Collections.emptySet();

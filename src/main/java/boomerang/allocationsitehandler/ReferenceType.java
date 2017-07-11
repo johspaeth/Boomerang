@@ -14,6 +14,7 @@ import soot.jimple.NewArrayExpr;
 import soot.jimple.NewExpr;
 import soot.jimple.NewMultiArrayExpr;
 import soot.jimple.NullConstant;
+import soot.jimple.ReturnStmt;
 
 public class ReferenceType implements AllocationSiteHandlers {
 
@@ -56,13 +57,13 @@ public class ReferenceType implements AllocationSiteHandlers {
 
 	@Override
 	public Optional<AllocationSiteHandler> returnStmtViaCall(final AssignStmt assignedCallSite,
-			final AccessGraph source, Value retOp) {
+			final AccessGraph source, ReturnStmt returnSite, Value retOp) {
 		if (!(retOp instanceof NullConstant))
 			return Optional.absent();
 		return Optional.<AllocationSiteHandler>of(new AllocationSiteHandler() {
 			@Override
 			public Alloc alloc() {
-				return new Alloc(source, assignedCallSite, true);
+				return new Alloc(source, assignedCallSite,returnSite, true);
 			}
 		});
 	}
