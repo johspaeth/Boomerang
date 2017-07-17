@@ -4,6 +4,7 @@ import com.google.common.base.Optional;
 
 import boomerang.AliasFinder;
 import boomerang.accessgraph.AccessGraph;
+import boomerang.accessgraph.WrappedSootField;
 import boomerang.pointsofindirection.Alloc;
 import boomerang.pointsofindirection.AllocationSiteHandler;
 import boomerang.pointsofindirection.AllocationSiteHandlers;
@@ -16,6 +17,7 @@ import soot.jimple.NewExpr;
 import soot.jimple.NewMultiArrayExpr;
 import soot.jimple.NullConstant;
 import soot.jimple.ReturnStmt;
+import soot.jimple.StringConstant;
 
 public class PrimitiveTypeAndReferenceType implements AllocationSiteHandlers {
 
@@ -30,6 +32,20 @@ public class PrimitiveTypeAndReferenceType implements AllocationSiteHandlers {
 		if (!isAllocationValue(rightOp))
 			return Optional.absent();
 
+		if(stmt.getRightOp() instanceof StringConstant){
+			if(source.getFieldCount() > 0){
+				for(WrappedSootField f : source.getFirstField()){
+					if(f.getField().getName().equals("value")){
+						return Optional.<AllocationSiteHandler>of(new AllocationSiteHandler() {
+							@Override
+							public Alloc alloc() {
+								return new Alloc(source, stmt, false);
+							}
+						});
+					}
+				}
+			}
+		}
 		if (source.getFieldCount() > 0 && !source.firstFieldMustMatch(AliasFinder.ARRAY_FIELD)) {
 			return Optional.absent();
 		}

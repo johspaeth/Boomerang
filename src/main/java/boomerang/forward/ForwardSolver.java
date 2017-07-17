@@ -49,6 +49,10 @@ public class ForwardSolver extends
       propagate(pathEdge, PropagationType.Normal);
     }
 
+    if(!icfg.isCallStmt(stmt)){
+      PathEdge<Unit, AccessGraph> pathEdge = new PathEdge<Unit, AccessGraph>(stmt, d1, stmt, d2);
+      propagate(pathEdge, PropagationType.Normal);
+    }
     awaitExecution();
   }
 
