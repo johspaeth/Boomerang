@@ -26,6 +26,8 @@ import soot.Value;
  */
 public class AccessGraph {
 
+	public static int MAX_FIELD_COUNT;
+
 	/**
 	 * The local variable at which the field graph is rooted.
 	 */
@@ -239,6 +241,7 @@ public class AccessGraph {
 		if(newapg.shouldOverApproximate()){
 			newapg = newapg.overapproximation();
 		}
+		MAX_FIELD_COUNT = Integer.max(MAX_FIELD_COUNT, getFieldCount());
 		return new AccessGraph(value, type, newapg, allocationSite,isNullAllocsite);
 	}
 
@@ -256,6 +259,8 @@ public class AccessGraph {
 		if(newapg.shouldOverApproximate()){
 			newapg = newapg.overapproximation();
 		}
+		MAX_FIELD_COUNT = Integer.max(MAX_FIELD_COUNT, getFieldCount());
+		
 		return new AccessGraph(value, type, newapg, allocationSite,isNullAllocsite);
 	}
 	
@@ -333,6 +338,7 @@ public class AccessGraph {
 		if(newapg.shouldOverApproximate()){
 			newapg = newapg.overapproximation();
 		}
+		MAX_FIELD_COUNT = Integer.max(MAX_FIELD_COUNT, getFieldCount());
 		return new AccessGraph(value, type, newapg, allocationSite,isNullAllocsite);
 	}
 

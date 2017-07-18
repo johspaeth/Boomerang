@@ -16,6 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import boomerang.AliasFinder;
 import boomerang.ifdssolver.DefaultIFDSTabulationProblem.Direction;
 import heros.solver.Pair;
 import soot.SootMethod;

@@ -3,6 +3,7 @@ package boomerang;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.beust.jcommander.internal.Sets;
 import com.google.common.base.Stopwatch;
 
 import boomerang.accessgraph.AccessGraph;
@@ -51,6 +52,7 @@ public class AliasFinder {
 	 * to describe aliases flow upon calling this method.
 	 */
 	private static SootMethod ARRAY_COPY;
+	public static Set<SootMethod> VISITED_METHODS = Sets.newHashSet();
 
 	public static SootMethod arrayCopy(){
 		if(ARRAY_COPY == null)
