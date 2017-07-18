@@ -118,6 +118,8 @@ public class AccessGraph {
 //			System.out.println(fieldGraph);
 			this.fieldGraph = fieldGraph;
 //		}
+		MAX_FIELD_COUNT = Integer.max(MAX_FIELD_COUNT, getFieldCount());
+			
 		this.allocationSite = sourceStmt;
 	}
 
@@ -241,7 +243,6 @@ public class AccessGraph {
 		if(newapg.shouldOverApproximate()){
 			newapg = newapg.overapproximation();
 		}
-		MAX_FIELD_COUNT = Integer.max(MAX_FIELD_COUNT, getFieldCount());
 		return new AccessGraph(value, type, newapg, allocationSite,isNullAllocsite);
 	}
 
@@ -259,7 +260,6 @@ public class AccessGraph {
 		if(newapg.shouldOverApproximate()){
 			newapg = newapg.overapproximation();
 		}
-		MAX_FIELD_COUNT = Integer.max(MAX_FIELD_COUNT, getFieldCount());
 		
 		return new AccessGraph(value, type, newapg, allocationSite,isNullAllocsite);
 	}
@@ -338,7 +338,6 @@ public class AccessGraph {
 		if(newapg.shouldOverApproximate()){
 			newapg = newapg.overapproximation();
 		}
-		MAX_FIELD_COUNT = Integer.max(MAX_FIELD_COUNT, getFieldCount());
 		return new AccessGraph(value, type, newapg, allocationSite,isNullAllocsite);
 	}
 
