@@ -1,5 +1,7 @@
 package boomerang.allocationsitehandler;
 
+import java.util.Collection;
+
 import com.google.common.base.Optional;
 
 import boomerang.AliasFinder;
@@ -8,6 +10,7 @@ import boomerang.accessgraph.WrappedSootField;
 import boomerang.pointsofindirection.Alloc;
 import boomerang.pointsofindirection.AllocationSiteHandler;
 import boomerang.pointsofindirection.AllocationSiteHandlers;
+import soot.SootMethod;
 import soot.Value;
 import soot.jimple.AssignStmt;
 import soot.jimple.Constant;
@@ -96,6 +99,19 @@ public class PrimitiveTypeAndReferenceType implements AllocationSiteHandlers {
 			@Override
 			public Alloc alloc() {
 				return new Alloc(source, stmt, true);
+			}
+		});
+	}
+
+	@Override
+	public Optional<AllocationSiteHandler> callToReturnAssign(AssignStmt callSite, AccessGraph source,
+			Collection<SootMethod> callees) {
+		if(!callees.isEmpty())
+			return Optional.absent();
+		return Optional.<AllocationSiteHandler>of(new AllocationSiteHandler() {
+			@Override
+			public Alloc alloc() {
+				return new Alloc(source, callSite, false);
 			}
 		});
 	}

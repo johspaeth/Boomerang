@@ -1,8 +1,11 @@
 package boomerang.pointsofindirection;
 
+import java.util.Collection;
+
 import com.google.common.base.Optional;
 
 import boomerang.accessgraph.AccessGraph;
+import soot.SootMethod;
 import soot.Value;
 import soot.jimple.AssignStmt;
 import soot.jimple.InstanceFieldRef;
@@ -18,4 +21,7 @@ public interface AllocationSiteHandlers {
 
 	public Optional<AllocationSiteHandler> fieldStoreStatement(AssignStmt stmt, InstanceFieldRef fieldRef,
 			Value rightOp, AccessGraph source);
+
+	public Optional<AllocationSiteHandler> callToReturnAssign(AssignStmt as, AccessGraph source,
+			Collection<SootMethod> callees);
 }

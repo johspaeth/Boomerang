@@ -461,8 +461,12 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 					// mapping of return value
 					if (leftOp instanceof Local && !source.isStatic() && source.getBase().equals(leftOp)) {
 						sourceIsKilled = true;
-						if(callees.isEmpty()){
-							new Alloc(source, callSite, false).execute(context);
+
+						Optional<AllocationSiteHandler> handler = context.allocationSiteHandlers()
+								.callToReturnAssign(as, source, callees);
+						if (handler.isPresent()) {
+							handler.get().alloc().execute(context);
+							return Collections.emptySet();
 						}
 					}
 					
