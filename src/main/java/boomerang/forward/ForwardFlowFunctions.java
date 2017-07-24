@@ -82,6 +82,8 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 								.toString();
 				assert source.isStatic() || method.getActiveBody().getLocals().contains(source.getBase());
 
+				if(!source.isStatic() && source.getBase() == null)
+					return Collections.emptySet();
 				if (!(curr instanceof AssignStmt)) {
 					return Collections.singleton(source);
 				}
