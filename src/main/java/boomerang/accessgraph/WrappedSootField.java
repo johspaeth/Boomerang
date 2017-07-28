@@ -14,8 +14,8 @@ public class WrappedSootField {
   private SootField field;
   private Type type;
   private Unit stmt;
-  public static boolean TRACK_TYPE = true;
-  public static boolean TRACK_STMT = true;
+  public static boolean TRACK_TYPE = false;
+  public static boolean TRACK_STMT = false;
 
   public WrappedSootField(SootField f, Type t, Unit s) {
     this.field = f;
