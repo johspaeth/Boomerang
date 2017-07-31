@@ -63,10 +63,28 @@ public class AbstractBoomerangTest extends AbstractTestingFramework{
 								return icfg;
 							}
 							
+							@Override
+							public IPropagationController<Unit, AccessGraph> propagationController() {
+								return (errorOnVisitMethod().isEmpty() ? super.propagationController() : createPropagationController());
+							}
+
+							private IPropagationController<Unit, AccessGraph> createPropagationController() {
+								return new IPropagationController<Unit, AccessGraph>() {
+
+									@Override
+									public boolean continuePropagate(IPathEdge<Unit, AccessGraph> edge) {
+										SootMethod methodOf = icfg.getMethodOf(edge.getTarget());
+										for(String m : errorOnVisitMethod())
+											if(methodOf.toString().equals(m))
+												throw new RuntimeException("Visited method " + m );
+										return true;
+									}
+								};
+							}
 							
 				};
 				Query q = parseQuery();
-				contextReuqester = (q.getMethod().getName().toString().equals(testMethodName.getMethodName()) ? new NoContextRequester()
+				contextReuqester = (q.getMethod().equals(testMethodName.getMethodName()) ? new NoContextRequester()
 						: new AllCallersRequester());
 
 				AliasResults expectedResults = parseExpectedQueryResults(q);
@@ -111,14 +129,7 @@ public class AbstractBoomerangTest extends AbstractTestingFramework{
 	private AliasResults runQuery(Query q) {
 		AliasFinder boomerang = new AliasFinder(options);
 		boomerang.startQuery();
-		AliasResults query = boomerang.findAliasAtStmt(q.getAp(), q.getStmt(), contextReuqester).withoutNullAllocationSites();
-		for(String methodSignature : errorOnVisitMethod()){
-			if(boomerang.context.visitableMethod(Scene.v().getMethod(methodSignature))){
-				throw new RuntimeException("Analysis visited method " + methodSignature);
-			}
-		}
-		
-		return query;
+		return boomerang.findAliasAtStmt(q.getAp(), q.getStmt(), contextReuqester).withoutNullAllocationSites();
 	}
 
 	private AliasResults parseExpectedQueryResults(Query q) {

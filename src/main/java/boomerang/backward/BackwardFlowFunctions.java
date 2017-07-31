@@ -47,6 +47,7 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 	public FlowFunction<AccessGraph> getNormalFlowFunction(final IPathEdge<Unit, AccessGraph> edge, final Unit succ) {
 		final Unit curr = edge.getTarget();
 		final SootMethod method = context.icfg.getMethodOf(curr);
+		context.addAsVisitedBackwardMethod(method);
 		final Local thisLocal = method.isStatic() ? null : method.getActiveBody().getThisLocal();
 		return new FlowFunction<AccessGraph>() {
 			@Override
@@ -69,7 +70,7 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 					Optional<AllocationSiteHandler> allocates = context.allocationSiteHandlers().assignStatement(as,
 							rightOp, source);
 					if (allocates.isPresent()) {
-						allocates.get().alloc().execute(context,edge);
+						allocates.get().alloc().execute(context);
 						return Collections.emptySet();
 					} else if (rightOp instanceof CastExpr) {
 						CastExpr castExpr = (CastExpr) rightOp;
@@ -126,13 +127,13 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 						Optional<AllocationSiteHandler> handler = context.allocationSiteHandlers()
 								.arrayStoreStatement(as, rightOp, source);
 						if (handler.isPresent()) {
-							handler.get().alloc().execute(context,edge);
+							handler.get().alloc().execute(context);
 							return Collections.emptySet();
 						}
 						Set<AccessGraph> out = new HashSet<>();
 						out.add(source);
 						if (rightOp instanceof Local)
-							out.addAll(source.deriveWithNewLocal((Local) rightOp).popFirstField());
+							out.add(new AccessGraph((Local) rightOp));
 						return out;
 					}
 				} else if (leftOp instanceof InstanceFieldRef) {
@@ -143,7 +144,7 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 						Optional<AllocationSiteHandler> fieldWriteStatements = context.allocationSiteHandlers()
 								.fieldStoreStatement(as, fr, rightOp, source);
 						if (fieldWriteStatements.isPresent()) {
-							fieldWriteStatements.get().alloc().execute(context,edge);
+							fieldWriteStatements.get().alloc().execute(context);
 						}
 						if (rightOp instanceof NullConstant) {
 							if (!source.firstFieldMustMatch(field))
@@ -153,8 +154,10 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 
 						if (rightOp instanceof Local) {
 							Set<AccessGraph> out = new HashSet<>();
-							out.addAll(source.deriveWithNewLocal((Local) rightOp)
+							for (WrappedSootField wrappedField : source.getFirstField()) {
+								out.addAll(source.deriveWithNewLocal((Local) rightOp)
 										.popFirstField());
+							}
 							if (!source.firstFieldMustMatch(field))
 								out.add(source);
 
@@ -181,7 +184,8 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 							Set<AccessGraph> newAp = source.popFirstField();
 							Set<AccessGraph> out = new HashSet<>();
 							for (AccessGraph a : newAp) {
-								out.add(a.deriveWithNewLocal((Local) rightOp));
+								for (WrappedSootField wrappedField : source.getFirstField())
+									out.add(a.deriveWithNewLocal((Local) rightOp));
 							}
 							return out;
 						}
@@ -213,9 +217,13 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 					return Collections.emptySet();
 				}
 				if (context.trackStaticFields() && source.isStatic()) {
-					return Collections.singleton(source);
+					if (callee != null && isFirstFieldUsedTransitivelyInMethod(source, callee)) {
+						return Collections.singleton(source);
+					} else {
+						return Collections.emptySet();
+					}
 				}
-				if (context.icfg.isIgnoredMethod(callee)) {
+				if (AliasFinder.IGNORED_METHODS.contains(callee)) {
 					return Collections.emptySet();
 				}
 				HashSet<AccessGraph> out = new HashSet<AccessGraph>();
@@ -240,6 +248,8 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 						if (!callee.isStatic() && ie instanceof InstanceInvokeExpr) {
 							InstanceInvokeExpr iIExpr = (InstanceInvokeExpr) is.getInvokeExpr();
 							if (source.baseMatches(iIExpr.getBase())) {
+								if (source.getFieldCount() == 0 && !source.hasSetBasedFieldGraph())
+									return Collections.emptySet();
 								AccessGraph replacedThisValue = source.deriveWithNewLocal(thisLocal);
 								if (context.isValidAccessPath(replacedThisValue)) {
 									out.add(replacedThisValue);
@@ -264,7 +274,7 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 						Optional<AllocationSiteHandler> handler = context.allocationSiteHandlers()
 								.returnStmtViaCall(as, source, retSite,retOp);
 						if (handler.isPresent()) {
-							handler.get().alloc().execute(context,edge);
+							handler.get().alloc().execute(context);
 							return Collections.emptySet();
 						}
 					}
@@ -291,19 +301,20 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 					Collections.emptySet();
 				AccessGraph derivedSource = source;
 				Set<AccessGraph> out = new HashSet<>();
-//				if (!context.getContextRequester().continueAtCallSite(callSite, callee)) {
-//					boolean isParam = false;
-//					for (Local l : paramLocals) {
-//						if (source.getBase().equals(l)) {
-//							isParam = true;
-//						}
-//					}
-//					if (source.isStatic() || isParam || source.getBase().equals(thisLocal)) {
-//						Alloc alloc = new Alloc(source, edge.getTarget(), true);
-//						alloc.execute(context,edge);
-//					}
-//					return Collections.emptySet();
-//				}
+				if (!context.getContextRequester().continueAtCallSite(callSite, callee)
+						&& !context.visitedBackwardMethod(context.icfg.getMethodOf(callSite))) {
+					boolean isParam = false;
+					for (Local l : paramLocals) {
+						if (source.getBase().equals(l)) {
+							isParam = true;
+						}
+					}
+					if (source.isStatic() || isParam || source.getBase().equals(thisLocal)) {
+						Alloc alloc = new Alloc(source, edge.getTarget(), true);
+						alloc.execute(context);
+					}
+					return Collections.emptySet();
+				}
 
 				if (context.trackStaticFields() && source.isStatic())
 					return Collections.singleton(source);
@@ -330,13 +341,13 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 
 								// Fields that do not have a null assignment
 								// must turn around
-								if ((source.getFieldCount() == 1)
+								if ((source.getFieldCount() == 1 || source.hasSetBasedFieldGraph())
 										&& !source.isStatic()) {
 									SootMethod caller = context.icfg.getMethodOf(callSite);
 									if (callee.isConstructor() && (!caller.isConstructor()
 											|| !caller.getActiveBody().getThisLocal().equals(newBase))) {
 										Alloc alloc = new Alloc(source, edge.getTarget(), true);
-										alloc.execute(context,edge);
+										alloc.execute(context);
 										return Collections.emptySet();
 									}
 								}
@@ -362,7 +373,12 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 				boolean sourceIsKilled = false;
 
 				if (context.trackStaticFields() && source.isStatic()) {
-					return Collections.emptySet();
+					boolean staticFieldUsed = isFirstFieldUsedTransitivelyInMethod(source, callees);
+					if (!staticFieldUsed) {
+						return Collections.singleton(source);
+					} else {
+						return Collections.emptySet();
+					}
 				}
 				Set<AccessGraph> out = new HashSet<>();
 				if (callSite instanceof Stmt) {
@@ -414,10 +430,11 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 					// mapping of return value
 					if (leftOp instanceof Local && !source.isStatic() && source.getBase().equals(leftOp)) {
 						sourceIsKilled = true;
+
 						Optional<AllocationSiteHandler> handler = context.allocationSiteHandlers()
 								.callToReturnAssign(as, source, callees);
 						if (handler.isPresent()) {
-							handler.get().alloc().execute(context, edge);
+							handler.get().alloc().execute(context);
 							return Collections.emptySet();
 						}
 					}

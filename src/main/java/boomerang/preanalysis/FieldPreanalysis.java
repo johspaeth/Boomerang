@@ -72,6 +72,7 @@ public class FieldPreanalysis {
     if (!method.hasActiveBody())
       return;
     if (isIgnoredMethod(method)) {
+      AliasFinder.IGNORED_METHODS.add(method);
       return;
     }
     for (Unit stmt : method.getActiveBody().getUnits()) {

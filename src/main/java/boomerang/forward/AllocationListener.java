@@ -1,9 +1,7 @@
 package boomerang.forward;
 
-import java.util.List;
 import java.util.Set;
 
-import com.beust.jcommander.internal.Lists;
 import com.google.common.collect.Sets;
 
 import boomerang.BoomerangContext;
@@ -14,20 +12,15 @@ import heros.solver.Pair;
 import soot.SootMethod;
 import soot.Unit;
 
-public class AllocationListener implements IncomingListener<Unit, AccessGraph, SootMethod>{
+public abstract class AllocationListener implements IncomingListener<Unit, AccessGraph, SootMethod>{
 
 	private Pair<Unit, AccessGraph> sourcePair;
 	private BoomerangContext context;
 	private Set<Pair<Unit, AccessGraph>> triggered = Sets.newHashSet();
-	private Set<Pair<Unit, AccessGraph>> allocNodes = Sets.newHashSet();
-	private List<AllocationSiteListener> listeners = Lists.newLinkedList();
-	private SootMethod method;
 
-	public AllocationListener(Pair<Unit,AccessGraph> sourcePair,SootMethod m, BoomerangContext context) {
+	public AllocationListener(Pair<Unit,AccessGraph> sourcePair,BoomerangContext context) {
 		this.sourcePair = sourcePair;
-		this.method = m;
 		this.context = context;
-		triggered.add(sourcePair);
 		if(sourcePair.getO2().hasAllocationSite())
 			discoveredAllocationSite(sourcePair);
 	}
@@ -42,11 +35,10 @@ public class AllocationListener implements IncomingListener<Unit, AccessGraph, S
 			discoveredAllocationSite(edge.getStartNode());
 			return;
 		}
-		context.getForwardSolver().attachAllocationListener(edge.getStartNode(), context.icfg.getMethodOf(edge.getTarget()),new AllocationSiteListener() {
-			
+		context.getForwardSolver().attachIncomingListener(new AllocationListener(edge.getStartNode(),context) {
 			@Override
-			public void discoveredAllocationSite(Pair<Unit, AccessGraph> origin) {
-				AllocationListener.this.discoveredAllocationSite(origin);
+			public void discoveredAllocationSite(Pair<Unit, AccessGraph> allocNode) {
+				AllocationListener.this.discoveredAllocationSite(allocNode);
 			}
 		});
 	}
@@ -56,20 +48,5 @@ public class AllocationListener implements IncomingListener<Unit, AccessGraph, S
 		return sourcePair;
 	}
 
-	@Override
-	public SootMethod getMethod() {
-		return method;
-	}
-	public void discoveredAllocationSite(Pair<Unit, AccessGraph> allocNode){
-		if(!allocNodes.add(allocNode))
-			return;
-		for(AllocationSiteListener l : Lists.newLinkedList(listeners))
-			l.discoveredAllocationSite(allocNode);
-	}
-	
-	public void addListener(AllocationSiteListener l){
-		listeners.add(l);
-		for(Pair<Unit,AccessGraph> n : Sets.newHashSet(allocNodes))
-			l.discoveredAllocationSite(n);
-	}
+	public abstract void discoveredAllocationSite(Pair<Unit, AccessGraph> allocNode);
 }

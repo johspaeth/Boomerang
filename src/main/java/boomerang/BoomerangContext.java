@@ -7,7 +7,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.lang.model.type.PrimitiveType;
 
-import com.beust.jcommander.internal.Sets;
 import com.google.common.base.Stopwatch;
 
 import boomerang.accessgraph.AccessGraph;
@@ -32,7 +31,6 @@ import boomerang.mock.DefaultNativeCallHandler;
 import boomerang.mock.MockedDataFlow;
 import boomerang.mock.NativeCallHandler;
 import boomerang.pointsofindirection.AliasCallback;
-import boomerang.pointsofindirection.Alloc;
 import boomerang.pointsofindirection.AllocationSiteHandlers;
 import boomerang.pointsofindirection.PointOfIndirection;
 import heros.FlowFunction;
@@ -75,7 +73,7 @@ public class BoomerangContext {
 
 	Stopwatch startTime;
 
-	private Set<SootMethod> callingContexts = new HashSet<>();
+	private Set<SootMethod> backwardVisitedMethods = new HashSet<>();
 	private Set<SootMethod> visitableMethods = new HashSet<>();
 
 	public ContextScheduler scheduler;
@@ -164,8 +162,6 @@ public class BoomerangContext {
 
 	public IPropagationController<Unit, AccessGraph> propagationController;
 
-	private Set<Alloc> allocs = Sets.newHashSet();
-
 	public boolean isOutOfBudget() {
 		if (startTime.elapsed(TimeUnit.MILLISECONDS) > options.getTimeBudget())
 			return true;
@@ -190,6 +186,13 @@ public class BoomerangContext {
 		return options.getTrackStaticFields();
 	}
 
+	public boolean visitedBackwardMethod(SootMethod m) {
+		return backwardVisitedMethods.contains(m);
+	}
+
+	public void addAsVisitedBackwardMethod(SootMethod m) {
+		backwardVisitedMethods.add(m);
+	}
 
 	public ForwardSolver getForwardSolver() {
 		if (forwardSolver == null) {
@@ -253,17 +256,9 @@ public class BoomerangContext {
 	}
 	
 	public void addVisitableMethod(SootMethod m){
-		if(!visitableMethods.add(m))
-			return;
+		visitableMethods.add(m);
 		getBackwardSolver().setVisitable(m);
 		getForwardSolver().setVisitable(m);
 	}
 
-	public void expandContext(SootMethod m){
-		callingContexts.add(m);
-	}
-
-	public boolean isExpandingContext(SootMethod m){
-		return callingContexts.contains(m);
-	}
 }

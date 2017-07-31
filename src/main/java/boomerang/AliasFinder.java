@@ -38,6 +38,10 @@ public class AliasFinder {
 	 */
 	public BoomerangContext context;
 
+	/**
+	 * Methods to be ignored by the analysis.
+	 */
+	public static Set<SootMethod> IGNORED_METHODS = new HashSet<SootMethod>();
 
 	/**
 	 * Holds the System.arraycopy method and is used within the flow functions
@@ -194,8 +198,8 @@ public class AliasFinder {
 		BackwardSolver backwardSolver = context.getBackwardSolver();
 		ForwardSolver forwardSolver = context.getForwardSolver();
 		boolean timedout = false;
+		context.addAsVisitedBackwardMethod(context.icfg.getMethodOf(stmt));
 		context.addVisitableMethod(context.icfg.getMethodOf(stmt));
-		context.expandContext(context.icfg.getMethodOf(stmt));
 		try{
 			backwardSolver.startPropagation(accessGraph, stmt);
 			backwardSolver.awaitExecution();

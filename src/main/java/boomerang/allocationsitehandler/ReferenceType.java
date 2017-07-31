@@ -31,6 +31,7 @@ public class ReferenceType implements AllocationSiteHandlers {
 			final AccessGraph source) {
 		if (!isAllocationValue(rightOp))
 			return Optional.absent();
+
 		if (source.getFieldCount() > 0 && !source.firstFieldMustMatch(AliasFinder.ARRAY_FIELD)) {
 			return Optional.absent();
 		}
@@ -60,7 +61,7 @@ public class ReferenceType implements AllocationSiteHandlers {
 	@Override
 	public Optional<AllocationSiteHandler> returnStmtViaCall(final AssignStmt assignedCallSite,
 			final AccessGraph source, final ReturnStmt returnSite, Value retOp) {
-		if (!(retOp instanceof NullConstant) || source.getFieldCount() != 0 || source.hasSetBasedFieldGraph())
+		if (!(retOp instanceof NullConstant))
 			return Optional.absent();
 		return Optional.<AllocationSiteHandler>of(new AllocationSiteHandler() {
 			@Override

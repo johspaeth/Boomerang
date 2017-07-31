@@ -396,7 +396,7 @@ public abstract class IFDSSolver<N, D, M, I extends BiDiInterproceduralCFG<N, M>
 	
 	public void attachIncomingListener(IncomingListener<N, D, M> listener){
 		Pair<N,D> sourcePair = listener.getSourcePair();
-		Set<? extends IPathEdge<N, D>> incs = incoming(sourcePair, listener.getMethod());
+		Set<? extends IPathEdge<N, D>> incs = incoming(sourcePair, icfg.getMethodOf(sourcePair.getO1()));
 		for(IPathEdge<N, D> edge : incs)
 			listener.hasIncomingEdge(edge);
 		incomingListeners.put(sourcePair, listener);

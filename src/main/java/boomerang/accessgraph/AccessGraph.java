@@ -11,9 +11,7 @@ import soot.Type;
 import soot.Unit;
 import soot.Value;
 import soot.jimple.AssignStmt;
-import soot.jimple.InstanceFieldRef;
 import soot.jimple.NewExpr;
-import soot.jimple.NopStmt;
 
 /**
  * An AccessGraph is represented by a local variable and a {@link FieldGraph}
@@ -48,7 +46,6 @@ public class AccessGraph {
 	private Unit allocationSite;
 
 	private boolean isNullAllocsite;
-	private boolean propagationOrigin;
 
 	/**
 	 * Constructs an access graph with empty field graph, but specified base
@@ -412,7 +409,7 @@ public class AccessGraph {
 	 * @return <code>true</code> if it is static.
 	 */
 	public boolean isStatic() {
-		return value == null && (getFieldCount() > 0 || hasSetBasedFieldGraph());
+		return value == null && (getFieldCount() > 0);
 	}
 
 	/**
@@ -437,28 +434,34 @@ public class AccessGraph {
 	}
 	
 
-	
-
 	@Override
 	public int hashCode() {
+//		if (hashCode != 0)
+//			return hashCode;
+
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((allocationSite == null) ? 0 : allocationSite.hashCode());
 		result = prime * result + ((fieldGraph == null) ? 0 : fieldGraph.hashCode());
-		result = prime * result + (propagationOrigin ? 1231 : 1237);
 		result = prime * result + ((value == null) ? 0 : value.hashCode());
-		return result;
+		result = prime * result + ((allocationSite == null) ? 0 : allocationSite.hashCode());
+		this.hashCode = result;
+
+		return this.hashCode;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (obj == this || super.equals(obj))
 			return true;
-		if (obj == null)
+		if (obj == null || getClass() != obj.getClass())
 			return false;
-		if (getClass() != obj.getClass())
-			return false;
+
 		AccessGraph other = (AccessGraph) obj;
+		if (value == null) {
+			if (other.value != null)
+				return false;
+		} else if (!value.equals(other.value))
+			return false;
 		if (allocationSite == null) {
 			if (other.allocationSite != null)
 				return false;
@@ -469,13 +472,7 @@ public class AccessGraph {
 				return false;
 		} else if (!fieldGraph.equals(other.fieldGraph))
 			return false;
-		if (propagationOrigin != other.propagationOrigin)
-			return false;
-		if (value == null) {
-			if (other.value != null)
-				return false;
-		} else if (!value.equals(other.value))
-			return false;
+		assert this.hashCode() == obj.hashCode();
 		return true;
 	}
 
@@ -499,34 +496,13 @@ public class AccessGraph {
 		if(allocationSite instanceof AssignStmt){
 			AssignStmt as = (AssignStmt) allocationSite;
 			Value rightOp = as.getRightOp();
-			Value leftOp = as.getLeftOp();
 			if(rightOp instanceof NewExpr){
 				NewExpr newExpr = (NewExpr) rightOp;
 				return newExpr.getBaseType();
 			}
-			if(leftOp instanceof InstanceFieldRef){
-				InstanceFieldRef ifr = (InstanceFieldRef) leftOp;
-				return ifr.getField().getType();
-			}
-			
+			Value leftOp = as.getLeftOp();
 			return leftOp.getType();
 		}
-		if(allocationSite instanceof NopStmt){
-			if(hasSetBasedFieldGraph() || getFieldCount() == 0)
-				return value.getType();
-			WrappedSootField[] fields = getFieldGraph().getFields();
-			return fields[fields.length-1].getField().getType();
-		}
-		throw new RuntimeException("Allocation site not an Assign Stmt" + allocationSite + this);
-	}
-
-	public AccessGraph propagationOrigin() {
-		AccessGraph a = new AccessGraph(value, fieldGraph, allocationSite, isNullAllocsite);
-		a.propagationOrigin = true;
-		return a;
-	}
-
-	public boolean isPropagationOrigin() {
-		return propagationOrigin;
+		throw new RuntimeException("Allocation site not an Assign Stmt" + allocationSite);
 	}
 }
