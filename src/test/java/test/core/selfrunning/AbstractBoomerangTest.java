@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import com.google.common.collect.Lists;
 
@@ -62,6 +63,10 @@ public class AbstractBoomerangTest extends AbstractTestingFramework{
 							public IExtendedICFG icfg() {
 								return icfg;
 							}
+							@Override
+							public long getTimeBudget() {
+								return TimeUnit.SECONDS.toMillis(600);
+							}
 							
 							
 				};
@@ -113,7 +118,7 @@ public class AbstractBoomerangTest extends AbstractTestingFramework{
 		boomerang.startQuery();
 		AliasResults query = boomerang.findAliasAtStmt(q.getAp(), q.getStmt(), contextReuqester).withoutNullAllocationSites();
 		for(String methodSignature : errorOnVisitMethod()){
-			if(boomerang.context.visitableMethod(Scene.v().getMethod(methodSignature))){
+			if(boomerang.context.getOptions().onTheFlyCallGraphGeneration() && boomerang.context.visitableMethod(Scene.v().getMethod(methodSignature))){
 				throw new RuntimeException("Analysis visited method " + methodSignature);
 			}
 		}
@@ -175,10 +180,11 @@ public class AbstractBoomerangTest extends AbstractTestingFramework{
 			AssignStmt as = (AssignStmt) u;
 
 			if (as.getLeftOp() instanceof Local && as.getRightOp() instanceof NewExpr) {
-				if (allocatesObjectOfInterest((NewExpr) as.getRightOp())) {
+				NewExpr expr = ((NewExpr) as.getRightOp());
+				if (allocatesObjectOfInterest(expr)) {
 					Local local = (Local) as.getLeftOp();
 					AccessGraph accessGraph = new AccessGraph(local);
-					out.add(new Pair<Unit, AccessGraph>(as, accessGraph.deriveWithAllocationSite(as, true)));
+					out.add(new Pair<Unit, AccessGraph>(as, accessGraph.deriveWithAllocationSite(as, expr.getType(),true)));
 				}
 			}
 
@@ -208,10 +214,11 @@ public class AbstractBoomerangTest extends AbstractTestingFramework{
 				AssignStmt as = (AssignStmt) u;
 
 				if (as.getLeftOp() instanceof Local && as.getRightOp() instanceof NewExpr) {
-					if (allocatesObjectOfInterest((NewExpr) as.getRightOp())) {
+					NewExpr expr = ((NewExpr) as.getRightOp());
+					if (allocatesObjectOfInterest(expr)) {
 						Local local = (Local) as.getLeftOp();
 						AccessGraph accessGraph = new AccessGraph(local);
-						out.add(accessGraph.deriveWithAllocationSite(as, true));
+						out.add(accessGraph.deriveWithAllocationSite(as, expr.getType(), true));
 					}
 				}
 

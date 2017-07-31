@@ -15,6 +15,7 @@ import heros.solver.Pair;
 import soot.Local;
 import soot.Scene;
 import soot.SootMethod;
+import soot.Type;
 import soot.Unit;
 import soot.Value;
 import soot.jimple.ArrayRef;
@@ -51,7 +52,9 @@ class BackwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 				initialSelfLoop.factAtTarget());
 		Unit callSite = prevEdge.getTarget();
 		AccessGraph target = initialSelfLoop.factAtTarget();
-		if(context.getOptions().onTheFlyCallGraphGeneration() && !callee.isStatic()){
+		if(!context.getOptions().onTheFlyCallGraphGeneration()){
+			context.addVisitableMethod(callee);
+		} else if(context.getOptions().onTheFlyCallGraphGeneration() && !callee.isStatic()){
 			if(callSite instanceof Stmt){
 				Stmt stmt = (Stmt) callSite;
 				if(stmt.containsInvokeExpr()){
@@ -102,8 +105,10 @@ class BackwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 		if(isParamOrStatic){
 			if(callSite == null && returnSite == null){
 				if(context.getContextRequester().isEntryPointMethod(callee)){
-					Alloc alloc = new Alloc(prevEdge.factAtTarget(), prevEdge.getTarget(),true);
-					alloc.execute(context,prevEdge);
+					for(Type type : prevEdge.factAtTarget().getTypes()){
+						Alloc alloc = new Alloc(prevEdge.factAtTarget(), prevEdge.getTarget(), type, true);
+						alloc.execute(context,prevEdge);
+					}
 				}
 				return Collections.emptySet();
 			} else if(!target.isStatic()){
@@ -112,8 +117,10 @@ class BackwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 						context.addVisitableMethod(context.icfg.getMethodOf(callSite));
 						context.expandContext(context.icfg.getMethodOf(callSite));
 					} else{
-						Alloc alloc = new Alloc(prevEdge.factAtTarget(), prevEdge.getTarget(),true);
-						alloc.execute(context,prevEdge);
+						for(Type type : prevEdge.factAtTarget().getTypes()){
+							Alloc alloc = new Alloc(prevEdge.factAtTarget(), prevEdge.getTarget(), type, true);
+							alloc.execute(context,prevEdge);
+						}
 					}
 				}
 			}

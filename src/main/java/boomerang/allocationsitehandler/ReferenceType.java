@@ -27,7 +27,7 @@ public class ReferenceType implements AllocationSiteHandlers {
 	}
 
 	@Override
-	public Optional<AllocationSiteHandler> assignStatement(final AssignStmt stmt, final Value rightOp,
+	public Optional<AllocationSiteHandler> assignStatement(final AssignStmt stmt, final Value leftOp, final Value rightOp,
 			final AccessGraph source) {
 		if (!isAllocationValue(rightOp))
 			return Optional.absent();
@@ -39,7 +39,7 @@ public class ReferenceType implements AllocationSiteHandlers {
 		return Optional.<AllocationSiteHandler>of(new AllocationSiteHandler() {
 			@Override
 			public Alloc alloc() {
-				return new Alloc(source, stmt, rightOp instanceof NullConstant);
+				return new Alloc(source, stmt, leftOp.getType(), rightOp instanceof NullConstant);
 			}
 		});
 	}
@@ -52,7 +52,7 @@ public class ReferenceType implements AllocationSiteHandlers {
 		return Optional.<AllocationSiteHandler>of(new AllocationSiteHandler() {
 			@Override
 			public Alloc alloc() {
-				return new Alloc(source, stmt, false);
+				return new Alloc(source, stmt, rightOp.getType(), false);
 			}
 		});
 	}
@@ -65,7 +65,7 @@ public class ReferenceType implements AllocationSiteHandlers {
 		return Optional.<AllocationSiteHandler>of(new AllocationSiteHandler() {
 			@Override
 			public Alloc alloc() {
-				return new Alloc(source, assignedCallSite,returnSite, true);
+				return new Alloc(source, assignedCallSite,returnSite,assignedCallSite.getLeftOp().getType(), true);
 			}
 		});
 	}
@@ -81,7 +81,7 @@ public class ReferenceType implements AllocationSiteHandlers {
 		return Optional.<AllocationSiteHandler>of(new AllocationSiteHandler() {
 			@Override
 			public Alloc alloc() {
-				return new Alloc(source, stmt, true);
+				return new Alloc(source, stmt, rightOp.getType(), true);
 			}
 		});
 	}
@@ -94,7 +94,7 @@ public class ReferenceType implements AllocationSiteHandlers {
 		return Optional.<AllocationSiteHandler>of(new AllocationSiteHandler() {
 			@Override
 			public Alloc alloc() {
-				return new Alloc(source, callSite, false);
+				return new Alloc(source, callSite, callSite.getLeftOp().getType(), false);
 			}
 		});
 	}

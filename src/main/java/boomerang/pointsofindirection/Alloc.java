@@ -7,6 +7,7 @@ import boomerang.ifdssolver.IPathEdge;
 import heros.solver.Pair;
 import soot.Scene;
 import soot.SootMethod;
+import soot.Type;
 import soot.Unit;
 import soot.jimple.AssignStmt;
 import soot.jimple.NewExpr;
@@ -18,22 +19,21 @@ public class Alloc {
 	private AccessGraph factAtTarget;
 	private boolean isNullAlloc;
 	private Unit allocationSite;
+	private Type allocType;
 
 	/**
 	 * Creates an allocation POI with the backward path edge reaching it.
 	 * 
 	 * @param pathEdge
 	 */
-	public Alloc(AccessGraph factAtTarget, Unit target, boolean isNullAlloc) {
-		this.factAtTarget = factAtTarget;
-		this.target = target;
-		this.isNullAlloc = isNullAlloc;
-		this.allocationSite = target;
+	public Alloc(AccessGraph factAtTarget, Unit target, Type allocType, boolean isNullAlloc) {
+		this(factAtTarget, target, target, allocType, isNullAlloc);
 	}
-	public Alloc(AccessGraph factAtTarget, Unit target,Unit allocationSite, boolean isNullAlloc) {
+	public Alloc(AccessGraph factAtTarget, Unit target,Unit allocationSite, Type allocType,  boolean isNullAlloc) {
 		this.factAtTarget = factAtTarget;
 		this.target = target;
 		this.allocationSite = allocationSite;
+		this.allocType = allocType;
 		this.isNullAlloc = isNullAlloc;
 	}
 
@@ -55,7 +55,7 @@ public class Alloc {
 
 	private void sendForward(BoomerangContext context) {
 		context.debugger.onAllocationSiteReached(target, factAtTarget);
-		AccessGraph alloc = factAtTarget.deriveWithAllocationSite(allocationSite,isNullAlloc);
+		AccessGraph alloc = factAtTarget.deriveWithAllocationSite(allocationSite,allocType, isNullAlloc);
 		if (target instanceof AssignStmt && ((AssignStmt) target).getRightOp() instanceof NewExpr)
 			alloc = alloc.deriveWithNewLocal(alloc.getBase());
 		assert alloc.hasAllocationSite() == true;

@@ -12,7 +12,7 @@ import soot.jimple.InstanceFieldRef;
 import soot.jimple.ReturnStmt;
 
 public interface AllocationSiteHandlers {
-	public Optional<AllocationSiteHandler> assignStatement(AssignStmt stmt, Value rightOp, AccessGraph g);
+	public Optional<AllocationSiteHandler> assignStatement(AssignStmt stmt, Value leftOp, Value rightOp, AccessGraph g);
 
 	public Optional<AllocationSiteHandler> arrayStoreStatement(AssignStmt stmt, Value rightOp, AccessGraph source);
 

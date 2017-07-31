@@ -20,6 +20,7 @@ import heros.FlowFunction;
 import soot.Local;
 import soot.SootField;
 import soot.SootMethod;
+import soot.Type;
 import soot.Unit;
 import soot.Value;
 import soot.jimple.ArrayRef;
@@ -51,7 +52,7 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 		return new FlowFunction<AccessGraph>() {
 			@Override
 			public Set<AccessGraph> computeTargets(final AccessGraph source) {
-
+				assert !source.hasAllocationSite() : "Access Graph must not have an allocation site in backward analysis!";
 				if (curr instanceof IdentityStmt) {
 					IdentityStmt identityStmt = (IdentityStmt) curr;
 					if (identityStmt.getRightOp() instanceof CaughtExceptionRef)
@@ -67,7 +68,7 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 				Value rightOp = as.getRightOp();
 				if (leftOp instanceof Local && source.baseMatches(leftOp)) {
 					Optional<AllocationSiteHandler> allocates = context.allocationSiteHandlers().assignStatement(as,
-							rightOp, source);
+							leftOp, rightOp, source);
 					if (allocates.isPresent()) {
 						allocates.get().alloc().execute(context,edge);
 						return Collections.emptySet();
@@ -335,8 +336,10 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 									SootMethod caller = context.icfg.getMethodOf(callSite);
 									if (callee.isConstructor() && (!caller.isConstructor()
 											|| !caller.getActiveBody().getThisLocal().equals(newBase))) {
-										Alloc alloc = new Alloc(source, edge.getTarget(), true);
-										alloc.execute(context,edge);
+										for(Type type : source.getTypes()){
+											Alloc alloc = new Alloc(source, edge.getTarget(), type, true);
+											alloc.execute(context,edge);
+										}
 										return Collections.emptySet();
 									}
 								}

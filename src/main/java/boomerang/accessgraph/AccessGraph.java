@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.beust.jcommander.internal.Sets;
+
 import soot.Local;
 import soot.SootField;
 import soot.Type;
@@ -14,6 +16,7 @@ import soot.jimple.AssignStmt;
 import soot.jimple.InstanceFieldRef;
 import soot.jimple.NewExpr;
 import soot.jimple.NopStmt;
+import soot.jimple.ReturnStmt;
 
 /**
  * An AccessGraph is represented by a local variable and a {@link FieldGraph}
@@ -50,6 +53,8 @@ public class AccessGraph {
 	private boolean isNullAllocsite;
 	private boolean propagationOrigin;
 
+	private Type allocType;
+
 	/**
 	 * Constructs an access graph with empty field graph, but specified base
 	 * (local) variable.
@@ -60,11 +65,11 @@ public class AccessGraph {
 	 *            The type of the base
 	 */
 	public AccessGraph(Local val) {
-		this(val,  null, null, false);
+		this(val,  null, null, null, false);
 	}
 
-	public AccessGraph(Local val, Unit allocsite,boolean isNullAllocsite) {
-		this(val, null, allocsite, isNullAllocsite);
+	public AccessGraph(Local val, Unit allocsite,Type allocType, boolean isNullAllocsite) {
+		this(val, null, allocsite, allocType, isNullAllocsite);
 	}
 
 	/**
@@ -79,7 +84,7 @@ public class AccessGraph {
 	 *            the first field access
 	 */
 	public AccessGraph(Local val,  WrappedSootField field) {
-		this(val, new FieldGraph(field), null,false);
+		this(val, new FieldGraph(field), null,null,false);
 	}
 
 	/**
@@ -94,31 +99,22 @@ public class AccessGraph {
 	 *            An array of field accesses
 	 */
 	public AccessGraph(Local val, WrappedSootField[] f) {
-		this(val, (f == null || f.length == 0 ? null : new FieldGraph(f)), null, false);
+		this(val, (f == null || f.length == 0 ? null : new FieldGraph(f)), null, null, false);
 	}
 
-	protected AccessGraph(Local value, IFieldGraph fieldGraph, Unit sourceStmt, boolean isNullAllocsite) {
+	protected AccessGraph(Local value, IFieldGraph fieldGraph, Unit sourceStmt, Type allocType, boolean isNullAllocsite) {
 		this.value = value;
 		this.isNullAllocsite = isNullAllocsite;
-//		if(apgs == null){
-//			apgs = new LinkedList<IFieldGraph>();
-//		}
 		if(fieldGraph != null && fieldGraph.equals(FieldGraph.EMPTY_GRAPH))
 			fieldGraph = null;
-//		int index = apgs.indexOf(fieldGraph);
-//		if(index >= 0){
-//			this.fieldGraph = apgs.get(index);
-//		} else{
-//			apgs.add(fieldGraph);
-//			System.out.println("APG" + apgs.size());
-//			System.out.println(fieldGraph);
-			this.fieldGraph = fieldGraph;
-//		}
+		this.fieldGraph = fieldGraph;
 		if(getFieldCount() > MAX_FIELD_COUNT)
 			MAX_ACCESS_GRAPH = this;
 		MAX_FIELD_COUNT = Integer.max(MAX_FIELD_COUNT, getFieldCount());
 			
 		this.allocationSite = sourceStmt;
+		this.allocType = allocType;
+		assert (this.allocationSite == null && allocType == null) || (this.allocationSite != null && allocType != null);
 	}
 
 	/**
@@ -216,7 +212,7 @@ public class AccessGraph {
 	 * @return The access graph
 	 */
 	public AccessGraph deriveWithNewLocal(Local local) {
-		return new AccessGraph(local, fieldGraph, allocationSite,isNullAllocsite);
+		return new AccessGraph(local, fieldGraph, allocationSite,allocType,isNullAllocsite);
 	}
 
 	/**
@@ -232,7 +228,7 @@ public class AccessGraph {
 		if(newapg.shouldOverApproximate()){
 			newapg = newapg.overapproximation();
 		}
-		return new AccessGraph(value,  newapg, allocationSite,isNullAllocsite);
+		return new AccessGraph(value,  newapg, allocationSite,allocType,isNullAllocsite);
 	}
 
 	/**
@@ -249,7 +245,7 @@ public class AccessGraph {
 		if(newapg.shouldOverApproximate()){
 			newapg = newapg.overapproximation();
 		}
-		return new AccessGraph(value,  newapg, allocationSite,isNullAllocsite);
+		return new AccessGraph(value,  newapg, allocationSite,allocType,isNullAllocsite);
 	}
 	
 	/**
@@ -265,7 +261,7 @@ public class AccessGraph {
 		if(newapg.shouldOverApproximate()){
 			newapg = newapg.overapproximation();
 		}
-		return new AccessGraph(value, newapg, allocationSite,isNullAllocsite);
+		return new AccessGraph(value, newapg, allocationSite,allocType,isNullAllocsite);
 	}
 
 	/**
@@ -313,10 +309,10 @@ public class AccessGraph {
 
 		Set<IFieldGraph> newapg = fieldGraph.popFirstField();
 		if (newapg.isEmpty())
-			return Collections.singleton(new AccessGraph(value, null, allocationSite,isNullAllocsite));
+			return Collections.singleton(new AccessGraph(value, null, allocationSite,allocType,isNullAllocsite));
 		Set<AccessGraph> out = new HashSet<>();
 		for (IFieldGraph a : newapg) {
-				out.add(new AccessGraph(value, a, allocationSite,isNullAllocsite));
+				out.add(new AccessGraph(value, a, allocationSite,allocType,isNullAllocsite));
 		}
 		return out;
 	}
@@ -336,9 +332,9 @@ public class AccessGraph {
 
 		Set<AccessGraph> out = new HashSet<>();
 		if (newapg.isEmpty())
-			return Collections.singleton(new AccessGraph(value, null, allocationSite,isNullAllocsite));
+			return Collections.singleton(new AccessGraph(value, null, allocationSite,allocType,isNullAllocsite));
 		for (IFieldGraph a : newapg) {
-			out.add(new AccessGraph(value,  a, allocationSite,isNullAllocsite));
+			out.add(new AccessGraph(value,  a, allocationSite,allocType,isNullAllocsite));
 		}
 		return out;
 	}
@@ -361,8 +357,8 @@ public class AccessGraph {
 	 *            The statement, typically the allocation site.
 	 * @return The derived access graph
 	 */
-	public AccessGraph deriveWithAllocationSite(Unit stmt, boolean isNullAllocsite) {
-		return new AccessGraph(value, fieldGraph, stmt, isNullAllocsite);
+	public AccessGraph deriveWithAllocationSite(Unit stmt, Type allocType, boolean isNullAllocsite) {
+		return new AccessGraph(value, fieldGraph, stmt, allocType,isNullAllocsite);
 	}
 
 	/**
@@ -383,7 +379,7 @@ public class AccessGraph {
 	 * @return The derived access graph
 	 */
 	public AccessGraph deriveWithoutAllocationSite() {
-		return new AccessGraph(value, fieldGraph, null, false);
+		return new AccessGraph(value, fieldGraph, null,null, false);
 	}
 
 	/**
@@ -392,7 +388,7 @@ public class AccessGraph {
 	 * @return The derived access graph
 	 */
 	public AccessGraph dropTail() {
-		return new AccessGraph(value, null, allocationSite,isNullAllocsite);
+		return new AccessGraph(value, null, allocationSite,allocType,isNullAllocsite);
 	}
 
 	/**
@@ -403,7 +399,7 @@ public class AccessGraph {
 	 * @return The derived access graph.
 	 */
 	public AccessGraph makeStatic() {
-		return new AccessGraph(null, fieldGraph, allocationSite,isNullAllocsite);
+		return new AccessGraph(null, fieldGraph, allocationSite,allocType,isNullAllocsite);
 	}
 
 	/**
@@ -422,7 +418,7 @@ public class AccessGraph {
 	 */
 	public Collection<WrappedSootField> getLastField() {
 		if (fieldGraph == null)
-			return null;
+			return Sets.newHashSet();
 
 		return fieldGraph.getExitNode();
 	}
@@ -484,7 +480,7 @@ public class AccessGraph {
 	}
 
 	public AccessGraph overApproximate() {
-		return new AccessGraph(value,fieldGraph == null ? null : fieldGraph.overapproximation(), allocationSite,isNullAllocsite);
+		return new AccessGraph(value,fieldGraph == null ? null : fieldGraph.overapproximation(), allocationSite,allocType,isNullAllocsite);
 	}
 
 
@@ -496,37 +492,31 @@ public class AccessGraph {
 	public Type getAllocationType() {
 		if(!hasAllocationSite())
 			throw new RuntimeException("Wrong state");
-		if(allocationSite instanceof AssignStmt){
-			AssignStmt as = (AssignStmt) allocationSite;
-			Value rightOp = as.getRightOp();
-			Value leftOp = as.getLeftOp();
-			if(rightOp instanceof NewExpr){
-				NewExpr newExpr = (NewExpr) rightOp;
-				return newExpr.getBaseType();
-			}
-			if(leftOp instanceof InstanceFieldRef){
-				InstanceFieldRef ifr = (InstanceFieldRef) leftOp;
-				return ifr.getField().getType();
-			}
-			
-			return leftOp.getType();
-		}
-		if(allocationSite instanceof NopStmt){
-			if(hasSetBasedFieldGraph() || getFieldCount() == 0)
-				return value.getType();
-			WrappedSootField[] fields = getFieldGraph().getFields();
-			return fields[fields.length-1].getField().getType();
-		}
-		throw new RuntimeException("Allocation site not an Assign Stmt" + allocationSite + this);
+		return allocType;
 	}
 
 	public AccessGraph propagationOrigin() {
-		AccessGraph a = new AccessGraph(value, fieldGraph, allocationSite, isNullAllocsite);
+		AccessGraph a = new AccessGraph(value, fieldGraph, allocationSite,allocType, isNullAllocsite);
 		a.propagationOrigin = true;
 		return a;
 	}
 
 	public boolean isPropagationOrigin() {
 		return propagationOrigin;
+	}
+
+	public Collection<Type> getTypes() {
+		Set<Type> out = Sets.newHashSet();
+		if(!isStatic() && getFieldCount() == 0){
+			out.add(value.getType());
+		}
+		
+		if(getFieldCount() > 0){
+			for(WrappedSootField f : getLastField()){
+				out.add(f.getField().getType());
+			}
+		}
+			
+		return out;
 	}
 }
