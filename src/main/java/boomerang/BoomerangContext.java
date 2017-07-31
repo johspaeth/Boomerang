@@ -130,10 +130,10 @@ public class BoomerangContext {
 		;
 	}
 
-	public boolean isReturnValue(SootMethod method, Local base) {
-		Collection<Unit> endPointsOf = icfg.getEndPointsOf(method);
-
-		for (Unit eP : endPointsOf) {
+	public static boolean isReturnValue(SootMethod method, Local base) {
+		if(!method.hasActiveBody())
+			return false;
+		for (Unit eP : method.getActiveBody().getUnits()) {
 			if (eP instanceof ReturnStmt) {
 				ReturnStmt returnStmt = (ReturnStmt) eP;
 				Value op = returnStmt.getOp();

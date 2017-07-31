@@ -45,30 +45,10 @@ public abstract class AbstractTestingFramework {
 		try {
 			analyze();
 		} catch (ImprecisionException e) {
-			removeVizFile();
 			Assert.fail(e.getMessage());
 		}
-		removeVizFile();
 		// To never execute the @Test method...
 		org.junit.Assume.assumeTrue(false);
-	}
-
-	public void removeVizFile() {
-		File parentFile = ideVizFile.getParentFile();
-		if (ideVizFile.exists())
-			ideVizFile.delete();
-		try {
-			if (parentFile.exists() && isDirEmpty(parentFile.toPath()))
-				parentFile.delete();
-		} catch (IOException e) {
-			throw new RuntimeException("Was not able to delete directories for IDEViz output!");
-		}
-	}
-
-	private static boolean isDirEmpty(final Path directory) throws IOException {
-		try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(directory)) {
-			return !dirStream.iterator().hasNext();
-		}
 	}
 
 	private void createVizFile() {
@@ -97,7 +77,6 @@ public abstract class AbstractTestingFramework {
 	private void initializeSootWithEntryPoint() {
 		G.v().reset();
 		Options.v().set_whole_program(true);
-		Options.v().setPhaseOption("jb", "use-original-names:true");
 		Options.v().setPhaseOption("cg.spark", "on");
 		Options.v().setPhaseOption("cg.spark", "verbose:true");
 		Options.v().set_output_format(Options.output_format_none);

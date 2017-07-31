@@ -3,10 +3,6 @@ package boomerang.backward;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.plaf.synth.SynthSliderUI;
-
-import org.apache.tools.ant.types.CommandlineJava.SysProperties;
-
 import com.beust.jcommander.internal.Lists;
 import com.google.common.collect.Sets;
 

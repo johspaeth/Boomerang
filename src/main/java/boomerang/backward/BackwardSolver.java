@@ -1,5 +1,6 @@
 package boomerang.backward;
 
+import boomerang.AliasFinder;
 import boomerang.BoomerangContext;
 import boomerang.accessgraph.AccessGraph;
 import boomerang.bidi.Incomings;
@@ -51,6 +52,8 @@ public class BackwardSolver
 	@Override
 	public void onRegister(IPathEdge<Unit, AccessGraph> edge) {
 		context.sanityCheckEdge(edge);
+		if (edge.getTarget() != null)
+			AliasFinder.VISITED_METHODS.add(icfg.getMethodOf(edge.getTarget()));
 	}
 
 	public String toString() {

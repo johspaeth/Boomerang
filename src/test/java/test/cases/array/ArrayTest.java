@@ -29,6 +29,7 @@ public class ArrayTest extends AbstractBoomerangTest {
 		Object query = array[2];
 		queryFor(query);
 	}
+
 	@Test
 	public void doubleArray() {
 		Object[][] array = new Object[3][3];
@@ -37,6 +38,7 @@ public class ArrayTest extends AbstractBoomerangTest {
 		Object query = array[3][3];
 		queryFor(query);
 	}
+
 	@Test
 	public void threeDimensionalArray() {
 		Object[][][] array = new Object[3][3][1];
@@ -45,6 +47,7 @@ public class ArrayTest extends AbstractBoomerangTest {
 		Object query = array[3][3][2];
 		queryFor(query);
 	}
+
 	@Test
 	public void arrayCopyTest() {
 		Object[] copiedArray = new Object[3];
@@ -69,6 +72,14 @@ public class ArrayTest extends AbstractBoomerangTest {
 		B casted = (B) bAlias;
 		Object query = casted.f;
 		queryFor(query);
+	}
+
+	@Test
+	public void toCharArrayTest() {
+		String s = "password";
+		char[] query = s.toCharArray();
+		char[] t = query;
+		queryFor(t);
 	}
 
 	private static class B {

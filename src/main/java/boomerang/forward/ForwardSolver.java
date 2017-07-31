@@ -1,5 +1,6 @@
 package boomerang.forward;
 
+import boomerang.AliasFinder;
 import boomerang.BoomerangContext;
 import boomerang.BoomerangTimeoutException;
 import boomerang.accessgraph.AccessGraph;
@@ -23,7 +24,7 @@ public class ForwardSolver extends IFDSSolver<Unit, AccessGraph, SootMethod, BiD
 
 		@Override
 		protected AllocationListener createItem(PairWithMethod key) {
-			AllocationListener allocationListener = new AllocationListener(key.sourcePair,key.method, context);
+			AllocationListener allocationListener = new AllocationListener(key.sourcePair, key.method, context);
 			return allocationListener;
 		}
 	};
@@ -57,7 +58,7 @@ public class ForwardSolver extends IFDSSolver<Unit, AccessGraph, SootMethod, BiD
 		SootMethod m = icfg.getMethodOf(stmt);
 		for (Unit succStmt : icfg.getSuccsOf(stmt)) {
 			PathEdge<Unit, AccessGraph> pathEdge = new PathEdge<Unit, AccessGraph>(stmt, d1, succStmt, d2);
-			if(context.visitableMethod(m))
+			if (context.visitableMethod(m))
 				propagate(pathEdge, PropagationType.Normal);
 			else
 				addMethodToPausedEdge(m, pathEdge);
@@ -68,10 +69,8 @@ public class ForwardSolver extends IFDSSolver<Unit, AccessGraph, SootMethod, BiD
 	@Override
 	public void onRegister(IPathEdge<Unit, AccessGraph> edge) {
 		context.sanityCheckEdge(edge);
-	}
-
-	public String toString() {
-		return "FW Solver";
+		if (edge.getTarget() != null)
+			AliasFinder.VISITED_METHODS.add(icfg.getMethodOf(edge.getTarget()));
 	}
 
 	@Override
@@ -80,21 +79,24 @@ public class ForwardSolver extends IFDSSolver<Unit, AccessGraph, SootMethod, BiD
 	}
 
 	public void attachAllocationListener(Pair<Unit, AccessGraph> sourcePair, SootMethod m, AllocationSiteListener l) {
-		if(!allocationListenersPerSource.containsKey(new PairWithMethod(sourcePair,m))){
-			AllocationListener allocationListener = allocationListenersPerSource.getOrCreate(new PairWithMethod(sourcePair,m));
+		if (!allocationListenersPerSource.containsKey(new PairWithMethod(sourcePair, m))) {
+			AllocationListener allocationListener = allocationListenersPerSource
+					.getOrCreate(new PairWithMethod(sourcePair, m));
 			context.getForwardSolver().attachIncomingListener(allocationListener);
 		}
-		AllocationListener listeners = allocationListenersPerSource.getOrCreate(new PairWithMethod(sourcePair,m));
+		AllocationListener listeners = allocationListenersPerSource.getOrCreate(new PairWithMethod(sourcePair, m));
 		listeners.addListener(l);
 	}
-	
-	private class PairWithMethod{
+
+	private class PairWithMethod {
 		Pair<Unit, AccessGraph> sourcePair;
 		SootMethod method;
-		public PairWithMethod(Pair<Unit,AccessGraph> p, SootMethod m) {
+
+		public PairWithMethod(Pair<Unit, AccessGraph> p, SootMethod m) {
 			this.sourcePair = p;
 			this.method = m;
 		}
+
 		@Override
 		public int hashCode() {
 			final int prime = 31;
@@ -103,6 +105,7 @@ public class ForwardSolver extends IFDSSolver<Unit, AccessGraph, SootMethod, BiD
 			result = prime * result + ((sourcePair == null) ? 0 : sourcePair.hashCode());
 			return result;
 		}
+
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj)

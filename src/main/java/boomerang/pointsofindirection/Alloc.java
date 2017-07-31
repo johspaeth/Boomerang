@@ -17,6 +17,7 @@ public class Alloc {
 	private SootMethod method;
 	private AccessGraph factAtTarget;
 	private boolean isNullAlloc;
+	private Unit allocationSite;
 
 	/**
 	 * Creates an allocation POI with the backward path edge reaching it.
@@ -26,6 +27,13 @@ public class Alloc {
 	public Alloc(AccessGraph factAtTarget, Unit target, boolean isNullAlloc) {
 		this.factAtTarget = factAtTarget;
 		this.target = target;
+		this.isNullAlloc = isNullAlloc;
+		this.allocationSite = target;
+	}
+	public Alloc(AccessGraph factAtTarget, Unit target,Unit allocationSite, boolean isNullAlloc) {
+		this.factAtTarget = factAtTarget;
+		this.target = target;
+		this.allocationSite = allocationSite;
 		this.isNullAlloc = isNullAlloc;
 	}
 
@@ -47,7 +55,7 @@ public class Alloc {
 
 	private void sendForward(BoomerangContext context) {
 		context.debugger.onAllocationSiteReached(target, factAtTarget);
-		AccessGraph alloc = factAtTarget.deriveWithAllocationSite(target,isNullAlloc);
+		AccessGraph alloc = factAtTarget.deriveWithAllocationSite(allocationSite,isNullAlloc);
 		if (target instanceof AssignStmt && ((AssignStmt) target).getRightOp() instanceof NewExpr)
 			alloc = alloc.deriveWithNewLocal(alloc.getBase());
 		assert alloc.hasAllocationSite() == true;
