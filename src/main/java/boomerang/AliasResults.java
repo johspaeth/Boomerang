@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.swing.plaf.synth.SynthSpinnerUI;
+
 import com.google.common.collect.ForwardingMultimap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -17,6 +19,7 @@ import heros.solver.Pair;
 import soot.Unit;
 import soot.Value;
 import soot.jimple.AssignStmt;
+import soot.jimple.ReturnStmt;
 
 public class AliasResults extends ForwardingMultimap<Pair<Unit, AccessGraph>, AccessGraph> {
 	private Multimap<Pair<Unit, AccessGraph>, AccessGraph> delegate;
@@ -162,9 +165,16 @@ public class AliasResults extends ForwardingMultimap<Pair<Unit, AccessGraph>, Ac
 	public Set<Value> getValues(){
 		Set<Value> res = Sets.newHashSet();
 		for(Pair<Unit, AccessGraph> key : this.keySet()){
-			if(key.getO1() instanceof AssignStmt){
-				AssignStmt as = (AssignStmt) key.getO1();
-				res.add(as.getRightOp());
+			if(key.getO2().hasAllocationSite()){
+				Unit alloc = key.getO2().getSourceStmt();
+
+				if(alloc instanceof AssignStmt){
+					AssignStmt as = (AssignStmt) alloc;
+					res.add(as.getRightOp());
+				}
+				if(alloc instanceof ReturnStmt){
+					res.add(((ReturnStmt) alloc).getOp());
+				}
 			}
 		}
 		return res;

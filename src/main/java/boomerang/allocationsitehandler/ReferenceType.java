@@ -1,5 +1,7 @@
 package boomerang.allocationsitehandler;
 
+import java.util.Collection;
+
 import com.google.common.base.Optional;
 
 import boomerang.AliasFinder;
@@ -7,6 +9,7 @@ import boomerang.accessgraph.AccessGraph;
 import boomerang.pointsofindirection.Alloc;
 import boomerang.pointsofindirection.AllocationSiteHandler;
 import boomerang.pointsofindirection.AllocationSiteHandlers;
+import soot.SootMethod;
 import soot.Value;
 import soot.jimple.AssignStmt;
 import soot.jimple.InstanceFieldRef;
@@ -14,6 +17,7 @@ import soot.jimple.NewArrayExpr;
 import soot.jimple.NewExpr;
 import soot.jimple.NewMultiArrayExpr;
 import soot.jimple.NullConstant;
+import soot.jimple.ReturnStmt;
 
 public class ReferenceType implements AllocationSiteHandlers {
 
@@ -56,13 +60,13 @@ public class ReferenceType implements AllocationSiteHandlers {
 
 	@Override
 	public Optional<AllocationSiteHandler> returnStmtViaCall(final AssignStmt assignedCallSite,
-			final AccessGraph source, Value retOp) {
+			final AccessGraph source, final ReturnStmt returnSite, Value retOp) {
 		if (!(retOp instanceof NullConstant))
 			return Optional.absent();
 		return Optional.<AllocationSiteHandler>of(new AllocationSiteHandler() {
 			@Override
 			public Alloc alloc() {
-				return new Alloc(source, assignedCallSite, true);
+				return new Alloc(source, assignedCallSite,returnSite, true);
 			}
 		});
 	}
@@ -79,6 +83,19 @@ public class ReferenceType implements AllocationSiteHandlers {
 			@Override
 			public Alloc alloc() {
 				return new Alloc(source, stmt, true);
+			}
+		});
+	}
+
+	@Override
+	public Optional<AllocationSiteHandler> callToReturnAssign(final AssignStmt callSite, final AccessGraph source,
+			Collection<SootMethod> callees) {
+		if(!callees.isEmpty())
+			return Optional.absent();
+		return Optional.<AllocationSiteHandler>of(new AllocationSiteHandler() {
+			@Override
+			public Alloc alloc() {
+				return new Alloc(source, callSite, false);
 			}
 		});
 	}

@@ -3,16 +3,9 @@ package boomerang.accessgraph;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 
-import boomerang.AliasFinder;
-import heros.solver.Pair;
-import soot.ArrayType;
 import soot.Local;
-import soot.RefType;
-import soot.Scene;
 import soot.SootField;
 import soot.Type;
 import soot.Unit;
@@ -28,6 +21,10 @@ import soot.jimple.NewExpr;
  *
  */
 public class AccessGraph {
+
+	public static int MAX_FIELD_COUNT;
+
+	public static AccessGraph MAX_ACCESS_GRAPH;
 
 	/**
 	 * The local variable at which the field graph is rooted.
@@ -114,6 +111,10 @@ public class AccessGraph {
 //			System.out.println(fieldGraph);
 			this.fieldGraph = fieldGraph;
 //		}
+		if(getFieldCount() > MAX_FIELD_COUNT)
+			MAX_ACCESS_GRAPH = this;
+		MAX_FIELD_COUNT = Integer.max(MAX_FIELD_COUNT, getFieldCount());
+			
 		this.allocationSite = sourceStmt;
 	}
 
@@ -189,14 +190,14 @@ public class AccessGraph {
 	public String toString() {
 		String str = "";
 		if (value != null){
-			str += value.toString() ;
+			str += value.toString();
 		}
 		if (fieldGraph != null) {
 			
 			 str += fieldGraph.toString();
 		}
 		if (allocationSite != null) {
-			str += " at " +allocationSite.toString();
+			str += "(alloc)";
 		}
 		return str;
 	}

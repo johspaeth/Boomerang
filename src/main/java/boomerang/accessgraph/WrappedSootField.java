@@ -12,7 +12,7 @@ import soot.Unit;
 public class WrappedSootField {
   private SootField field;
   private Unit stmt;
-  public static boolean TRACK_STMT = true;
+  public static boolean TRACK_STMT = false;
 
   public WrappedSootField(SootField f, Unit s) {
     this.field = f;

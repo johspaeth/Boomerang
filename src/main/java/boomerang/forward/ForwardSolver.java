@@ -1,5 +1,6 @@
 package boomerang.forward;
 
+import boomerang.AliasFinder;
 import boomerang.BoomerangContext;
 import boomerang.BoomerangTimeoutException;
 import boomerang.accessgraph.AccessGraph;
@@ -49,12 +50,18 @@ public class ForwardSolver extends
       propagate(pathEdge, PropagationType.Normal);
     }
 
+    if(!icfg.isCallStmt(stmt)){
+      PathEdge<Unit, AccessGraph> pathEdge = new PathEdge<Unit, AccessGraph>(stmt, d1, stmt, d2);
+      propagate(pathEdge, PropagationType.Normal);
+    }
     awaitExecution();
   }
 
   @Override
   public void onRegister(IPathEdge<Unit, AccessGraph> edge) {
     context.sanityCheckEdge(edge);
+    if(edge.getTarget() != null)
+    	AliasFinder.VISITED_METHODS.add(icfg.getMethodOf(edge.getTarget()));
   }
 
   public String toString() {

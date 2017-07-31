@@ -74,10 +74,6 @@ class BackwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 			IPathEdge<Unit, AccessGraph> calleeEdge, IPathEdge<Unit, AccessGraph> succEdge,
 			IPathEdge<Unit, AccessGraph> incEdge) {
 
-		AccessGraph targetFact = succEdge.factAtTarget();
-		if(!targetFact.isStatic() && Scene.v().getPointsToAnalysis().reachingObjects(targetFact.getBase()).isEmpty()){
-			return Collections.emptySet();
-		}
 		return Collections.singleton(succEdge);
 	}
 
@@ -102,10 +98,6 @@ class BackwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 		}
 		succEdge = new PathEdge<Unit, AccessGraph>(null, succEdge.factAtTarget(), succEdge.getTarget(),
 				succEdge.factAtTarget());
-		AccessGraph targetFact = succEdge.factAtTarget();
-		if(!targetFact.isStatic() && Scene.v().getPointsToAnalysis().reachingObjects(targetFact.getBase()).isEmpty()){
-			return Collections.emptySet();
-		}
 		return Collections.singleton(succEdge);
 	}
 

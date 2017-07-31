@@ -1,5 +1,6 @@
 package boomerang.backward;
 
+import boomerang.AliasFinder;
 import boomerang.BoomerangContext;
 import boomerang.accessgraph.AccessGraph;
 import boomerang.bidi.Incomings;
@@ -18,7 +19,6 @@ public class BackwardSolver
 
 	private BoomerangContext context;
 
-
 	public BackwardSolver(BackwardProblem tabulationProblem, BoomerangContext context) {
 		super(tabulationProblem, context.debugger);
 		this.context = context;
@@ -26,7 +26,6 @@ public class BackwardSolver
 		this.summaries = new Summaries(context);
 		this.incomings = new Incomings();
 	}
-
 
 	public void startPropagation(AccessGraph d1, Unit stmt) {
 		for (Unit s : icfg.getSuccsOf(stmt)) {
@@ -36,18 +35,15 @@ public class BackwardSolver
 		}
 	}
 
-
-
 	@Override
 	public void onRegister(IPathEdge<Unit, AccessGraph> edge) {
 		context.sanityCheckEdge(edge);
+		if (edge.getTarget() != null)
+			AliasFinder.VISITED_METHODS.add(icfg.getMethodOf(edge.getTarget()));
 	}
 
 	public String toString() {
 		return "BWSOLVER";
 	}
-
-
-
 
 }

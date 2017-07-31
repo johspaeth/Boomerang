@@ -48,4 +48,17 @@ public class ArrayTest extends AbstractBoomerangTest{
     Object query = copiedArray[3];
     queryFor(query);
   }
+
+  @Test
+  public void toCharArrayTest() {
+	String s = "password";
+	char[] query = s.toCharArray();
+	char[] t = query;
+    queryFor(t);
+  }
+  
+  @Override
+	protected boolean includeJDK() {
+		return true;
+	}
 }
