@@ -11,7 +11,6 @@ import test.core.selfrunning.AbstractBoomerangTest;
 import test.core.selfrunning.AllocatedObject;
 
 public class TreeSetsLongTest extends AbstractBoomerangTest{
-	@Ignore
 	@Test
 	public void addAndRetrieve(){
 		Set<Object> set = new TreeSet<Object>();

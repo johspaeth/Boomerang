@@ -8,4 +8,6 @@ public interface IncomingListener<N, D, M> {
 
 	public Pair<N, D> getSourcePair();
 
+	public M getMethod();
+
 }
