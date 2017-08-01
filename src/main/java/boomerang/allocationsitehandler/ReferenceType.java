@@ -39,7 +39,7 @@ public class ReferenceType implements AllocationSiteHandlers {
 		return Optional.<AllocationSiteHandler>of(new AllocationSiteHandler() {
 			@Override
 			public Alloc alloc() {
-				return new Alloc(source, stmt, leftOp.getType(), rightOp instanceof NullConstant);
+				return new Alloc(source, stmt, rightOp.getType(), rightOp instanceof NullConstant);
 			}
 		});
 	}

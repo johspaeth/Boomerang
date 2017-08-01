@@ -253,7 +253,7 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 		else
 			toAppend = source.getFieldGraph().prependField(new WrappedSootField(field, curr))
 					.getFields();
-		if (toAppend.length > 0)
+		if (toAppend.length > 0 && (!context.getOptions().earlyCutOff() || toAppend.length == 1))
 			context.registerPOI(curr, new PointOfIndirection(new AccessGraph(lBase), curr, context),
 					new ForwardAliasCallback(edge.getStart(), edge.factAtSource(), succ, toAppend, context));
 	}

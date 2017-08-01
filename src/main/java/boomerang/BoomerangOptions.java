@@ -83,4 +83,8 @@ public abstract class BoomerangOptions {
 	public boolean onTheFlyCallGraphGeneration(){
 		return true;
 	}
+	
+	public boolean earlyCutOff(){
+		return true;
+	}
 }
