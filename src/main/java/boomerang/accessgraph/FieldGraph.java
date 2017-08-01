@@ -22,7 +22,7 @@ import soot.SootField;
  */
 public class FieldGraph implements IFieldGraph {
 
-	final LinkedList<WrappedSootField> fields;
+	final WrappedSootField[] fields;
 	static FieldGraph EMPTY_GRAPH = new FieldGraph() {
 		public String toString() {
 			return "EMPTY_GRAPH";
@@ -31,21 +31,18 @@ public class FieldGraph implements IFieldGraph {
 
 	FieldGraph(WrappedSootField[] fields) {
 		assert fields != null && fields.length > 0;
-		this.fields = new LinkedList<>(Arrays.asList(fields));
+		this.fields = fields;
 	}
 
 	FieldGraph(WrappedSootField f) {
 		assert f != null;
-		this.fields = new LinkedList<>();
-		this.fields.add(f);
+		this.fields = new WrappedSootField[1];
+		this.fields[0] = f;
 	}
 
-	private FieldGraph(LinkedList<WrappedSootField> fields) {
-		this.fields = fields;
-	}
 
 	private FieldGraph() {
-		this.fields = new LinkedList<>();
+		this.fields = new WrappedSootField[0];
 	}
 
 	/**
@@ -53,38 +50,41 @@ public class FieldGraph implements IFieldGraph {
 	 * @return
 	 */
 	public Set<IFieldGraph> popFirstField() {
-		if (fields.isEmpty())
+		if (fields.length == 0)
 			return new HashSet<>();
 		Set<IFieldGraph> out = new HashSet<>();
-		LinkedList<WrappedSootField> newFields = new LinkedList<>(fields);
-		newFields.removeFirst();
-		if(newFields.isEmpty())
+		if(fields.length == 1)
 			out.add(FieldGraph.EMPTY_GRAPH);
-		else
-			out.add(new FieldGraph(newFields));
+		else{
+			WrappedSootField[] copy = new WrappedSootField[fields.length - 1];
+			System.arraycopy(fields, 1, copy, 0, fields.length - 1);
+			out.add(new FieldGraph(copy));
+		}
 		return out;
 	}
 
 	public WrappedSootField[] getFields() {
-		return fields.toArray(new WrappedSootField[] {});
+		return fields;
 	}
 
 	public IFieldGraph prependField(WrappedSootField f) {
-		LinkedList<WrappedSootField> newFields = new LinkedList<>(fields);
-		newFields.addFirst(f);
-		return new FieldGraph(newFields);
+		WrappedSootField[] copy = new WrappedSootField[fields.length + 1];
+		System.arraycopy(fields, 0, copy, 1, fields.length);
+		copy[0] = f;
+		return new FieldGraph(copy);
 	}
 
 	public Set<IFieldGraph> popLastField() {
 		Set<IFieldGraph> out = new HashSet<>();
-		if (fields.isEmpty())
+		if (fields.length == 0)
 			return out;
-		LinkedList<WrappedSootField> newFields = new LinkedList<>(fields);
-		newFields.removeLast();
-		if(newFields.isEmpty())
+		if(fields.length == 1)
 			out.add(FieldGraph.EMPTY_GRAPH);
-		else
-			out.add(new FieldGraph(newFields));
+		else{
+			WrappedSootField[] copy = new WrappedSootField[fields.length - 1];
+			System.arraycopy(fields, 0, copy, 0, fields.length - 1);
+			out.add(new FieldGraph(copy));
+		}
 		return out;
 	}
 
@@ -94,10 +94,12 @@ public class FieldGraph implements IFieldGraph {
 			return setBasedFieldGraph.append(this);
 		} else if (o instanceof FieldGraph) {
 			FieldGraph other = (FieldGraph) o;
-			LinkedList<WrappedSootField> fields2 = other.fields;
-			LinkedList<WrappedSootField> newFields = new LinkedList<>(fields);
-			newFields.addAll(fields2);
-			return new FieldGraph(newFields);
+			if(other.fields.length == 0)
+				return this;
+			WrappedSootField[] copy = new WrappedSootField[fields.length + other.fields.length];
+			System.arraycopy(fields, 0, copy, 0, fields.length);
+			System.arraycopy(other.fields, 0, copy, fields.length, other.fields.length);
+			return new FieldGraph(copy);
 		}
 		throw new RuntimeException("Not yet implemented!");
 	}
@@ -108,7 +110,8 @@ public class FieldGraph implements IFieldGraph {
 
 	public Set<WrappedSootField> getEntryNode() {
 		Set<WrappedSootField> out = new HashSet<>();
-		out.add(fields.get(0));
+		if(fields.length > 0)
+			out.add(fields[0]);
 		return out;
 	}
 
@@ -123,12 +126,15 @@ public class FieldGraph implements IFieldGraph {
 	}
 
 	public Collection<WrappedSootField> getExitNode() {
-		return Collections.singleton(fields.getLast());
+		Set<WrappedSootField> out = new HashSet<>();
+		if(fields.length > 0)
+			out.add(fields[fields.length - 1]);
+		return out;
 	}
 
 	public String toString() {
 		String str = "";
-		str += fields.toString();
+		str += Arrays.toString(fields);
 		return str;
 	}
 
@@ -139,16 +145,14 @@ public class FieldGraph implements IFieldGraph {
 
 	@Override
 	public IFieldGraph overapproximation() {
-		return new SetBasedFieldGraph(new HashSet<>(fields));
+		return new SetBasedFieldGraph(new HashSet<>(Arrays.asList(fields)));
 	}
-
-	
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((fields == null) ? 0 : fields.hashCode());
+		result = prime * result + Arrays.hashCode(fields);
 		return result;
 	}
 
@@ -161,13 +165,13 @@ public class FieldGraph implements IFieldGraph {
 		if (getClass() != obj.getClass())
 			return false;
 		FieldGraph other = (FieldGraph) obj;
-		if (fields == null) {
-			if (other.fields != null)
-				return false;
-		} else if (!fields.equals(other.fields))
+		if (!Arrays.equals(fields, other.fields))
 			return false;
 		return true;
 	}
+
+	
+
 
 
 }
