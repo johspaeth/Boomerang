@@ -1,54 +1,26 @@
 package boomerang.accessgraph;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import com.google.common.base.Joiner;
 
 import soot.Scene;
-import soot.SootField;
 import soot.Type;
 
 public class SetBasedFieldGraph implements IFieldGraph {
-
+	private int hashCode = 0;
 	private Set<WrappedSootField> fields;
 	public static Set<WrappedSootField> allFields;
 
 	public SetBasedFieldGraph(Set<WrappedSootField> fields) {
-		this(fields, true);
+		if (allFields == null)
+			allFields = new HashSet<>();
+		allFields.addAll(fields);
+		this.fields = fields;
 	}
 
-	public SetBasedFieldGraph(Set<WrappedSootField> fields, boolean type) {
-		if (!type) {
-			this.fields = new HashSet<>();
-			for (WrappedSootField f : fields) {
-				this.fields.add(new WrappedSootField(f.getField(), null));
-			}
-		} else {
-			if (allFields == null)
-				allFields = new HashSet<>();
-			allFields.addAll(fields);
-				this.fields =new HashSet<>(fields);// minimize(fields);
-		}
-		// assert fields.size() > 1;
-	}
-
-
-	private Type superType(Type a, Type b) {
-		if (a.equals(b))
-			return a;
-		if (Scene.v().getOrMakeFastHierarchy().canStoreType(a, b)) {
-			return b;
-		} else if (Scene.v().getOrMakeFastHierarchy().canStoreType(b, a)) {
-			return a;
-		}
-		return a;
-		// throw new RuntimeException("Type mismatch?" + a +" and " + b);
-	}
 	@Override
 	public Set<IFieldGraph> popFirstField() {
 		Set<IFieldGraph> out = new HashSet<>();
@@ -74,9 +46,17 @@ public class SetBasedFieldGraph implements IFieldGraph {
 
 	@Override
 	public IFieldGraph appendFields(WrappedSootField[] toAppend) {
+		boolean added = false;
+		for (WrappedSootField f : toAppend){
+			if(!fields.contains(f))
+				added = true;
+		}
+		if(!added)
+			return this;
 		Set<WrappedSootField> overapprox = new HashSet<>(fields);
-		for (WrappedSootField f : toAppend)
+		for (WrappedSootField f : toAppend){
 			overapprox.add(f);
+		}
 		return new SetBasedFieldGraph(overapprox);
 	}
 
@@ -87,8 +67,9 @@ public class SetBasedFieldGraph implements IFieldGraph {
 
 	@Override
 	public IFieldGraph prependField(WrappedSootField f) {
+		if(fields.contains(f))
+			return this;
 		Set<WrappedSootField> overapprox = new HashSet<>(fields);
-		overapprox.add(f);
 		return new SetBasedFieldGraph(overapprox);
 	}
 
@@ -105,8 +86,6 @@ public class SetBasedFieldGraph implements IFieldGraph {
 	@Override
 	public IFieldGraph overapproximation() {
 		return this;
-		// throw new RuntimeException("Cannot overapproximate the approxmiation
-		// anymore");
 	}
 
 	public String toString() {
@@ -114,9 +93,12 @@ public class SetBasedFieldGraph implements IFieldGraph {
 	}
 	@Override
 	public int hashCode() {
+		if(hashCode != 0)
+			return hashCode;
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((fields == null) ? 0 : fields.hashCode());
+		hashCode = result;
 		return result;
 	}
 	@Override
@@ -131,7 +113,7 @@ public class SetBasedFieldGraph implements IFieldGraph {
 		if (fields == null) {
 			if (other.fields != null)
 				return false;
-		} else if (fields.size() != other.fields.size() || !fields.equals(other.fields))
+		} else if (!fields.equals(other.fields))
 			return false;
 		return true;
 	}
