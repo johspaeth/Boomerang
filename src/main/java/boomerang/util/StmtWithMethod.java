@@ -17,6 +17,14 @@ public class StmtWithMethod {
 		return stmt +"€" + method;
 	}
 
+	public Unit getStmt() {
+		return stmt;
+	}
+
+	public SootMethod getMethod() {
+		return method;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
