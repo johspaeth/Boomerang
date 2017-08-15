@@ -1,11 +1,16 @@
 package boomerang.pointsofindirection;
 
+import java.util.List;
+
 import boomerang.BoomerangContext;
 import boomerang.accessgraph.AccessGraph;
 import boomerang.backward.PropagationSourceListener;
 import boomerang.ifdssolver.IPathEdge;
+import boomerang.ifdssolver.DefaultIFDSTabulationProblem.Direction;
 import heros.solver.Pair;
+import soot.RefType;
 import soot.Scene;
+import soot.SootClass;
 import soot.SootMethod;
 import soot.Type;
 import soot.Unit;
@@ -38,6 +43,14 @@ public class Alloc {
 	}
 
 	public void execute(final BoomerangContext context, IPathEdge<Unit, AccessGraph> edge) {
+		if(allocType instanceof RefType){
+			RefType refType = (RefType) allocType;
+			context.addVisitableClass(refType.getSootClass());
+		}
+		System.out.println(this);
+		SootMethod allocMethod = context.icfg.getMethodOf(allocationSite);
+		if(allocMethod.isStatic())
+			context.addVisitableMethod(allocMethod);
 		context.getBackwardSolver().attachPropagationOriginListener(edge.getStartNode(), context.icfg.getMethodOf(edge.getTarget()), new PropagationSourceListener() {
 			
 			@Override
@@ -62,7 +75,6 @@ public class Alloc {
 		// start forward propagation from the path edge target with the
 		// allocation site.
 		this.method = context.icfg.getMethodOf(target);
-		System.out.println(this);
 		context.getForwardSolver().startPropagationAlongPath(target, alloc, alloc.deriveWithoutAllocationSite());
 	}
 

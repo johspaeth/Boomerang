@@ -194,7 +194,15 @@ public class AliasFinder {
 		BackwardSolver backwardSolver = context.getBackwardSolver();
 		ForwardSolver forwardSolver = context.getForwardSolver();
 		boolean timedout = false;
-		context.addVisitableMethod(context.icfg.getMethodOf(stmt));
+		SootMethod m = context.icfg.getMethodOf(stmt);
+		if(!m.isStatic()){
+			for(Unit callSite : context.icfg.getCallersOf(m)){
+				context.setBackwardVisitable(context.icfg.getMethodOf(callSite));	
+				context.sendBaseVariableBackward(callSite);
+			}
+		}
+		context.setBackwardVisitable(m);	
+		
 		context.expandContext(context.icfg.getMethodOf(stmt));
 		try{
 			backwardSolver.startPropagation(accessGraph, stmt);
@@ -211,6 +219,10 @@ public class AliasFinder {
 
 		if(timedout)
 			res.setTimedout();
+		if(timedout)
+			System.err.println("Query timedout");
+		else
+			System.out.println("Query finished");
 		return res;
 	}
 

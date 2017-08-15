@@ -6,6 +6,7 @@ import java.util.Map;
 
 import soot.Body;
 import soot.Local;
+import soot.PatchingChain;
 import soot.Scene;
 import soot.SceneTransformer;
 import soot.SootClass;
@@ -16,6 +17,8 @@ import soot.ValueBox;
 import soot.jimple.AssignStmt;
 import soot.jimple.Constant;
 import soot.jimple.InvokeExpr;
+import soot.jimple.Jimple;
+import soot.jimple.JimpleBody;
 import soot.jimple.NumericConstant;
 import soot.jimple.ReturnStmt;
 import soot.jimple.ReturnVoidStmt;
@@ -76,7 +79,16 @@ public class PreparationTransformer extends SceneTransformer {
           continue;
         }
         Body b = m.getActiveBody();
-        b.getUnits().addFirst(new JNopStmt());
+        PatchingChain<Unit> units = b.getUnits();
+        JimpleBody body = Jimple.v().newBody(m);
+        m.setActiveBody(body);
+        for(Local l : b.getLocals())
+        	body.getLocals().add(l);
+        for(Unit u : units){
+        	body.getUnits().add(new JNopStmt());
+        	body.getUnits().add(u);
+        }
+//        body.validate();
       }
     }
   }

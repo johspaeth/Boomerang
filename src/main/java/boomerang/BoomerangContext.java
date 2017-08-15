@@ -9,6 +9,8 @@ import javax.lang.model.type.PrimitiveType;
 
 import com.beust.jcommander.internal.Sets;
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 
 import boomerang.accessgraph.AccessGraph;
 import boomerang.accessgraph.WrappedSootField;
@@ -23,6 +25,7 @@ import boomerang.debug.JSONOutputDebugger;
 import boomerang.forward.ForwardFlowFunctions;
 import boomerang.forward.ForwardProblem;
 import boomerang.forward.ForwardSolver;
+import boomerang.ifdssolver.DefaultIFDSTabulationProblem.Direction;
 import boomerang.ifdssolver.IPathEdge;
 import boomerang.ifdssolver.IPropagationController;
 import boomerang.ifdssolver.PathEdge;
@@ -38,10 +41,15 @@ import boomerang.pointsofindirection.PointOfIndirection;
 import heros.FlowFunction;
 import heros.solver.Pair;
 import soot.Local;
+import soot.Scene;
+import soot.SootClass;
 import soot.SootMethod;
 import soot.Unit;
 import soot.Value;
+import soot.jimple.InstanceInvokeExpr;
+import soot.jimple.InvokeExpr;
 import soot.jimple.ReturnStmt;
+import soot.jimple.Stmt;
 
 @SuppressWarnings("serial")
 public class BoomerangContext {
@@ -77,6 +85,8 @@ public class BoomerangContext {
 
 	private Set<SootMethod> callingContexts = new HashSet<>();
 	private Set<SootMethod> visitableMethods = new HashSet<>();
+	private Set<SootClass> visitableClasses = new HashSet<>();
+	private Set<SootMethod> backwardVisitableMethods = new HashSet<>();
 
 	public ContextScheduler scheduler;
 
@@ -255,7 +265,7 @@ public class BoomerangContext {
 	public void addVisitableMethod(SootMethod m){
 		if(!visitableMethods.add(m))
 			return;
-		getBackwardSolver().setVisitable(m);
+		setBackwardVisitable(m);
 		getForwardSolver().setVisitable(m);
 	}
 
@@ -265,5 +275,48 @@ public class BoomerangContext {
 
 	public boolean isExpandingContext(SootMethod m){
 		return callingContexts.contains(m);
+	}
+
+	public void setBackwardVisitable(SootMethod m) {
+		if(!backwardVisitableMethods.add(m))
+			return;
+		getBackwardSolver().setVisitable(m);
+	}
+
+	public boolean backwardVisitableMethod(SootMethod callee) {
+		return backwardVisitableMethods.contains(callee);
+	}
+
+	public void addVisitableClass(SootClass sootClass) {
+		if(!visitableClasses.add(sootClass))
+			return;
+		System.out.println("Becomes visitable class "+  sootClass  );
+		for(SootMethod m : sootClass.getMethods()){
+			addVisitableMethod(m);
+		}
+		if(sootClass.isInterface())
+			return;
+		for(SootClass superClass : Scene.v().getActiveHierarchy().getSuperclassesOf(sootClass)){
+			addVisitableClass(superClass);
+		}
+		if(sootClass.isInnerClass()){
+			addVisitableClass(sootClass.getOuterClass());
+		}
+	}
+
+	public void sendBaseVariableBackward(Unit callSite) {
+		if(!(callSite instanceof Stmt))
+			return;
+		Stmt stmt = (Stmt) callSite;
+		if(!stmt.containsInvokeExpr())
+			return;
+		InvokeExpr invokeExpr = stmt.getInvokeExpr();
+		if(!(invokeExpr instanceof InstanceInvokeExpr))
+			return;
+		InstanceInvokeExpr iie = (InstanceInvokeExpr) invokeExpr;
+		Value base = iie.getBase();
+		if(base instanceof Local){
+			getBackwardSolver().startPropagation(new AccessGraph((Local) base), callSite);
+		}
 	}
 }

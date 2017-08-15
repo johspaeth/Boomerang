@@ -36,7 +36,7 @@ class BackwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 	protected Collection<? extends IPathEdge<Unit, AccessGraph>> normalFunctionExtendor(
 			IPathEdge<Unit, AccessGraph> prevEdge, IPathEdge<Unit, AccessGraph> succEdge) {
 		SootMethod m = context.icfg.getMethodOf(succEdge.getTarget());
-		if(!context.visitableMethod(m)){
+		if(!context.backwardVisitableMethod(m)){
 			context.getBackwardSolver().addMethodToPausedEdge(m, succEdge);
 			return Collections.emptySet();
 		}
@@ -47,7 +47,7 @@ class BackwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 	protected Collection<? extends IPathEdge<Unit, AccessGraph>> callFunctionExtendor(
 			IPathEdge<Unit, AccessGraph> prevEdge, final IPathEdge<Unit, AccessGraph> initialSelfLoop,
 			SootMethod callee) {
-
+		
 		PathEdge<Unit, AccessGraph> pathEdge = new PathEdge<>(null, initialSelfLoop.factAtSource(), initialSelfLoop.getTarget(),
 				initialSelfLoop.factAtTarget());
 		Unit callSite = prevEdge.getTarget();
@@ -55,6 +55,7 @@ class BackwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 		if(!context.getOptions().onTheFlyCallGraphGeneration()){
 			context.addVisitableMethod(callee);
 		} else if(context.getOptions().onTheFlyCallGraphGeneration() && !callee.isStatic()){
+			context.sendBaseVariableBackward(callSite);
 			if(callSite instanceof Stmt){
 				Stmt stmt = (Stmt) callSite;
 				if(stmt.containsInvokeExpr()){
@@ -62,9 +63,6 @@ class BackwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 					if(invokeExpr instanceof InstanceInvokeExpr){
 						InstanceInvokeExpr iie = (InstanceInvokeExpr) invokeExpr;
 						Value base = iie.getBase();
-						if(base instanceof Local){
-							context.getBackwardSolver().startPropagation(new AccessGraph((Local) base), callSite);
-						}
 						if (target.getFieldCount() == 0 && !target.hasSetBasedFieldGraph() && target.baseMatches(base))
 							return Collections.emptySet();
 					}
@@ -76,13 +74,15 @@ class BackwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 		}
 		return Collections.singleton(pathEdge);
 	}
+	
+	
 
 	@Override
 	protected Collection<? extends IPathEdge<Unit, AccessGraph>> balancedReturnFunctionExtendor(
 			IPathEdge<Unit, AccessGraph> calleeEdge, IPathEdge<Unit, AccessGraph> succEdge,
 			IPathEdge<Unit, AccessGraph> incEdge) {
 		SootMethod caller = context.icfg.getMethodOf(incEdge.getTarget());
-		if(!context.visitableMethod(caller)){
+		if(!context.backwardVisitableMethod(caller)){
 			context.getBackwardSolver().addMethodToPausedEdge(caller, succEdge);
 			return Collections.emptySet();
 		}
@@ -113,15 +113,16 @@ class BackwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 				return Collections.emptySet();
 			} else if(!target.isStatic()){
 				if(context.isExpandingContext(callee)){
-					if(context.getContextRequester().continueAtCallSite(callSite, callee)){
-						context.addVisitableMethod(context.icfg.getMethodOf(callSite));
+//					if(context.getContextRequester().continueAtCallSite(callSite, callee)){
+						context.sendBaseVariableBackward(callSite);
+						context.setBackwardVisitable(context.icfg.getMethodOf(callSite));
 						context.expandContext(context.icfg.getMethodOf(callSite));
-					} else{
-						for(Type type : prevEdge.factAtTarget().getTypes()){
-							Alloc alloc = new Alloc(prevEdge.factAtTarget(), prevEdge.getTarget(), type, true);
-							alloc.execute(context,prevEdge);
-						}
-					}
+//					} else{
+//						for(Type type : prevEdge.factAtTarget().getTypes()){
+//							Alloc alloc = new Alloc(prevEdge.factAtTarget(), prevEdge.getTarget(), type, true);
+//							alloc.execute(context,prevEdge);
+//						}
+//					}
 				}
 			}
 			
@@ -132,7 +133,7 @@ class BackwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 		
 		if(callSite == null)
 			return Collections.emptySet();
-		if(!context.visitableMethod(context.icfg.getMethodOf(callSite))){
+		if(!context.backwardVisitableMethod(context.icfg.getMethodOf(callSite))){
 			context.getBackwardSolver().addMethodToPausedEdge(context.icfg.getMethodOf(callSite), succEdge);
 			return Collections.emptySet();
 		}

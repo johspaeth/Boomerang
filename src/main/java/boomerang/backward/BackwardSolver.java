@@ -42,7 +42,7 @@ public class BackwardSolver
 		for (Unit s : icfg.getSuccsOf(stmt)) {
 			PathEdge<Unit, AccessGraph> edge = new PathEdge<Unit, AccessGraph>(null, d1.propagationOrigin(), s, d1);
 			debugger.backwardStart(Direction.BACKWARD, stmt, d1, s);
-			if(context.visitableMethod(m))
+			if(context.backwardVisitableMethod(m))
 				propagate(edge, PropagationType.Normal);
 			else
 				addMethodToPausedEdge(m, edge);

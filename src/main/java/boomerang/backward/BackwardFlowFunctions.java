@@ -58,11 +58,11 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 					if (identityStmt.getRightOp() instanceof CaughtExceptionRef)
 						return Collections.emptySet();
 				}
+				if (curr instanceof ThrowStmt)
+					return Collections.emptySet();
 				if (!(curr instanceof AssignStmt)) {
 					return Collections.singleton(source);
 				}
-				if (curr instanceof ThrowStmt)
-					return Collections.emptySet();
 				AssignStmt as = (AssignStmt) curr;
 				Value leftOp = as.getLeftOp();
 				Value rightOp = as.getRightOp();
@@ -429,9 +429,6 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 				if (!sourceIsKilled)
 					out.add(source);
 
-				if (callees.isEmpty()) {
-					return Collections.singleton(source);
-				}
 				return out;
 			}
 

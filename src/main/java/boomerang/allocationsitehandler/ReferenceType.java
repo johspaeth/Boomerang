@@ -36,6 +36,8 @@ public class ReferenceType implements AllocationSiteHandlers {
 		}
 		if (source.getFieldCount() > 1 && source.firstFieldMustMatch(AliasFinder.ARRAY_FIELD))
 			return Optional.absent();
+//		if(source.hasSetBasedFieldGraph())
+//			return Optional.absent();
 		return Optional.<AllocationSiteHandler>of(new AllocationSiteHandler() {
 			@Override
 			public Alloc alloc() {
@@ -89,7 +91,7 @@ public class ReferenceType implements AllocationSiteHandlers {
 	@Override
 	public Optional<AllocationSiteHandler> callToReturnAssign(final AssignStmt callSite, final AccessGraph source,
 			Collection<SootMethod> callees) {
-		if(!callees.isEmpty())
+		if(!callees.isEmpty() || source.hasSetBasedFieldGraph() || source.getFieldCount() > 0)
 			return Optional.absent();
 		return Optional.<AllocationSiteHandler>of(new AllocationSiteHandler() {
 			@Override
