@@ -213,7 +213,7 @@ public class ExtendedICFG implements IExtendedICFG {
 
 	@Override
 	public boolean isStaticFieldUsed(SootMethod method, SootField variable) {
-		return isStaticFieldUsed(method, variable, new HashSet<SootMethod>(), false);
+		return true;//;isStaticFieldUsed(method, variable, new HashSet<SootMethod>(), false);
 	}
 
 	private boolean isStaticFieldUsed(SootMethod method, SootField variable, Set<SootMethod> runList,
