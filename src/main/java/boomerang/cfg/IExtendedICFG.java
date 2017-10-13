@@ -3,14 +3,11 @@
  */
 package boomerang.cfg;
 
+import boomerang.incremental.UpdatableInterproceduralCFG;
 import soot.SootField;
 import soot.SootMethod;
-import soot.Type;
-import soot.Unit;
-import soot.Value;
-import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
 
-public interface IExtendedICFG extends BiDiInterproceduralCFG<Unit, SootMethod> {
+public interface IExtendedICFG<N, M> extends UpdatableInterproceduralCFG<N, M> {
 
 	/**
 	 * Checks whether the given static field is used (read or written) inside

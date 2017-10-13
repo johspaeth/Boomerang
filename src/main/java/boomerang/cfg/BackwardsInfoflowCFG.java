@@ -1,5 +1,7 @@
 package boomerang.cfg;
 
+import soot.SootMethod;
+import soot.Unit;
 import soot.jimple.toolkits.ide.icfg.BackwardsInterproceduralCFG;
 
 /**
@@ -10,9 +12,9 @@ import soot.jimple.toolkits.ide.icfg.BackwardsInterproceduralCFG;
  */
 public class BackwardsInfoflowCFG extends ExtendedICFG {
 	
-	private final IExtendedICFG baseCFG;
+	private final IExtendedICFG<Unit, SootMethod> baseCFG;
 	
-	public BackwardsInfoflowCFG(IExtendedICFG baseCFG) {
+	public BackwardsInfoflowCFG(IExtendedICFG<Unit, SootMethod> baseCFG) {
 		super(new BackwardsInterproceduralCFG(baseCFG));
 		this.baseCFG = baseCFG;
 	}

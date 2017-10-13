@@ -47,14 +47,14 @@ public class BoomerangContext {
 	/**
 	 * The inter-procedural control flow graph to be used.
 	 */
-	public IExtendedICFG icfg;
+	public IExtendedICFG<Unit, SootMethod> icfg;
 
 	public IBoomerangDebugger debugger;
 
 	/**
 	 * The inter-procedural backward control flow graph to be used.
 	 */
-	public IExtendedICFG bwicfg;
+	public IExtendedICFG<Unit, SootMethod> bwicfg;
 
 	/**
 	 * Native call handler, defines how aliases flow at native call sites.
