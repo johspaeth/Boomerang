@@ -82,10 +82,20 @@ public class ExtendedICFG extends AbstractUpdatableExtendedICFG<Unit, SootMethod
 	}
 
 	public ExtendedICFG(BiDiInterproceduralCFG<Unit, SootMethod> delegate) {
-		super();
+		super(delegate);
 		this.sceneDiff.fullBuild();
 		this.delegate = delegate;
 		preanalysis();
+	}
+	
+	@Override
+	protected BiDiInterproceduralCFG<Unit, SootMethod> createBaseCFG() {
+		return this.delegate;
+	}
+	
+	@Override
+	protected JimpleBasedInterproceduralCFG getBaseCFG() {
+		return (JimpleBasedInterproceduralCFG) super.getBaseCFG();
 	}
 
 	private void preanalysis() {
@@ -471,16 +481,6 @@ public class ExtendedICFG extends AbstractUpdatableExtendedICFG<Unit, SootMethod
 			uold = oldChain.getSuccOf(uold);
 			unew = newChain.getSuccOf(unew);
 		}
-	}
-	
-	@Override
-	protected BiDiInterproceduralCFG<Unit, SootMethod> createBaseCFG() {
-		return this.delegate;
-	}
-	
-	@Override
-	protected JimpleBasedInterproceduralCFG getBaseCFG() {
-		return (JimpleBasedInterproceduralCFG) super.getBaseCFG();
 	}
 	
 	/**

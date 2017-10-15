@@ -10,6 +10,7 @@
  ******************************************************************************/
 package boomerang.incremental;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -76,7 +77,7 @@ public interface UpdatableInterproceduralCFG<N, M>
 	 * @param obj The list of objects to be wrapped
 	 * @return The list of wrapped objects
 	 */
-	public <X> List<UpdatableWrapper<X>> wrap(List<X> obj);
+	public <X> Collection<UpdatableWrapper<X>> wrap(Collection<X> obj);
 
 	/**
 	 * Wraps an object and registers a listener so that the reference can be

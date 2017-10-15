@@ -51,7 +51,7 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 	public FlowFunction<AccessGraph> getNormalFlowFunction(final IPathEdge<Unit, AccessGraph> edge, final Unit succ) {
 		final Unit curr = edge.getTarget();
 
-		final SootMethod method = context.icfg.getMethodOf(curr);
+		final SootMethod method = context.icfg.getMethodOf(context.icfg.wrap(curr)).getContents();
 		final Local thisLocal = method.isStatic() ? null : method.getActiveBody().getThisLocal();
 		return new FlowFunction<AccessGraph>() {
 

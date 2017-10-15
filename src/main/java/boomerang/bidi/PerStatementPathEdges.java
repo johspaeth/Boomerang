@@ -16,6 +16,7 @@ import boomerang.BoomerangContext;
 import boomerang.accessgraph.AccessGraph;
 import boomerang.ifdssolver.DefaultIFDSTabulationProblem.Direction;
 import boomerang.ifdssolver.IPathEdge;
+import boomerang.incremental.UpdatableWrapper;
 import boomerang.pointsofindirection.AliasCallback;
 import boomerang.pointsofindirection.PointOfIndirection;
 import heros.solver.Pair;
@@ -242,18 +243,20 @@ class PerStatementPathEdges {
 		Multimap<Pair<Unit, AccessGraph>, AccessGraph> out = HashMultimap.create();
 		for (Pair<Unit, AccessGraph> key : pathEdges.keySet()) {
 			Unit pathEdgeStart = key.getO1();
-			SootMethod callee = context.icfg.getMethodOf(pathEdgeStart);
+			SootMethod callee = context.icfg.getMethodOf(context.icfg.wrap(pathEdgeStart)).getContents();
 			boolean maintainPathEdge = false;
-			if (context.icfg.getStartPointsOf(callee).contains(pathEdgeStart)) {
-				for (Unit callSite : context.icfg.getCallersOf(callee)) {
+			//TODO: might not work because of tempStartPoints being a Collection<UpdatableWrapper<Unit>>
+			Collection<UpdatableWrapper<Unit>> tempStartPoints = context.icfg.getStartPointsOf(context.icfg.wrap(callee));
+			if (tempStartPoints.contains(pathEdgeStart)) {
+				for (UpdatableWrapper<Unit> callSite : context.icfg.getCallersOf(context.icfg.wrap(callee))) {
 //					maintainPathEdge |= !context.getContextRequester().continueAtCallSite(callSite, callee);
 					Set<? extends IPathEdge<Unit, AccessGraph>> pathEdgesAtCallSite = context.getForwardIncomings(key);
 					for (IPathEdge<Unit, AccessGraph> pathEdgeAtCallSite : pathEdgesAtCallSite) {
 						Multimap<Pair<Unit, AccessGraph>, AccessGraph> aliasesAtCallSite = context.getForwardPathEdges()
-								.getResultAtStmtContainingValue(callSite, pathEdgeAtCallSite.factAtTarget(), visited);
+								.getResultAtStmtContainingValue(callSite.getContents(), pathEdgeAtCallSite.factAtTarget(), visited);
 						for (Entry<Pair<Unit, AccessGraph>, AccessGraph> aliasEntry : aliasesAtCallSite.entries()) {
 							Set<AccessGraph> withinCalleeFacts = context.getForwardTargetsFor(aliasEntry.getValue(),
-									callSite, callee);
+									callSite.getContents(), callee);
 							for (AccessGraph wihinCalleeFact : withinCalleeFacts) {
 
 								Collection<Pair<Unit, AccessGraph>> fwPair = forwardPathEdges

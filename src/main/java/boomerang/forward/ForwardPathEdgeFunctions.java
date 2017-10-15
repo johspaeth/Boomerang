@@ -15,7 +15,6 @@ import boomerang.ifdssolver.IPathEdge;
 import boomerang.pointsofindirection.ForwardAliasCallback;
 import boomerang.pointsofindirection.PointOfIndirection;
 import boomerang.pointsofindirection.StrongUpdateCallback;
-import heros.solver.Pair;
 import soot.Local;
 import soot.Scene;
 import soot.SootMethod;
@@ -33,7 +32,7 @@ class ForwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 	}
 
 	private boolean isActivePath(Unit target) {
-		SootMethod m = context.icfg.getMethodOf(target);
+		SootMethod m = context.icfg.getMethodOf(context.icfg.wrap(target)).getContents();
 		return context.visitedBackwardMethod(m);
 	}
 
@@ -144,7 +143,7 @@ class ForwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 				}
 			}
 
-			context.addAsVisitedBackwardMethod(context.icfg.getMethodOf(callSite));
+			context.addAsVisitedBackwardMethod(context.icfg.getMethodOf(context.icfg.wrap(callSite)).getContents());
 			return out;
 		}
 		return Collections.emptySet();

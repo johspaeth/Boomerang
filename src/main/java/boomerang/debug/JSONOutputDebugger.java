@@ -10,6 +10,7 @@ import boomerang.accessgraph.AccessGraph;
 import boomerang.cfg.IExtendedICFG;
 import boomerang.ifdssolver.DefaultIFDSTabulationProblem.Direction;
 import boomerang.ifdssolver.IPathEdge;
+import boomerang.incremental.UpdatableWrapper;
 import heros.debug.visualization.ExplodedSuperGraph;
 import heros.debug.visualization.IDEToJSON;
 import heros.solver.Pair;
@@ -24,7 +25,7 @@ import soot.jimple.Stmt;
 
 public class JSONOutputDebugger extends DefaultBoomerangDebugger {
 	private BoomerangContext context;
-	private IExtendedICFG icfg;
+	private IExtendedICFG<Unit, SootMethod> icfg;
 	private File jsonFile;
 	private IDEToJSON<SootMethod, Unit, AccessGraph, Object, IExtendedICFG> forwardJSON;
 
@@ -35,17 +36,17 @@ public class JSONOutputDebugger extends DefaultBoomerangDebugger {
 
 	@Override
 	public void addSummary(Direction dir, SootMethod methodToSummary, IPathEdge<Unit, AccessGraph> summary) {
-		for (Unit callSite : icfg.getCallersOf(methodToSummary)) {
-			ExplodedSuperGraph cfg = forwardJSON.getOrCreateESG(icfg.getMethodOf(callSite), convertDirection(dir));
-			for (Unit start : icfg.getStartPointsOf(methodToSummary)) {
-				cfg.addSummary(cfg.new ESGNode(start, summary.factAtSource()), cfg.new ESGNode(summary.getTarget(),summary.factAtTarget()));
+		for (UpdatableWrapper<Unit> callSite : icfg.getCallersOf(icfg.wrap(methodToSummary))) {
+			ExplodedSuperGraph cfg = forwardJSON.getOrCreateESG(icfg.getMethodOf(callSite).getContents(), convertDirection(dir));
+			for (UpdatableWrapper<Unit> start : icfg.getStartPointsOf(icfg.wrap(methodToSummary))) {
+				cfg.addSummary(cfg.new ESGNode(start.getContents(), summary.factAtSource()), cfg.new ESGNode(summary.getTarget(),summary.factAtTarget()));
 			}
 		}
 	}
 
 	@Override
 	public void normalFlow(Direction dir, Unit start, AccessGraph startFact, Unit target, AccessGraph targetFact) {
-		forwardJSON.getOrCreateESG(icfg.getMethodOf(start), convertDirection(dir)).normalFlow(start, startFact, target, targetFact);
+		forwardJSON.getOrCreateESG(icfg.getMethodOf(icfg.wrap(start)).getContents(), convertDirection(dir)).normalFlow(start, startFact, target, targetFact);
 	}
 
 	private heros.debug.visualization.IDEToJSON.Direction convertDirection(Direction dir){
@@ -56,41 +57,41 @@ public class JSONOutputDebugger extends DefaultBoomerangDebugger {
 
 	@Override
 	public void callFlow(Direction dir, Unit start, AccessGraph startFact, Unit target, AccessGraph targetFact) {
-		forwardJSON.getOrCreateESG(icfg.getMethodOf(start), convertDirection(dir)).callFlow(start, startFact, target, targetFact);
+		forwardJSON.getOrCreateESG(icfg.getMethodOf(icfg.wrap(start)).getContents(), convertDirection(dir)).callFlow(start, startFact, target, targetFact);
 	}
 
 	@Override
 	public void callToReturn(Direction dir, Unit start, AccessGraph startFact, Unit target, AccessGraph targetFact) {
-		forwardJSON.getOrCreateESG(icfg.getMethodOf(start), convertDirection(dir)).callToReturn(start, startFact, target, targetFact);
+		forwardJSON.getOrCreateESG(icfg.getMethodOf(icfg.wrap(start)).getContents(), convertDirection(dir)).callToReturn(start, startFact, target, targetFact);
 	}
 
 	@Override
 	public void returnFlow(Direction dir, Unit start, AccessGraph startFact, Unit target, AccessGraph targetFact) {
-		forwardJSON.getOrCreateESG(icfg.getMethodOf(target), convertDirection(dir)).returnFlow(start, startFact, target, targetFact);
+		forwardJSON.getOrCreateESG(icfg.getMethodOf(icfg.wrap(target)).getContents(), convertDirection(dir)).returnFlow(start, startFact, target, targetFact);
 	}
 
 	@Override
 	public void indirectFlowEdgeAtRead(AccessGraph startFact, Unit start, AccessGraph targetFact, Unit target) {
-		ExplodedSuperGraph<SootMethod, Unit, AccessGraph, Object> esg = forwardJSON.getOrCreateESG(icfg.getMethodOf(target),heros.debug.visualization.IDEToJSON.Direction.Backward);
-		esg.addEdgeWithLabel(icfg.getMethodOf(start), esg.new ESGNode(start, startFact), esg.new ESGNode(target, targetFact), "indirectReadFlow");
+		ExplodedSuperGraph<SootMethod, Unit, AccessGraph, Object> esg = forwardJSON.getOrCreateESG(icfg.getMethodOf(icfg.wrap(target)).getContents(),heros.debug.visualization.IDEToJSON.Direction.Backward);
+		esg.addEdgeWithLabel(icfg.getMethodOf(icfg.wrap(start)).getContents(), esg.new ESGNode(start, startFact), esg.new ESGNode(target, targetFact), "indirectReadFlow");
 	}
 
 	@Override
 	public void indirectFlowEdgeAtWrite(AccessGraph startFact, Unit start, AccessGraph targetFact, Unit target) {
-		ExplodedSuperGraph<SootMethod, Unit, AccessGraph, Object>  esg = forwardJSON.getOrCreateESG(icfg.getMethodOf(target),heros.debug.visualization.IDEToJSON.Direction.Forward);
-		esg.addEdgeWithLabel(icfg.getMethodOf(start), esg.new ESGNode(start, startFact),esg.new ESGNode(target, targetFact), "indirectWriteFlow");
+		ExplodedSuperGraph<SootMethod, Unit, AccessGraph, Object>  esg = forwardJSON.getOrCreateESG(icfg.getMethodOf(icfg.wrap(target)).getContents(),heros.debug.visualization.IDEToJSON.Direction.Forward);
+		esg.addEdgeWithLabel(icfg.getMethodOf(icfg.wrap(start)).getContents(), esg.new ESGNode(start, startFact),esg.new ESGNode(target, targetFact), "indirectWriteFlow");
 	}
 
 	@Override
 	public void indirectFlowEdgeAtReturn(AccessGraph startFact, Unit start, AccessGraph targetFact, Unit target) {
-		ExplodedSuperGraph<SootMethod, Unit, AccessGraph, Object> esg = forwardJSON.getOrCreateESG(icfg.getMethodOf(target),heros.debug.visualization.IDEToJSON.Direction.Forward);
-		esg.addEdgeWithLabel(icfg.getMethodOf(start), esg.new ESGNode(start, startFact),esg.new ESGNode(target, targetFact), "indirectReturnFlow");
+		ExplodedSuperGraph<SootMethod, Unit, AccessGraph, Object> esg = forwardJSON.getOrCreateESG(icfg.getMethodOf(icfg.wrap(target)).getContents(),heros.debug.visualization.IDEToJSON.Direction.Forward);
+		esg.addEdgeWithLabel(icfg.getMethodOf(icfg.wrap(start)).getContents(), esg.new ESGNode(start, startFact),esg.new ESGNode(target, targetFact), "indirectReturnFlow");
 	}
 
 	@Override
 	public void indirectFlowEdgeAtCall(AccessGraph startFact, Unit start, AccessGraph targetFact, Unit target) {
-		ExplodedSuperGraph<SootMethod, Unit, AccessGraph, Object>  esg = forwardJSON.getOrCreateESG(icfg.getMethodOf(start),heros.debug.visualization.IDEToJSON.Direction.Backward);
-		esg.addEdgeWithLabel(icfg.getMethodOf(start), esg.new ESGNode(start, startFact), esg.new ESGNode(target, targetFact), "indirectCallFlow");
+		ExplodedSuperGraph<SootMethod, Unit, AccessGraph, Object>  esg = forwardJSON.getOrCreateESG(icfg.getMethodOf(icfg.wrap(start)).getContents(),heros.debug.visualization.IDEToJSON.Direction.Backward);
+		esg.addEdgeWithLabel(icfg.getMethodOf(icfg.wrap(start)).getContents(), esg.new ESGNode(start, startFact), esg.new ESGNode(target, targetFact), "indirectCallFlow");
 	}
 	
 

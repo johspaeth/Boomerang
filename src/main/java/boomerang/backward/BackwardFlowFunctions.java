@@ -46,7 +46,7 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 	@Override
 	public FlowFunction<AccessGraph> getNormalFlowFunction(final IPathEdge<Unit, AccessGraph> edge, final Unit succ) {
 		final Unit curr = edge.getTarget();
-		final SootMethod method = context.icfg.getMethodOf(curr);
+		final SootMethod method = context.icfg.getMethodOf(context.icfg.wrap(curr)).getContents();
 		context.addAsVisitedBackwardMethod(method);
 		final Local thisLocal = method.isStatic() ? null : method.getActiveBody().getThisLocal();
 		return new FlowFunction<AccessGraph>() {
@@ -302,7 +302,7 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 				AccessGraph derivedSource = source;
 				Set<AccessGraph> out = new HashSet<>();
 				if (!context.getContextRequester().continueAtCallSite(callSite, callee)
-						&& !context.visitedBackwardMethod(context.icfg.getMethodOf(callSite))) {
+						&& !context.visitedBackwardMethod(context.icfg.getMethodOf(context.icfg.wrap(callSite)).getContents())) {
 					boolean isParam = false;
 					for (Local l : paramLocals) {
 						if (source.getBase().equals(l)) {
@@ -343,7 +343,7 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 								// must turn around
 								if ((source.getFieldCount() == 1 || source.hasSetBasedFieldGraph())
 										&& !source.isStatic()) {
-									SootMethod caller = context.icfg.getMethodOf(callSite);
+									SootMethod caller = context.icfg.getMethodOf(context.icfg.wrap(callSite)).getContents();
 									if (callee.isConstructor() && (!caller.isConstructor()
 											|| !caller.getActiveBody().getThisLocal().equals(newBase))) {
 										Alloc alloc = new Alloc(source, edge.getTarget(), true);

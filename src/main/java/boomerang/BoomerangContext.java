@@ -25,6 +25,7 @@ import boomerang.forward.ForwardSolver;
 import boomerang.ifdssolver.IPathEdge;
 import boomerang.ifdssolver.IPropagationController;
 import boomerang.ifdssolver.PathEdge;
+import boomerang.incremental.UpdatableWrapper;
 import boomerang.mock.DefaultBackwardDataFlowMocker;
 import boomerang.mock.DefaultForwardDataFlowMocker;
 import boomerang.mock.DefaultNativeCallHandler;
@@ -100,7 +101,7 @@ public class BoomerangContext {
 	}
 
 	public boolean isParameterOrThisValue(Unit stmtInMethod, Local local) {
-		SootMethod method = bwicfg.getMethodOf(stmtInMethod);
+		SootMethod method = bwicfg.getMethodOf(bwicfg.wrap(stmtInMethod)).getContents();
 		return isParameterOrThisValue(method, local);
 	}
 
@@ -121,19 +122,19 @@ public class BoomerangContext {
 	public void sanityCheckEdge(IPathEdge<Unit, AccessGraph> edge) {
 		if (edge.getStart() == null)
 			return;
-		SootMethod m1 = icfg.getMethodOf(edge.getStart());
-		SootMethod m2 = icfg.getMethodOf(edge.getTarget());
+		SootMethod m1 = icfg.getMethodOf(icfg.wrap(edge.getStart())).getContents();
+		SootMethod m2 = icfg.getMethodOf(icfg.wrap(edge.getTarget())).getContents();
 		assert m1 == m2 : "The path edge " + edge + "contains statements of two different method: " + m1.toString()
 				+ " and " + m2.toString();
 		;
 	}
 
 	public boolean isReturnValue(SootMethod method, Local base) {
-		Collection<Unit> endPointsOf = icfg.getEndPointsOf(method);
+		Collection<UpdatableWrapper<Unit>> endPointsOf = icfg.getEndPointsOf(icfg.wrap(method));
 
-		for (Unit eP : endPointsOf) {
-			if (eP instanceof ReturnStmt) {
-				ReturnStmt returnStmt = (ReturnStmt) eP;
+		for (UpdatableWrapper<Unit> eP : endPointsOf) {
+			if (eP.getContents() instanceof ReturnStmt) {
+				ReturnStmt returnStmt = (ReturnStmt) eP.getContents();
 				Value op = returnStmt.getOp();
 				if (op.equals(base))
 					return true;
@@ -143,7 +144,7 @@ public class BoomerangContext {
 	}
 
 	public boolean isValidQuery(AccessGraph ap, Unit stmt) {
-		SootMethod m = bwicfg.getMethodOf(stmt);
+		SootMethod m = bwicfg.getMethodOf(bwicfg.wrap(stmt)).getContents();
 		if (!ap.isStatic() && !m.getActiveBody().getLocals().contains(ap.getBase())) {
 			return false;
 		}
@@ -169,7 +170,7 @@ public class BoomerangContext {
 	}
 
 	public void validateInput(AccessGraph ap, Unit stmt) {
-		SootMethod m = bwicfg.getMethodOf(stmt);
+		SootMethod m = bwicfg.getMethodOf(bwicfg.wrap(stmt)).getContents();
 		if (!ap.isStatic() && !m.getActiveBody().getLocals().contains(ap.getBase())) {
 			throw new IllegalArgumentException(
 					"Base value of access path " + ap + " is not a local of the Method at which the Query was asked!");
@@ -215,7 +216,7 @@ public class BoomerangContext {
 	}
 
 	public Set<? extends IPathEdge<Unit, AccessGraph>> getForwardIncomings(Pair<Unit, AccessGraph> startNode) {
-		return getForwardSolver().incoming(startNode, icfg.getMethodOf(startNode.getO1()));
+		return getForwardSolver().incoming(startNode, icfg.getMethodOf(icfg.wrap(startNode.getO1())).getContents());
 	}
 
 	public void registerPOI(Unit stmt, PointOfIndirection poi, AliasCallback cb) {
@@ -231,12 +232,12 @@ public class BoomerangContext {
 	}
 
 	public Set<AccessGraph> getForwardTargetsFor(AccessGraph d2, Unit callSite, SootMethod callee) {
-		Collection<Unit> calleeSps = this.icfg.getStartPointsOf(callee);
+		Collection<UpdatableWrapper<Unit>> calleeSps = this.icfg.getStartPointsOf(icfg.wrap(callee));
 		Set<AccessGraph> factsInCallee = new HashSet<>();
 		ForwardFlowFunctions ptsFunction = new ForwardFlowFunctions(this);
-		for (Unit calleeSp : calleeSps) {
+		for (UpdatableWrapper<Unit> calleeSp : calleeSps) {
 			FlowFunction<AccessGraph> callFlowFunction = ptsFunction.getCallFlowFunction(
-					new PathEdge<Unit, AccessGraph>(callSite, null, callSite, null), callee, calleeSp);
+					new PathEdge<Unit, AccessGraph>(callSite, null, callSite, null), callee, calleeSp.getContents());
 			Set<AccessGraph> targets = callFlowFunction.computeTargets(d2);
 			factsInCallee.addAll(targets);
 		}
