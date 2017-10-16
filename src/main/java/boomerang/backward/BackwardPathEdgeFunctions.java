@@ -84,7 +84,7 @@ class BackwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 	@Override
 	protected Collection<? extends IPathEdge<Unit, AccessGraph>> call2ReturnFunctionExtendor(
 			IPathEdge<Unit, AccessGraph> prevEdge, IPathEdge<Unit, AccessGraph> succEdge) {
-		context.addAsVisitedBackwardMethod(context.icfg.getMethodOf(context.icfg.wrap(succEdge.getTarget())).getContents());
+		context.addAsVisitedBackwardMethod(context.icfg.getMethodOf(succEdge.getTarget()));
 		return Collections.singleton(succEdge);
 	}
 
@@ -93,7 +93,7 @@ class BackwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 			IPathEdge<Unit, AccessGraph> prevEdge, IPathEdge<Unit, AccessGraph> succEdge, Unit callSite,
 			Unit returnSite) {
 		if(callSite == null && returnSite == null){
-			SootMethod callee = context.icfg.getMethodOf(context.icfg.wrap(prevEdge.getTarget())).getContents();
+			SootMethod callee = context.icfg.getMethodOf(prevEdge.getTarget());
 			if(context.getContextRequester().isEntryPointMethod(callee)){
 				Alloc alloc = new Alloc(prevEdge.factAtTarget(), prevEdge.getTarget(),true);
 				alloc.execute(context);

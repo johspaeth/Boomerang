@@ -181,7 +181,7 @@ public class AliasFinder {
 	public AliasResults findAliasAtStmt(AccessGraph ap, Unit stmt, IContextRequester req) {
 
 		AliasResults res = null;
-		Query q = new Query(ap, stmt, context.icfg.getMethodOf(context.icfg.wrap(stmt)).getContents());
+		Query q = new Query(ap, stmt, context.icfg.getMethodOf(stmt).getContents());
 		try {
 			res = internalFindAliasAtStmt(q, req);
 		} catch (BoomerangTimeoutException e) {
@@ -196,8 +196,8 @@ public class AliasFinder {
 		BackwardSolver backwardSolver = context.getBackwardSolver();
 		ForwardSolver forwardSolver = context.getForwardSolver();
 		boolean timedout = false;
-		context.addAsVisitedBackwardMethod(context.icfg.getMethodOf(context.icfg.wrap(stmt)).getContents());
-		context.addVisitableMethod(context.icfg.getMethodOf(context.icfg.wrap(stmt)).getContents());
+		context.addAsVisitedBackwardMethod(context.icfg.getMethodOf(stmt));
+		context.addVisitableMethod(context.icfg.getMethodOf(stmt));
 		try{
 			backwardSolver.startPropagation(accessGraph, stmt);
 			backwardSolver.awaitExecution();

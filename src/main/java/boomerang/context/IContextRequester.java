@@ -1,11 +1,10 @@
 package boomerang.context;
 
-import java.util.Collection;
-
+import boomerang.incremental.UpdatableWrapper;
 import soot.SootMethod;
 import soot.Unit;
 
 public interface IContextRequester {
-	public boolean continueAtCallSite(Unit callSite, SootMethod callee);
-	public boolean isEntryPointMethod(SootMethod method);
+	public boolean continueAtCallSite(UpdatableWrapper<Unit> callSite, UpdatableWrapper<SootMethod> callee);
+	public boolean isEntryPointMethod(UpdatableWrapper<SootMethod> method);
 }

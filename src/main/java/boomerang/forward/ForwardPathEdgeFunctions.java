@@ -32,7 +32,7 @@ class ForwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 	}
 
 	private boolean isActivePath(Unit target) {
-		SootMethod m = context.icfg.getMethodOf(context.icfg.wrap(target)).getContents();
+		SootMethod m = context.icfg.getMethodOf(target);
 		return context.visitedBackwardMethod(m);
 	}
 
@@ -143,7 +143,7 @@ class ForwardPathEdgeFunctions extends AbstractPathEdgeFunctions {
 				}
 			}
 
-			context.addAsVisitedBackwardMethod(context.icfg.getMethodOf(context.icfg.wrap(callSite)).getContents());
+			context.addAsVisitedBackwardMethod(context.icfg.getMethodOf(callSite));
 			return out;
 		}
 		return Collections.emptySet();

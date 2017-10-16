@@ -37,13 +37,13 @@ private Direction direction;
 
   public void register(IPathEdge<Unit, AccessGraph> pe) {
     Unit target = pe.getTarget();
-    SootMethod m = context.icfg.getMethodOf(context.icfg.wrap(target)).getContents();
+    SootMethod m = context.icfg.getMethodOf(target);
     PerMethodPathEdges perMethodPathEdges = getOrCreatePerStmt(m);
     perMethodPathEdges.register(pe);
   }
 
   public void registerPointOfIndirectionAt(Unit stmt, PointOfIndirection poi,AliasCallback cb){
-	    SootMethod m = context.icfg.getMethodOf(context.icfg.wrap(stmt)).getContents();
+	    SootMethod m = context.icfg.getMethodOf(stmt);
 	    PerMethodPathEdges perMethodPathEdges = getOrCreatePerStmt(m);
 	    perMethodPathEdges.registerPointOfIndirectionAt(stmt,poi,cb);
   }
@@ -51,7 +51,7 @@ private Direction direction;
 
   public boolean hasAlreadyProcessed(IPathEdge<Unit, AccessGraph> pe) {
     Unit target = pe.getTarget();
-    SootMethod m = context.icfg.getMethodOf(context.icfg.wrap(target)).getContents();
+    SootMethod m = context.icfg.getMethodOf(target);
     PerMethodPathEdges perMethodPathEdges = stmtToPathEdges.get(m);
     if (perMethodPathEdges == null)
       return false;
@@ -60,7 +60,7 @@ private Direction direction;
 
   public Multimap<Pair<Unit, AccessGraph>, AccessGraph> getResultAtStmtContainingValue(Unit stmt,
       final AccessGraph fact, Set<Pair<Unit,AccessGraph>> visited) {
-    SootMethod m = context.icfg.getMethodOf(context.icfg.wrap(stmt)).getContents();
+    SootMethod m = context.icfg.getMethodOf(stmt);
     PerMethodPathEdges perMethodPathEdges = stmtToPathEdges.get(m);
     if (perMethodPathEdges == null)
       return HashMultimap.create();

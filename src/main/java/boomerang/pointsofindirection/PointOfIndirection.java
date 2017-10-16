@@ -4,7 +4,6 @@ import boomerang.BoomerangContext;
 import boomerang.accessgraph.AccessGraph;
 import boomerang.ifdssolver.IFDSSolver.PropagationType;
 import boomerang.ifdssolver.PathEdge;
-import boomerang.incremental.UpdatableWrapper;
 import heros.solver.Pair;
 import soot.Unit;
 
@@ -22,8 +21,8 @@ public class PointOfIndirection {
 	}
 	
 	public void sendBackward(){
-		for(UpdatableWrapper<Unit> u :context.icfg.getPredsOf(context.icfg.wrap(fromStmt))){
-			PathEdge<Unit, AccessGraph> pe = new PathEdge<>(null, sendBackward, u.getContents(), sendBackward);
+		for(Unit u :context.icfg.getPredsOf(fromStmt)){
+			PathEdge<Unit, AccessGraph> pe = new PathEdge<>(null, sendBackward, u, sendBackward);
 			context.getBackwardSolver().inject(pe, PropagationType.Normal);
 		}
 	}

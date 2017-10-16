@@ -12,9 +12,9 @@ import soot.jimple.toolkits.ide.icfg.BackwardsInterproceduralCFG;
  */
 public class BackwardsInfoflowCFG extends ExtendedICFG {
 	
-	private final IExtendedICFG<Unit, SootMethod> baseCFG;
+	private final IExtendedICFG baseCFG;
 	
-	public BackwardsInfoflowCFG(IExtendedICFG<Unit, SootMethod> baseCFG) {
+	public BackwardsInfoflowCFG(IExtendedICFG baseCFG) {
 		super(new BackwardsInterproceduralCFG(baseCFG));
 		this.baseCFG = baseCFG;
 	}
