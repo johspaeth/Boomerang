@@ -40,6 +40,8 @@ import soot.SootMethod;
 import soot.Unit;
 import soot.Value;
 import soot.jimple.ReturnStmt;
+import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
+import soot.jimple.toolkits.ide.icfg.JimpleBasedInterproceduralCFG;
 
 @SuppressWarnings("serial")
 public class BoomerangContext {
@@ -47,14 +49,14 @@ public class BoomerangContext {
 	/**
 	 * The inter-procedural control flow graph to be used.
 	 */
-	public IExtendedICFG icfg;
+	public BiDiInterproceduralCFG<Unit, SootMethod> icfg;
 
 	public IBoomerangDebugger debugger;
 
 	/**
 	 * The inter-procedural backward control flow graph to be used.
 	 */
-	public IExtendedICFG bwicfg;
+	public BiDiInterproceduralCFG<Unit, SootMethod> bwicfg;
 
 	/**
 	 * Native call handler, defines how aliases flow at native call sites.

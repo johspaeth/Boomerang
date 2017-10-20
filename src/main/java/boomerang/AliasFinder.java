@@ -181,7 +181,7 @@ public class AliasFinder {
 	public AliasResults findAliasAtStmt(AccessGraph ap, Unit stmt, IContextRequester req) {
 
 		AliasResults res = null;
-		Query q = new Query(ap, stmt, context.icfg.getMethodOf(stmt).getContents());
+		Query q = new Query(ap, stmt, context.icfg.getMethodOf(stmt));
 		try {
 			res = internalFindAliasAtStmt(q, req);
 		} catch (BoomerangTimeoutException e) {

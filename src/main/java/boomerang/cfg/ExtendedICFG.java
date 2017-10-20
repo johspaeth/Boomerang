@@ -94,7 +94,11 @@ public class ExtendedICFG extends AbstractUpdatableExtendedICFG<Unit, SootMethod
 	}
 	
 	@Override
-	protected JimpleBasedInterproceduralCFG getBaseCFG() {
+	protected BiDiInterproceduralCFG<Unit, SootMethod> getBaseCFG() {
+		return (JimpleBasedInterproceduralCFG) super.getBaseCFG();
+	}
+	
+	protected JimpleBasedInterproceduralCFG getBaseECFG() {
 		return (JimpleBasedInterproceduralCFG) super.getBaseCFG();
 	}
 
@@ -490,7 +494,7 @@ public class ExtendedICFG extends AbstractUpdatableExtendedICFG<Unit, SootMethod
 	 * false
 	 */
 	public boolean containsStmt(Unit u) {
-		return this.getBaseCFG().containsStmt(u);
+		return this.getBaseECFG().containsStmt(u);
 	}
 
 	/**
@@ -501,7 +505,7 @@ public class ExtendedICFG extends AbstractUpdatableExtendedICFG<Unit, SootMethod
 	 */
 	@Override
 	public boolean containsStmt(UpdatableWrapper<Unit> u) {
-		return this.getBaseCFG().containsStmt(u.getContents());
+		return this.getBaseECFG().containsStmt(u.getContents());
 	}
 	
 	/**
@@ -509,7 +513,7 @@ public class ExtendedICFG extends AbstractUpdatableExtendedICFG<Unit, SootMethod
 	 * @return All classes that can contain methods in this cfg
 	 */
 	public Collection<SootClass> getAllClasses() {
-		return this.getBaseCFG().getAllClasses();
+		return this.getBaseECFG().getAllClasses();
 	}
 	
 	/**
@@ -727,13 +731,13 @@ public class ExtendedICFG extends AbstractUpdatableExtendedICFG<Unit, SootMethod
 
 	@Override
 	public UpdatableWrapper<Unit> getLoopStartPointFor(UpdatableWrapper<Unit> stmt) {
-		Unit u = getBaseCFG().getLoopStartPointFor(stmt.getContents());
+		Unit u = getBaseECFG().getLoopStartPointFor(stmt.getContents());
 		return u == null ? null : wrap(u);
 	}
 
 	@Override
 	public Set<UpdatableWrapper<Unit>> getExitNodesForReturnSite(UpdatableWrapper<Unit> stmt) {
-		return this.wrap(getBaseCFG().getExitNodesForReturnSite(stmt.getContents()));
+		return this.wrap(getBaseECFG().getExitNodesForReturnSite(stmt.getContents()));
 	}
 
 	@Override

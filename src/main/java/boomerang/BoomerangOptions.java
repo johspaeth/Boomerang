@@ -2,26 +2,15 @@ package boomerang;
 
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.base.Optional;
-
 import boomerang.accessgraph.AccessGraph;
 import boomerang.allocationsitehandler.ReferenceType;
-import boomerang.cfg.IExtendedICFG;
 import boomerang.debug.DefaultBoomerangDebugger;
 import boomerang.debug.IBoomerangDebugger;
 import boomerang.ifdssolver.IPathEdge;
 import boomerang.ifdssolver.IPropagationController;
-import boomerang.pointsofindirection.Alloc;
-import boomerang.pointsofindirection.AllocationSiteHandler;
 import boomerang.pointsofindirection.AllocationSiteHandlers;
 import soot.Unit;
-import soot.Value;
-import soot.jimple.AssignStmt;
-import soot.jimple.InstanceFieldRef;
-import soot.jimple.NewArrayExpr;
-import soot.jimple.NewExpr;
-import soot.jimple.NewMultiArrayExpr;
-import soot.jimple.NullConstant;
+import soot.jimple.toolkits.ide.icfg.JimpleBasedInterproceduralCFG;
 
 public abstract class BoomerangOptions {
 
@@ -48,7 +37,7 @@ public abstract class BoomerangOptions {
 		return true;
 	}
 
-	public abstract IExtendedICFG icfg();
+	public abstract JimpleBasedInterproceduralCFG icfg();
 
 	public String toString() {
 		String str = "====== Boomerang Options ======";

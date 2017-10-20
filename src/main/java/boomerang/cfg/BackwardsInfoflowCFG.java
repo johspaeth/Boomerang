@@ -3,6 +3,7 @@ package boomerang.cfg;
 import soot.SootMethod;
 import soot.Unit;
 import soot.jimple.toolkits.ide.icfg.BackwardsInterproceduralCFG;
+import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
 
 /**
  * Inverse interprocedural control-flow graph for the infoflow solver
@@ -12,14 +13,14 @@ import soot.jimple.toolkits.ide.icfg.BackwardsInterproceduralCFG;
  */
 public class BackwardsInfoflowCFG extends ExtendedICFG {
 	
-	private final IExtendedICFG baseCFG;
+	private final BiDiInterproceduralCFG<Unit, SootMethod> baseCFG;
 	
-	public BackwardsInfoflowCFG(IExtendedICFG baseCFG) {
+	public BackwardsInfoflowCFG(BiDiInterproceduralCFG<Unit, SootMethod> baseCFG) {
 		super(new BackwardsInterproceduralCFG(baseCFG));
 		this.baseCFG = baseCFG;
 	}
 	
-	public IExtendedICFG getBaseCFG() {
+	public BiDiInterproceduralCFG<Unit, SootMethod> getBaseCFG() {
 		return this.baseCFG;
 	}
 	

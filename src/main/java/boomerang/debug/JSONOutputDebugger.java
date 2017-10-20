@@ -1,18 +1,14 @@
 package boomerang.debug;
 
 import java.io.File;
-import java.util.Collection;
-
 import boomerang.AliasResults;
 import boomerang.BoomerangContext;
 import boomerang.Query;
 import boomerang.accessgraph.AccessGraph;
-import boomerang.cfg.IExtendedICFG;
 import boomerang.ifdssolver.DefaultIFDSTabulationProblem.Direction;
 import boomerang.ifdssolver.IPathEdge;
 import heros.debug.visualization.ExplodedSuperGraph;
 import heros.debug.visualization.IDEToJSON;
-import heros.solver.Pair;
 import soot.SootMethod;
 import soot.Unit;
 import soot.jimple.AssignStmt;
@@ -21,12 +17,13 @@ import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.InvokeExpr;
 import soot.jimple.StaticInvokeExpr;
 import soot.jimple.Stmt;
+import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
 
 public class JSONOutputDebugger extends DefaultBoomerangDebugger {
 	private BoomerangContext context;
-	private IExtendedICFG<Unit, SootMethod> icfg;
+	private BiDiInterproceduralCFG<Unit, SootMethod> icfg;
 	private File jsonFile;
-	private IDEToJSON<SootMethod, Unit, AccessGraph, Object, IExtendedICFG> forwardJSON;
+	private IDEToJSON<SootMethod, Unit, AccessGraph, Object, BiDiInterproceduralCFG<Unit, SootMethod>> forwardJSON;
 
 	public JSONOutputDebugger(File jsonFile) {
 		this.jsonFile = jsonFile;
@@ -144,8 +141,8 @@ public class JSONOutputDebugger extends DefaultBoomerangDebugger {
 	
 	}
 	
-	private class BoomerangToJSON extends IDEToJSON<SootMethod, Unit, AccessGraph, Object, IExtendedICFG>{
-		public BoomerangToJSON(File file, IExtendedICFG icfg) {
+	private class BoomerangToJSON extends IDEToJSON<SootMethod, Unit, AccessGraph, Object, BiDiInterproceduralCFG<Unit, SootMethod>>{
+		public BoomerangToJSON(File file, BiDiInterproceduralCFG<Unit, SootMethod> icfg) {
 			super(file, icfg);
 		}
 

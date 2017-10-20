@@ -3,16 +3,9 @@ package boomerang.accessgraph;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 
-import boomerang.AliasFinder;
-import heros.solver.Pair;
-import soot.ArrayType;
 import soot.Local;
-import soot.RefType;
-import soot.Scene;
 import soot.SootField;
 import soot.Type;
 import soot.Unit;
