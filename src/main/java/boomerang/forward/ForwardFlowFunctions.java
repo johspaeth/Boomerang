@@ -277,7 +277,7 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 		return new FlowFunction<AccessGraph>() {
 			@Override
 			public Set<AccessGraph> computeTargets(AccessGraph source) {
-				if (context.icfg.isIgnoredMethod(callee))
+				if (context.isIgnoredMethod(callee))
 					Collections.emptySet();
 				assert source != null;
 				Set<AccessGraph> out = new HashSet<>();
@@ -363,7 +363,7 @@ public class ForwardFlowFunctions extends AbstractFlowFunctions
 			@Override
 			public Set<AccessGraph> computeTargets(AccessGraph source) {
 				HashSet<AccessGraph> out = new HashSet<AccessGraph>();
-				if (context.icfg.isIgnoredMethod(callee))
+				if (context.isIgnoredMethod(callee))
 					Collections.emptySet();
 				// mapping of fields of AccessPath those will be killed in
 				// callToReturn

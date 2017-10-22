@@ -211,7 +211,7 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 		return new FlowFunction<AccessGraph>() {
 			@Override
 			public Set<AccessGraph> computeTargets(AccessGraph source) {
-				if (context.icfg.isIgnoredMethod(callee))
+				if (context.isIgnoredMethod(callee))
 					Collections.emptySet();
 				if (calleeSp instanceof ThrowStmt) {
 					return Collections.emptySet();
@@ -297,7 +297,7 @@ public class BackwardFlowFunctions extends AbstractFlowFunctions
 
 			@Override
 			public Set<AccessGraph> computeTargets(AccessGraph source) {
-				if (context.icfg.isIgnoredMethod(callee))
+				if (context.isIgnoredMethod(callee))
 					Collections.emptySet();
 				AccessGraph derivedSource = source;
 				Set<AccessGraph> out = new HashSet<>();

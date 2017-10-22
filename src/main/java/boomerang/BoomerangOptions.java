@@ -9,8 +9,9 @@ import boomerang.debug.IBoomerangDebugger;
 import boomerang.ifdssolver.IPathEdge;
 import boomerang.ifdssolver.IPropagationController;
 import boomerang.pointsofindirection.AllocationSiteHandlers;
+import soot.SootMethod;
 import soot.Unit;
-import soot.jimple.toolkits.ide.icfg.JimpleBasedInterproceduralCFG;
+import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
 
 public abstract class BoomerangOptions {
 
@@ -37,7 +38,7 @@ public abstract class BoomerangOptions {
 		return true;
 	}
 
-	public abstract JimpleBasedInterproceduralCFG icfg();
+	public abstract BiDiInterproceduralCFG<Unit, SootMethod> icfg();
 
 	public String toString() {
 		String str = "====== Boomerang Options ======";

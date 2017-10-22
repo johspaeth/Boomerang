@@ -15,7 +15,6 @@ import boomerang.backward.BackwardProblem;
 import boomerang.backward.BackwardSolver;
 import boomerang.bidi.PathEdgeStore;
 import boomerang.cfg.BackwardsInfoflowCFG;
-import boomerang.cfg.IExtendedICFG;
 import boomerang.context.IContextRequester;
 import boomerang.debug.IBoomerangDebugger;
 import boomerang.debug.JSONOutputDebugger;
@@ -36,14 +35,13 @@ import boomerang.pointsofindirection.PointOfIndirection;
 import heros.FlowFunction;
 import heros.solver.Pair;
 import soot.Local;
+import soot.SootField;
 import soot.SootMethod;
 import soot.Unit;
 import soot.Value;
 import soot.jimple.ReturnStmt;
 import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
-import soot.jimple.toolkits.ide.icfg.JimpleBasedInterproceduralCFG;
 
-@SuppressWarnings("serial")
 public class BoomerangContext {
 
 	/**
@@ -101,6 +99,14 @@ public class BoomerangContext {
 		return true;
 	}
 
+	public boolean isIgnoredMethod(SootMethod method) {
+		return false;
+	}
+	
+	public boolean isStaticFieldUsed(SootMethod method, SootField sootField) {
+		return true;
+	}
+	
 	public boolean isParameterOrThisValue(Unit stmtInMethod, Local local) {
 		SootMethod method = bwicfg.getMethodOf(stmtInMethod);
 		return isParameterOrThisValue(method, local);

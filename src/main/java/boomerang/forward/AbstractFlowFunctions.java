@@ -11,7 +11,7 @@ public abstract class AbstractFlowFunctions {
 	protected BoomerangContext context;
 	protected boolean isFirstFieldUsedTransitivelyInMethod(AccessGraph source, final SootMethod callee) {
         for(WrappedSootField wrappedField :  source.getFirstField()){
-      	  if(context.icfg.isStaticFieldUsed(callee, wrappedField.getField()))
+      	  if(context.isStaticFieldUsed(callee, wrappedField.getField()))
       		  return true;
         }
 		return false;

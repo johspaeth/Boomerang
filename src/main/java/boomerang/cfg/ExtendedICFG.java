@@ -98,7 +98,7 @@ public class ExtendedICFG extends AbstractUpdatableExtendedICFG<Unit, SootMethod
 		return (JimpleBasedInterproceduralCFG) super.getBaseCFG();
 	}
 	
-	protected JimpleBasedInterproceduralCFG getBaseECFG() {
+	public JimpleBasedInterproceduralCFG getBaseECFG() {
 		return (JimpleBasedInterproceduralCFG) super.getBaseCFG();
 	}
 
