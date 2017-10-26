@@ -229,9 +229,6 @@ public abstract class AbstractUpdatableExtendedICFG<N, M> implements IExtendedIC
 
 	@Override
 	public Set<UpdatableWrapper<N>> getCallsFromWithin(UpdatableWrapper<M> m) {
-		System.out.println("called getCallsFromWithin() method of AbstractUpdatableICFG class");
-		System.out.println("contents " + m.getContents());
-		System.out.println("baseCFG " + baseCFG);
 		return wrap(baseCFG.getCallsFromWithin(m.getContents()));
 	}
 
