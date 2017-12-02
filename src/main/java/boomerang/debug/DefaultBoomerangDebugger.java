@@ -11,7 +11,6 @@ import boomerang.ifdssolver.IPathEdge;
 import heros.solver.Pair;
 import soot.SootMethod;
 import soot.Unit;
-import soot.jimple.AssignStmt;
 
 public class DefaultBoomerangDebugger implements IBoomerangDebugger {
 

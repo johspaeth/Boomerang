@@ -1,8 +1,8 @@
 package boomerang.cfg;
 
+import heros.BiDiInterproceduralCFG;
 import soot.SootMethod;
 import soot.Unit;
-import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
 import soot.jimple.toolkits.ide.icfg.JimpleBasedInterproceduralCFG;
 
 /**

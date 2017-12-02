@@ -4,17 +4,15 @@ import java.util.Map;
 import java.util.Set;
 
 import boomerang.BoomerangContext;
-import boomerang.BoomerangTimeoutException;
-import boomerang.ContextScheduler;
 import boomerang.accessgraph.AccessGraph;
 import boomerang.ifdssolver.DefaultIFDSTabulationProblem;
 import boomerang.ifdssolver.IPathEdge;
 import boomerang.ifdssolver.IPropagationController;
 import boomerang.ifdssolver.Scheduler;
+import heros.BiDiInterproceduralCFG;
 import heros.solver.Pair;
 import soot.SootMethod;
 import soot.Unit;
-import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
 
 public class ForwardProblem
 		extends DefaultIFDSTabulationProblem<Unit, AccessGraph, SootMethod, BiDiInterproceduralCFG<Unit, SootMethod>> {

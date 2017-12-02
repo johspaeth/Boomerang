@@ -32,6 +32,7 @@ import boomerang.mock.NativeCallHandler;
 import boomerang.pointsofindirection.AliasCallback;
 import boomerang.pointsofindirection.AllocationSiteHandlers;
 import boomerang.pointsofindirection.PointOfIndirection;
+import heros.BiDiInterproceduralCFG;
 import heros.FlowFunction;
 import heros.solver.Pair;
 import soot.Local;
@@ -40,7 +41,6 @@ import soot.SootMethod;
 import soot.Unit;
 import soot.Value;
 import soot.jimple.ReturnStmt;
-import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
 
 public class BoomerangContext {
 

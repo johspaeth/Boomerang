@@ -1,9 +1,9 @@
 package boomerang.ifdssolver;
 
+import heros.BiDiInterproceduralCFG;
 import heros.solver.Pair;
 import soot.SootMethod;
 import soot.Unit;
-import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
 
 import java.util.Collection;
 

@@ -19,11 +19,12 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import boomerang.incremental.DefaultUpdatableWrapper;
-import boomerang.incremental.UpdatableInterproceduralCFG;
-import boomerang.incremental.UpdatableWrapper;
-import boomerang.util.Utils;
+import heros.BiDiInterproceduralCFG;
+import heros.incremental.DefaultUpdatableWrapper;
+import heros.incremental.UpdatableInterproceduralCFG;
+import heros.incremental.UpdatableWrapper;
 import heros.solver.Pair;
+import heros.util.Utils;
 import soot.Local;
 import soot.MethodOrMethodContext;
 import soot.Scene;
@@ -36,7 +37,6 @@ import soot.jimple.StaticFieldRef;
 import soot.jimple.Stmt;
 import soot.jimple.toolkits.callgraph.Edge;
 import soot.jimple.toolkits.callgraph.ReachableMethods;
-import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
 import soot.jimple.toolkits.ide.icfg.JimpleBasedInterproceduralCFG;
 import soot.jimple.toolkits.ide.icfg.SceneDiff;
 import soot.jimple.toolkits.ide.icfg.SceneDiff.ClassDiffNode;
@@ -747,11 +747,11 @@ public class ExtendedICFG extends AbstractUpdatableExtendedICFG<Unit, SootMethod
 		return method;
 	}
 	
-	@Override
+	/*@Override
 	public <X> DirectedGraph<UpdatableWrapper<X>> wrap(DirectedGraph<X> obj) {
 		// TODO Auto-generated method stub
 		return null;
-	}
+	}*/
 
 	/**
 	 * Sets whether quick diffing shall be used. Quick diffing only scans for

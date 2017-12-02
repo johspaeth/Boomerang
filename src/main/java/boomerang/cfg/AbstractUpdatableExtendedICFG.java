@@ -13,17 +13,15 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.MapMaker;
 
-import boomerang.incremental.CFGChangeListener;
-import boomerang.incremental.DefaultUpdatableWrapper;
-import boomerang.incremental.UpdatableInterproceduralCFG;
-import boomerang.incremental.UpdatableWrapper;
-import boomerang.util.Utils;
+import heros.BiDiInterproceduralCFG;
 import heros.InterproceduralCFG;
+import heros.incremental.CFGChangeListener;
+import heros.incremental.DefaultUpdatableWrapper;
+import heros.incremental.UpdatableInterproceduralCFG;
+import heros.incremental.UpdatableWrapper;
+import heros.util.Utils;
 import soot.SootMethod;
 import soot.Unit;
-import soot.Value;
-import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
-import soot.toolkits.graph.DirectedGraph;
 
 public abstract class AbstractUpdatableExtendedICFG<N, M> implements IExtendedICFG<N, M>{
 	private static final int DEFAULT_CAPACITY = 10000;
@@ -187,11 +185,11 @@ public abstract class AbstractUpdatableExtendedICFG<N, M> implements IExtendedIC
 		return resSet;
 	}
 
-	@Override
+	/*@Override
 	public <X> DirectedGraph<UpdatableWrapper<X>> wrap(DirectedGraph<X> obj) {
 		// TODO Auto-generated method stub
 		return null;
-	}
+	}*/
 
 	@Override
 	public void merge(UpdatableInterproceduralCFG<N, M> otherCfg) {
@@ -313,13 +311,13 @@ public abstract class AbstractUpdatableExtendedICFG<N, M> implements IExtendedIC
 		return wrap(baseCFG.allNonCallEndNodes());
 	}
 
-	@Override
+	/*@Override
 	public DirectedGraph<UpdatableWrapper<N>> getOrCreateUnitGraph(UpdatableWrapper<M> m) {
 		return wrap(baseCFG.getOrCreateUnitGraph(m.getContents()));
-	}
+	}*/
 
 	@Override
-	public List<Value> getParameterRefs(UpdatableWrapper<M> m) {
+	public Object getParameterRefs(UpdatableWrapper<M> m) {
 		return baseCFG.getParameterRefs(m.getContents());
 	}
 

@@ -7,6 +7,7 @@ import boomerang.Query;
 import boomerang.accessgraph.AccessGraph;
 import boomerang.ifdssolver.DefaultIFDSTabulationProblem.Direction;
 import boomerang.ifdssolver.IPathEdge;
+import heros.BiDiInterproceduralCFG;
 import heros.debug.visualization.ExplodedSuperGraph;
 import heros.debug.visualization.IDEToJSON;
 import soot.SootMethod;
@@ -17,7 +18,6 @@ import soot.jimple.InstanceInvokeExpr;
 import soot.jimple.InvokeExpr;
 import soot.jimple.StaticInvokeExpr;
 import soot.jimple.Stmt;
-import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
 
 public class JSONOutputDebugger extends DefaultBoomerangDebugger {
 	private BoomerangContext context;

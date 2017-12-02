@@ -5,11 +5,9 @@ import boomerang.BoomerangContext;
 import boomerang.Query;
 import boomerang.accessgraph.AccessGraph;
 import boomerang.ifdssolver.IFDSDebugger;
-import boomerang.ifdssolver.IPathEdge;
+import heros.BiDiInterproceduralCFG;
 import soot.SootMethod;
 import soot.Unit;
-import soot.jimple.AssignStmt;
-import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
 
 public interface IBoomerangDebugger extends
     IFDSDebugger<Unit, AccessGraph, SootMethod, BiDiInterproceduralCFG<Unit, SootMethod>> {

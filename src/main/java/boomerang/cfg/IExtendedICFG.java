@@ -3,7 +3,7 @@
  */
 package boomerang.cfg;
 
-import boomerang.incremental.UpdatableInterproceduralCFG;
+import heros.incremental.UpdatableInterproceduralCFG;
 import soot.SootField;
 import soot.SootMethod;
 

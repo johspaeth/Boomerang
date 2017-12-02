@@ -11,12 +11,12 @@ package boomerang.ifdssolver;
 import java.util.Map;
 import java.util.Set;
 
+import heros.BiDiInterproceduralCFG;
 import heros.SolverConfiguration;
 import heros.solver.IFDSSolver;
 import heros.solver.Pair;
 import soot.SootMethod;
 import soot.Unit;
-import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
 
 
 

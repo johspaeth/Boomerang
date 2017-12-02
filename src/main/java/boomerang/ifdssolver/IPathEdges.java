@@ -1,6 +1,6 @@
 package boomerang.ifdssolver;
 
-import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
+import heros.BiDiInterproceduralCFG;
 
 public interface IPathEdges<N, D, M, I extends BiDiInterproceduralCFG<N, M>> {
 	public boolean hasAlreadyProcessed(IPathEdge<N,D> edge);

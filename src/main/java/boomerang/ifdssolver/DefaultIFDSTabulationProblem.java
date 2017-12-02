@@ -1,7 +1,7 @@
 package boomerang.ifdssolver;
 
+import heros.BiDiInterproceduralCFG;
 import heros.InterproceduralCFG;
-import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
 
 /**
  * This is a template for {@link IFDSTabulationProblem}s that automatically

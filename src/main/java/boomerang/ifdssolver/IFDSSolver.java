@@ -20,10 +20,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
 import boomerang.ifdssolver.DefaultIFDSTabulationProblem.Direction;
+import heros.BiDiInterproceduralCFG;
 import heros.solver.Pair;
 import soot.SootMethod;
 import soot.Unit;
-import soot.jimple.toolkits.ide.icfg.BiDiInterproceduralCFG;
 
 /**
  * A solver for an {@link IFDSTabulationProblem}. This solver is not based on
