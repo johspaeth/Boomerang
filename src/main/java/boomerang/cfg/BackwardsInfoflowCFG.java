@@ -3,6 +3,7 @@ package boomerang.cfg;
 import heros.BiDiInterproceduralCFG;
 import soot.SootMethod;
 import soot.Unit;
+import soot.jimple.toolkits.ide.icfg.BackwardsInterproceduralCFG;
 import soot.jimple.toolkits.ide.icfg.JimpleBasedInterproceduralCFG;
 
 /**
@@ -11,12 +12,12 @@ import soot.jimple.toolkits.ide.icfg.JimpleBasedInterproceduralCFG;
  * @author Steven Arzt
  * @author Eric Bodden
  */
-public class BackwardsInfoflowCFG extends JimpleBasedInterproceduralCFG {
+public class BackwardsInfoflowCFG extends BackwardsInterproceduralCFG {
 	
 	private final BiDiInterproceduralCFG<Unit, SootMethod> baseCFG;
 	
 	public BackwardsInfoflowCFG(BiDiInterproceduralCFG<Unit, SootMethod> baseCFG) {
-//		super(new BackwardsInterproceduralCFG(baseCFG));
+		super(baseCFG);
 		this.baseCFG = baseCFG;
 	}
 	
