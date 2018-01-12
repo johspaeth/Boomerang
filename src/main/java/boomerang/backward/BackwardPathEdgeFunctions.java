@@ -6,9 +6,9 @@ import java.util.Collections;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
-import boomerang.AliasResults;
-import boomerang.BoomerangContext;
 import boomerang.accessgraph.AccessGraph;
+import boomerang.ap.AliasResults;
+import boomerang.ap.BoomerangContext;
 import boomerang.forward.AbstractPathEdgeFunctions;
 import boomerang.ifdssolver.DefaultIFDSTabulationProblem.Direction;
 import boomerang.pointsofindirection.Alloc;

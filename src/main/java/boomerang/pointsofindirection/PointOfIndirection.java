@@ -1,7 +1,7 @@
 package boomerang.pointsofindirection;
 
-import boomerang.BoomerangContext;
 import boomerang.accessgraph.AccessGraph;
+import boomerang.ap.BoomerangContext;
 import boomerang.ifdssolver.IFDSSolver.PropagationType;
 import boomerang.ifdssolver.PathEdge;
 import heros.solver.Pair;

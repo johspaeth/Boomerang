@@ -7,10 +7,10 @@ import java.util.Set;
 
 import com.google.common.base.Optional;
 
-import boomerang.AliasFinder;
-import boomerang.BoomerangContext;
 import boomerang.accessgraph.AccessGraph;
 import boomerang.accessgraph.WrappedSootField;
+import boomerang.ap.AliasFinder;
+import boomerang.ap.BoomerangContext;
 import boomerang.forward.AbstractFlowFunctions;
 import boomerang.ifdssolver.FlowFunctions;
 import boomerang.ifdssolver.IPathEdge;

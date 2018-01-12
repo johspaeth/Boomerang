@@ -4,8 +4,8 @@ import java.util.Set;
 
 import com.google.common.collect.Sets;
 
-import boomerang.BoomerangContext;
 import boomerang.accessgraph.AccessGraph;
+import boomerang.ap.BoomerangContext;
 import boomerang.ifdssolver.IPathEdge;
 import boomerang.ifdssolver.IncomingListener;
 import heros.solver.Pair;

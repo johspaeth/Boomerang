@@ -5,8 +5,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import boomerang.BoomerangContext;
 import boomerang.accessgraph.AccessGraph;
+import boomerang.ap.BoomerangContext;
 import boomerang.ifdssolver.IPathEdge;
 import boomerang.ifdssolver.ISummaries;
 import heros.solver.Pair;

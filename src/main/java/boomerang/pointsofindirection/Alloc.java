@@ -1,7 +1,7 @@
 package boomerang.pointsofindirection;
 
-import boomerang.BoomerangContext;
 import boomerang.accessgraph.AccessGraph;
+import boomerang.ap.BoomerangContext;
 import soot.SootMethod;
 import soot.Unit;
 import soot.jimple.AssignStmt;

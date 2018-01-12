@@ -3,9 +3,9 @@ package boomerang.backward;
 import java.util.Map;
 import java.util.Set;
 
-import boomerang.BoomerangContext;
-import boomerang.ContextScheduler;
 import boomerang.accessgraph.AccessGraph;
+import boomerang.ap.BoomerangContext;
+import boomerang.ap.ContextScheduler;
 import boomerang.ifdssolver.DefaultIFDSTabulationProblem;
 import boomerang.ifdssolver.IPathEdge;
 import boomerang.ifdssolver.IPropagationController;

@@ -8,11 +8,11 @@ import java.util.Set;
 
 import com.google.common.collect.Lists;
 
-import boomerang.AliasFinder;
-import boomerang.AliasResults;
-import boomerang.BoomerangOptions;
-import boomerang.Query;
 import boomerang.accessgraph.AccessGraph;
+import boomerang.ap.AliasFinder;
+import boomerang.ap.AliasResults;
+import boomerang.ap.BoomerangOptions;
+import boomerang.ap.Query;
 import boomerang.cfg.ExtendedICFG;
 import boomerang.cfg.IExtendedICFG;
 import boomerang.context.AllCallersRequester;

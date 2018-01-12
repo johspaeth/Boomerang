@@ -1,8 +1,8 @@
 package boomerang.debug;
 
-import boomerang.AliasResults;
-import boomerang.Query;
 import boomerang.accessgraph.AccessGraph;
+import boomerang.ap.AliasResults;
+import boomerang.ap.Query;
 import soot.Unit;
 
 public class BoomerangDebugger extends DefaultBoomerangDebugger{

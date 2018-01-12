@@ -5,10 +5,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import boomerang.AliasFinder;
-import boomerang.BoomerangContext;
 import boomerang.accessgraph.AccessGraph;
 import boomerang.accessgraph.WrappedSootField;
+import boomerang.ap.AliasFinder;
+import boomerang.ap.BoomerangContext;
 import boomerang.ifdssolver.FlowFunctions;
 import boomerang.ifdssolver.IFDSSolver.PropagationType;
 import boomerang.ifdssolver.IPathEdge;

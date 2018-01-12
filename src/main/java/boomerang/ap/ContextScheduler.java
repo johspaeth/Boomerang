@@ -1,4 +1,4 @@
-package boomerang;
+package boomerang.ap;
 
 import boomerang.ifdssolver.Scheduler;
 

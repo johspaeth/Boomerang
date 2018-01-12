@@ -6,7 +6,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import boomerang.BoomerangOptions;
+import boomerang.ap.BoomerangOptions;
 import boomerang.debug.DefaultBoomerangDebugger;
 import boomerang.debug.IBoomerangDebugger;
 import boomerang.debug.JSONOutputDebugger;

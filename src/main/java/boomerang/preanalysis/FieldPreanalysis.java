@@ -30,7 +30,7 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
-import boomerang.AliasFinder;
+import boomerang.ap.AliasFinder;
 
 public class FieldPreanalysis {
   private Multimap<SootMethod, SootField> methodsToFieldsReads = HashMultimap.create();

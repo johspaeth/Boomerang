@@ -3,10 +3,10 @@ package boomerang.debug;
 import java.io.File;
 import java.util.Collection;
 
-import boomerang.AliasResults;
-import boomerang.BoomerangContext;
-import boomerang.Query;
 import boomerang.accessgraph.AccessGraph;
+import boomerang.ap.AliasResults;
+import boomerang.ap.BoomerangContext;
+import boomerang.ap.Query;
 import boomerang.cfg.IExtendedICFG;
 import boomerang.ifdssolver.DefaultIFDSTabulationProblem.Direction;
 import boomerang.ifdssolver.IPathEdge;

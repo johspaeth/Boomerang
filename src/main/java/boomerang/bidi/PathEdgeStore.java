@@ -9,9 +9,9 @@ import java.util.TreeSet;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
-import boomerang.BoomerangContext;
-import boomerang.BoomerangTimeoutException;
 import boomerang.accessgraph.AccessGraph;
+import boomerang.ap.BoomerangContext;
+import boomerang.ap.BoomerangTimeoutException;
 import boomerang.ifdssolver.DefaultIFDSTabulationProblem.Direction;
 import boomerang.ifdssolver.IPathEdge;
 import boomerang.ifdssolver.IPathEdges;

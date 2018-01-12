@@ -1,9 +1,9 @@
 package boomerang.debug;
 
-import boomerang.AliasResults;
-import boomerang.BoomerangContext;
-import boomerang.Query;
 import boomerang.accessgraph.AccessGraph;
+import boomerang.ap.AliasResults;
+import boomerang.ap.BoomerangContext;
+import boomerang.ap.Query;
 import boomerang.ifdssolver.IFDSDebugger;
 import boomerang.ifdssolver.IPathEdge;
 import soot.SootMethod;

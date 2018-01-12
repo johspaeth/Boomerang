@@ -1,7 +1,7 @@
 package boomerang.forward;
 
-import boomerang.BoomerangContext;
 import boomerang.accessgraph.AccessGraph;
+import boomerang.ap.BoomerangContext;
 import heros.solver.Pair;
 import soot.Type;
 import soot.Unit;

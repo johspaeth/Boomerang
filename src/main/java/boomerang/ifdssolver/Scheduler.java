@@ -2,7 +2,7 @@ package boomerang.ifdssolver;
 
 import java.util.LinkedList;
 
-import boomerang.BoomerangTimeoutException;
+import boomerang.ap.BoomerangTimeoutException;
 
 public class Scheduler {
 	protected LinkedList<Runnable> worklist = new LinkedList<>();

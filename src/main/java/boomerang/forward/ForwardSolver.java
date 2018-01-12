@@ -1,9 +1,9 @@
 package boomerang.forward;
 
-import boomerang.AliasFinder;
-import boomerang.BoomerangContext;
-import boomerang.BoomerangTimeoutException;
 import boomerang.accessgraph.AccessGraph;
+import boomerang.ap.AliasFinder;
+import boomerang.ap.BoomerangContext;
+import boomerang.ap.BoomerangTimeoutException;
 import boomerang.bidi.Incomings;
 import boomerang.bidi.PathEdgeStore;
 import boomerang.bidi.Summaries;

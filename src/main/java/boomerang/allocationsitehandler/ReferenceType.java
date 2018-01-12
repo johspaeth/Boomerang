@@ -4,8 +4,8 @@ import java.util.Collection;
 
 import com.google.common.base.Optional;
 
-import boomerang.AliasFinder;
 import boomerang.accessgraph.AccessGraph;
+import boomerang.ap.AliasFinder;
 import boomerang.pointsofindirection.Alloc;
 import boomerang.pointsofindirection.AllocationSiteHandler;
 import boomerang.pointsofindirection.AllocationSiteHandlers;

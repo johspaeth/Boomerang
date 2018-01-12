@@ -1,4 +1,4 @@
-package boomerang;
+package boomerang.ap;
 
 public class BoomerangTimeoutException extends RuntimeException {
 
