@@ -6,6 +6,7 @@ import com.google.common.collect.Sets;
 
 import boomerang.accessgraph.AccessGraph;
 import boomerang.ap.BoomerangContext;
+import boomerang.ap.BoomerangTimeoutException;
 import boomerang.ifdssolver.IPathEdge;
 import boomerang.ifdssolver.IncomingListener;
 import heros.solver.Pair;
@@ -29,6 +30,9 @@ public abstract class AllocationListener implements IncomingListener<Unit, Acces
 	public void hasIncomingEdge(IPathEdge<Unit, AccessGraph> edge) {
 		if(!triggered.add(edge.getStartNode()))
 			return;
+		if(context.isOutOfBudget()) {
+			throw new BoomerangTimeoutException();
+		}
 		if(sourcePair.getO2().hasAllocationSite())
 			return;
 		if(edge.getStartNode().getO2().hasAllocationSite()){
