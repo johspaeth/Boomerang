@@ -29,7 +29,7 @@ public class FieldGraph implements IFieldGraph {
 		};
 	};
 
-	FieldGraph(WrappedSootField[] fields) {
+	public FieldGraph(WrappedSootField[] fields) {
 		assert fields != null && fields.length > 0;
 		this.fields = new LinkedList<>(Arrays.asList(fields));
 	}

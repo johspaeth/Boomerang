@@ -90,7 +90,7 @@ public class AccessGraph {
 		this(val, (f == null || f.length == 0 ? null : new FieldGraph(f)), null, false);
 	}
 
-	protected AccessGraph(Local value, IFieldGraph fieldGraph, Unit sourceStmt, boolean isNullAllocsite) {
+	public AccessGraph(Local value, IFieldGraph fieldGraph, Unit sourceStmt, boolean isNullAllocsite) {
 		this.value = value;
 		this.isNullAllocsite = isNullAllocsite;
 //		if(apgs == null){
@@ -108,6 +108,10 @@ public class AccessGraph {
 			this.fieldGraph = fieldGraph;
 //		}
 		this.allocationSite = sourceStmt;
+	}
+	
+	public WrappedSootField[] getFields() {
+		return fieldGraph.getFields();
 	}
 
 	/**

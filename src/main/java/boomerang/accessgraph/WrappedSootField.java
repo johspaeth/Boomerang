@@ -22,6 +22,10 @@ public class WrappedSootField {
   public SootField getField() {
     return field;
   }
+  
+  public Unit getStmt() {
+	  return this.stmt;
+  }
 
 
   @Override
