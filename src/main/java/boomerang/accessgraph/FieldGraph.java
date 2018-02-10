@@ -23,7 +23,7 @@ import soot.SootField;
 public class FieldGraph implements IFieldGraph {
 
 	final LinkedList<WrappedSootField> fields;
-	static FieldGraph EMPTY_GRAPH = new FieldGraph() {
+	public static FieldGraph EMPTY_GRAPH = new FieldGraph() {
 		public String toString() {
 			return "EMPTY_GRAPH";
 		};
