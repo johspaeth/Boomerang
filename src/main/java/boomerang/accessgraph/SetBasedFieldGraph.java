@@ -66,6 +66,10 @@ public class SetBasedFieldGraph implements IFieldGraph {
 	public Collection<WrappedSootField> getEntryNode() {
 		return fields;
 	}
+	
+	public Set<WrappedSootField> getAllFields() {
+		return fields;
+	}
 
 	@Override
 	public WrappedSootField[] getFields() {

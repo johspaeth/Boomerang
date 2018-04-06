@@ -34,7 +34,7 @@ public class FieldGraph implements IFieldGraph {
 		this.fields = new LinkedList<>(Arrays.asList(fields));
 	}
 
-	FieldGraph(WrappedSootField f) {
+	public FieldGraph(WrappedSootField f) {
 		assert f != null;
 		this.fields = new LinkedList<>();
 		this.fields.add(f);
