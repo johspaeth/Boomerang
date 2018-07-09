@@ -26,6 +26,8 @@ public class AccessGraph {
 
 	public static AccessGraph MAX_ACCESS_GRAPH;
 
+	public static int KLimiting = -1;
+
 	/**
 	 * The local variable at which the field graph is rooted.
 	 */
@@ -76,7 +78,7 @@ public class AccessGraph {
 	 *            the first field access
 	 */
 	public AccessGraph(Local val,  WrappedSootField field) {
-		this(val, new FieldGraph(field), null,false);
+		this(val, createFieldGraph(field), null,false);
 	}
 
 	/**
@@ -150,6 +152,8 @@ public class AccessGraph {
 		if (fieldGraph == null)
 			return false;
 		if(fieldGraph instanceof SetBasedFieldGraph)
+			return false;
+		if(fieldGraph instanceof KLimitedFieldSequence)
 			return false;
 		for(WrappedSootField f: getFirstField())
 			return f.getField().equals(field);
@@ -225,13 +229,22 @@ public class AccessGraph {
 	 * @return the access graph derived with the appended fields.
 	 */
 	public AccessGraph appendFields(WrappedSootField[] toAppend) {
-		IFieldGraph newapg = (fieldGraph != null ? fieldGraph.appendFields(toAppend) : new FieldGraph(toAppend));
+		IFieldGraph newapg = (fieldGraph != null ? fieldGraph.appendFields(toAppend) : createFieldGraph(toAppend));
 		if(newapg.shouldOverApproximate()){
 			newapg = newapg.overapproximation();
 		}
 		return new AccessGraph(value,  newapg, allocationSite,isNullAllocsite);
 	}
 
+	private static IFieldGraph createFieldGraph(WrappedSootField[] toAppend) {
+		return (KLimiting < 0 ? new FieldGraph(toAppend) : new KLimitedFieldSequence(toAppend, false));
+	}
+
+
+	private static IFieldGraph createFieldGraph(WrappedSootField f) {
+		return (KLimiting < 0 ? new FieldGraph(f) : new KLimitedFieldSequence(f));
+	}
+	
 	/**
 	 * Appends a complete field graph to the current access graph.
 	 * 
@@ -258,7 +271,7 @@ public class AccessGraph {
 	 * @return A copy of the current access graph with the field appended
 	 */
 	public AccessGraph prependField(WrappedSootField f) {
-		IFieldGraph newapg = (fieldGraph != null ? fieldGraph.prependField(f) : new FieldGraph(f));
+		IFieldGraph newapg = (fieldGraph != null ? fieldGraph.prependField(f) : createFieldGraph(f));
 		if(newapg.shouldOverApproximate()){
 			newapg = newapg.overapproximation();
 		}
