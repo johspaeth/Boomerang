@@ -10,6 +10,7 @@ package boomerang.cfg;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -19,6 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Lists;
 
 import boomerang.preanalysis.FieldPreanalysis;
 import heros.solver.IDESolver;
@@ -64,10 +66,10 @@ public class ExtendedICFG implements IExtendedICFG {
 
 	protected final BiDiInterproceduralCFG<Unit, SootMethod> delegate;
 
-
 	public ExtendedICFG() {
 		this(true);
 	}
+
 	public ExtendedICFG(boolean exceptionAnalysis) {
 		this(new JimpleBasedInterproceduralCFG(exceptionAnalysis));
 	}
@@ -101,12 +103,10 @@ public class ExtendedICFG implements IExtendedICFG {
 		}
 	}
 
-
 	@Override
 	public boolean isIgnoredMethod(SootMethod method) {
 		return IGNORED_METHODS.contains(method);
 	}
-
 
 	// delegate methods follow
 
@@ -117,11 +117,15 @@ public class ExtendedICFG implements IExtendedICFG {
 
 	@Override
 	public List<Unit> getSuccsOf(Unit u) {
+		if(u == null)
+			return Lists.newArrayList();
 		return delegate.getSuccsOf(u);
 	}
 
 	@Override
 	public boolean isExitStmt(Unit u) {
+		if(u == null)
+			return false;
 		return delegate.isExitStmt(u);
 	}
 
@@ -147,6 +151,8 @@ public class ExtendedICFG implements IExtendedICFG {
 
 	@Override
 	public boolean isCallStmt(Unit u) {
+		if (u == null)
+			return false;
 		return delegate.isCallStmt(u);
 	}
 
@@ -157,6 +163,8 @@ public class ExtendedICFG implements IExtendedICFG {
 
 	@Override
 	public Collection<SootMethod> getCalleesOfCallAt(Unit u) {
+		if (u == null)
+			return Collections.emptyList();
 		return delegate.getCalleesOfCallAt(u);
 	}
 
@@ -177,6 +185,8 @@ public class ExtendedICFG implements IExtendedICFG {
 
 	@Override
 	public List<Unit> getPredsOf(Unit u) {
+		if (u == null)
+			return Collections.emptyList();
 		return delegate.getPredsOf(u);
 	}
 
@@ -187,6 +197,8 @@ public class ExtendedICFG implements IExtendedICFG {
 
 	@Override
 	public List<Unit> getPredsOfCallAt(Unit u) {
+		if (u == null)
+			return Collections.emptyList();
 		return delegate.getPredsOf(u);
 	}
 
@@ -207,9 +219,10 @@ public class ExtendedICFG implements IExtendedICFG {
 
 	@Override
 	public boolean isReturnSite(Unit n) {
+		if (n == null)
+			return false;
 		return delegate.isReturnSite(n);
 	}
-
 
 	@Override
 	public boolean isStaticFieldUsed(SootMethod method, SootField variable) {
@@ -309,10 +322,9 @@ public class ExtendedICFG implements IExtendedICFG {
 		entry.put(variable, newUse);
 	}
 
-
 	@Override
 	public boolean isReachable(Unit u) {
-		return false;
+		return delegate.isReachable(u);
 	}
 
 }

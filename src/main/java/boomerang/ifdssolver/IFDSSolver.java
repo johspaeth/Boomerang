@@ -227,6 +227,9 @@ public abstract class IFDSSolver<N, D, M, I extends BiDiInterproceduralCFG<N, M>
 		if (incomings.isEmpty()) {
 			Collection<N> callers = icfg.getCallersOf(methodThatNeedsSummary);
 			for (N c : callers) {
+				if(c == null) {
+					continue;
+				}
 				for (N retSiteC : icfg.getReturnSitesOfCallAt(c)) {
 					Collection<? extends IPathEdge<N, D>> nextEdges = pathEdgeFunctions
 							.unbalancedReturnFunction(summaryEdge, c, retSiteC, methodThatNeedsSummary);
