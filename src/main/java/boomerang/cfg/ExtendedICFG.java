@@ -175,6 +175,8 @@ public class ExtendedICFG implements IExtendedICFG {
 
 	@Override
 	public Collection<Unit> getReturnSitesOfCallAt(Unit u) {
+		if(u == null)
+			return Collections.emptySet();
 		return delegate.getReturnSitesOfCallAt(u);
 	}
 
